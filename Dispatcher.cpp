@@ -1,13 +1,13 @@
 #include "Dispatcher.hpp"
 
-Dispatcher::Dispatcher(unsigned short port, unsigned short nodeID, Tracker *tracker) : _port(port), sockfd(), srvaddr(), _nodeId(nodeID), _tracker(tracker), _threadHeartBeat(&Dispatcher::_hearbeat, this), _heartTimer(DEFAULTHEARTTIMER) {
+Dispatcher::Dispatcher(unsigned short port, unsigned short nodeID, Tracker *tracker) : _port(port), sockfd(), srvaddr(), _nodeId(nodeID), _tracker(tracker), _threadHeartBeat(), _heartTimer(DEFAULTHEARTTIMER) {
     if (not _tracker) {
         LOG_F(WARNING, "Tracker provided is NULLPTR");
     }
 }
 
 
-Dispatcher::Dispatcher(unsigned short port, unsigned short nodeID, Tracker *tracker, unsigned short heartTimer) : _port(port), sockfd(), srvaddr(), _nodeId(nodeID), _tracker(tracker), _threadHeartBeat(&Dispatcher::_hearbeat, this), _heartTimer(heartTimer) {
+Dispatcher::Dispatcher(unsigned short port, unsigned short nodeID, Tracker *tracker, unsigned short heartTimer) : _port(port), sockfd(), srvaddr(), _nodeId(nodeID), _tracker(tracker), _threadHeartBeat(), _heartTimer(heartTimer) {
     if (not _tracker) {
         LOG_F(WARNING, "Tracker provided is NULLPTR");
     }
@@ -63,6 +63,7 @@ void Dispatcher::start() {
 
     loguru::set_thread_name("Dispatcher");
     _setup_socket();
+    _threadHeartBeat = std::thread(&Dispatcher::_hearbeat, this);
 
     while (true) {
         sockaddr cli_addr;
@@ -75,6 +76,12 @@ void Dispatcher::start() {
         }
 
         LOG_F(INFO, "Received packet : {nodeID=%d, led_status=%d}", packet.nodeID, packet.led_status);
+        if (not _tracker) {
+            close(sockfd);
+            perror("Tracker NULLPTR");
+            throw;
+        }
+
         _tracker->Notify(packet);
     }
 }

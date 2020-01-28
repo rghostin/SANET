@@ -9,8 +9,8 @@
 
 int main(int argc, char** argv) {
     unsigned short nodeId(0);
-    Tracker *tracker = nullptr;
-//    Tracker *tracker = new Tracker();
+//    Tracker *tracker = nullptr;
+    Tracker *tracker = new Tracker();
     Dispatcher dispatcher(DISPATCHER_PORT, nodeId, tracker);
 
     loguru::init(argc, argv);
