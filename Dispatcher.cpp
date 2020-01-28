@@ -75,6 +75,7 @@ void Dispatcher::start() {
         }
 
         LOG_F(INFO, "Received packet : {nodeID=%d, led_status=%d}", packet.nodeID, packet.led_status);
+        _tracker->Notify(packet);
     }
 }
 
