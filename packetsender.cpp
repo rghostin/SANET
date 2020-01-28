@@ -22,7 +22,7 @@ uint8_t input_uint8() {
     std::cin >> tmp_uint8_input;
     int x = std::atoi(tmp_uint8_input);
 
-    if (not (0 <= x <= LIMITUINT8)) {
+    if (x < 0 or LIMITUINT8 < x) {
         perror("Invalid input uint8_t");
         throw;
     }
