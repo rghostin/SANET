@@ -12,18 +12,37 @@
 
 #define EXIT_PROG_CODE 99
 #define SRVPORT 5820
+#define LIMITUINT8 256  // 2**8
+
+
+uint8_t input_uint8() {
+    uint8_t uint8_x;
+    char tmp_uint8_input[3];
+
+    std::cin >> tmp_uint8_input;
+    int x = std::atoi(tmp_uint8_input);
+
+    if (not (0 <= x <= LIMITUINT8)) {
+        perror("Invalid input uint8_t");
+        throw;
+    }
+    else {
+        uint8_x = static_cast<uint8_t>(x);
+    }
+    return uint8_x;
+}
 
 
 Packet input_packet() {
     Packet packet;
 
     std::cout << "nodeID : ";
-    std::cin >> packet.nodeID;
-
+    packet.nodeID = input_uint8();
     std::cout << "led_status : ";
     std::cin >> packet.led_status;
     std::cout << "Timestamp : ";
     std::cin >> packet.timestamp;
+
     return packet;
 }
 
