@@ -17,14 +17,14 @@ void Tracker::Notify(Packet packet){
 
 void Tracker::_updateHashMap(){
     Packet packet;
-    Position pos(0.f,0.f);  // POS by default
+    Position pos(0,0);  // POS by default
 
     while(true){
         if(_queue.size()>0){
             packet = _queue.front();
             _queue.pop_front();
             m.lock();
-            _hashmap[packet.nodeID]=std::make_pair(pos, packet.timestamp);
+            _hashmap[packet.nodeID]={pos, packet.timestamp};
             m.unlock();
             LOG_F(INFO, "[TRACKER] Updated NodeID : {nodeID=%d, led_status=%d, timestamp=%d}", packet.nodeID, packet.led_status, packet.timestamp);
         }
@@ -70,6 +70,7 @@ Tracker::~Tracker(){
     if(_threadUpdateHash.joinable()){
         _threadUpdateHash.join();
     }
+
     if(_threadTimeCheck.joinable()){
         _threadTimeCheck.join();
     }

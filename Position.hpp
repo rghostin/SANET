@@ -6,6 +6,7 @@ private :
     double _longitude;
     double _latitude;
 public :
+    Position();
     Position(double longitude, double latitude);
     double getLongitude();
     double getLatitude();
