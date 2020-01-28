@@ -9,13 +9,13 @@
 
 int main(int argc, char** argv) {
     unsigned short nodeId(0);
-//    Tracker *tracker = nullptr;
-    Tracker *tracker = new Tracker();
+    Tracker tracker;
     Dispatcher dispatcher(DISPATCHER_PORT, nodeId, tracker);
 
     loguru::init(argc, argv);
     loguru::add_file("robin.log", loguru::Append, loguru::Verbosity_WARNING);
 
     dispatcher.start();
+    tracker.start();
     return 0;
 }

@@ -27,8 +27,9 @@ private:
     const unsigned short _port;
     int sockfd;
     sockaddr_in srvaddr;
-    unsigned short _nodeId;
-    Tracker *_tracker;
+    sockaddr_in to_sockaddr;
+    uint8_t _nodeID;
+    Tracker& _tracker;
     std::thread _threadHeartBeat;
     unsigned short _heartTimer;
 
@@ -36,8 +37,8 @@ private:
     void _hearbeat();
     
 public:
-    Dispatcher(unsigned short port, unsigned short nodeID, Tracker *tracker);
-    Dispatcher(unsigned short port, unsigned short nodeID, Tracker *tracker, unsigned short heartTimer);
+    Dispatcher(unsigned short port, uint8_t nodeID, Tracker &tracker);
+    Dispatcher(unsigned short port, uint8_t nodeID, Tracker &tracker, unsigned short heartTimer);
     Dispatcher(const Dispatcher&) = delete;
     Dispatcher(Dispatcher&&) = delete;
     Dispatcher& operator=(const Dispatcher&) = delete;

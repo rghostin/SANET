@@ -1,26 +1,17 @@
 #include "Dispatcher.hpp"
 
-Dispatcher::Dispatcher(unsigned short port, unsigned short nodeID, Tracker *tracker) : _port(port), sockfd(), srvaddr(), _nodeId(nodeID), _tracker(tracker), _threadHeartBeat(), _heartTimer(DEFAULTHEARTTIMER) {
-    if (not _tracker) {
-        LOG_F(WARNING, "Tracker provided is NULLPTR");
-    }
-}
+Dispatcher::Dispatcher(unsigned short port, uint8_t nodeID, Tracker &tracker) : _port(port), sockfd(), srvaddr(), _nodeID(nodeID), _tracker(tracker), _threadHeartBeat(), _heartTimer(DEFAULTHEARTTIMER) {}
 
 
-Dispatcher::Dispatcher(unsigned short port, unsigned short nodeID, Tracker *tracker, unsigned short heartTimer) : _port(port), sockfd(), srvaddr(), _nodeId(nodeID), _tracker(tracker), _threadHeartBeat(), _heartTimer(heartTimer) {
-    if (not _tracker) {
-        LOG_F(WARNING, "Tracker provided is NULLPTR");
-    }
-}
+Dispatcher::Dispatcher(unsigned short port, uint8_t nodeID, Tracker &tracker, unsigned short heartTimer) : _port(port), sockfd(), srvaddr(), _nodeID(nodeID), _tracker(tracker), _threadHeartBeat(), _heartTimer(heartTimer) {}
 
 
 Dispatcher::~Dispatcher() {
     if (_threadHeartBeat.joinable()) {
         _threadHeartBeat.join();
     }
+
     close(sockfd);
-    delete _tracker;  // A voir si on laisse le delete ici ou directement dans ROBIN.CPP TODO
-    _tracker = nullptr;
 }
 
 
@@ -76,21 +67,14 @@ void Dispatcher::start() {
         }
 
         LOG_F(INFO, "Received packet : {nodeID=%d, led_status=%d}", packet.nodeID, packet.led_status);
-        if (not _tracker) {
-            close(sockfd);
-            perror("Tracker NULLPTR");
-            throw;
-        }
-
-        _tracker->Notify(packet);
+        _tracker.notify(packet);
     }
 }
 
 void Dispatcher::_hearbeat() {
     Packet packet;
-    packet.nodeID = _nodeId;
+    packet.nodeID = _nodeID;
 
-    sockaddr_in to_sockaddr;
     socklen_t len_to_sockaddr = sizeof(sockaddr);
 
     // fill receiver address

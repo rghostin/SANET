@@ -1,5 +1,6 @@
-#ifndef TRACKER_TRACKER_HPP
-#define TRACKER_TRACKER_HPP
+#ifndef __TRACKER_HPP_
+#define __TRACKER_HPP_
+
 #include <thread>
 #include <mutex>
 #include <deque>
@@ -14,22 +15,24 @@
 
 class Tracker {
 private :
-    std::deque<Packet> _queue;
-    std::map<unsigned short, std::pair<Position, uint32_t>> _hashmap;
+    std::deque<Packet> _packetqueue;
+    std::map<unsigned short, std::pair<Position, uint32_t>> _status_node_map;
     bool ALERT_PEER_LOST;
-    unsigned short _timeout;
+    unsigned short _peer_lost_timeout;
     std::thread _threadUpdateHash;
     std::thread _threadTimeCheck;
 
-    void _changeFlag(bool);
+    void _set_peer_lostFlag();
+    void _reset_peer_lostFlag();
     void _updateHashMap();
     void _checkTimestamp();
 
 public :
     Tracker();
-    Tracker(unsigned short timeout);
-    void Notify(Packet paquet);
+    Tracker(unsigned short);
+    void start();
+    void notify(Packet);
     ~Tracker();
 };
 
-#endif //TRACKER_TRACKER_HPP
+#endif

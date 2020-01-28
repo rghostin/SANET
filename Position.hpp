@@ -1,15 +1,14 @@
-#ifndef POSITION_HPP
-#define POSITION_HPP
+#ifndef __POSITION_HPP_
+#define __POSITION_HPP_
 
-class Position{
-private :
-    double _longitude;
-    double _latitude;
-public :
-    Position();
-    Position(double longitude, double latitude);
-    double getLongitude();
-    double getLatitude();
-    ~Position()=default;
+struct Position {
+    double longitude;
+    double latitude;
 };
-#endif //POSITION_HPP
+
+
+inline void print_position(const Position& pos) {
+    printf("Longitude : %f\nLatitude: %f\n\n", pos.longitude, pos.latitude);
+}
+
+#endif
