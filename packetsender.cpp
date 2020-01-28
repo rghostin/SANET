@@ -29,6 +29,7 @@ uint8_t input_uint8() {
     else {
         uint8_x = static_cast<uint8_t>(x);
     }
+
     return uint8_x;
 }
 
@@ -45,7 +46,6 @@ Packet input_packet() {
 
     return packet;
 }
-
 
 
 int main(int argc, char** argv) {

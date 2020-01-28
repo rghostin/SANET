@@ -11,7 +11,7 @@ inline void print_packet(const Packet& packet) {
     printf("nodeID : %d\nled_status: %d\ntimestamp: %d\n\n", packet.nodeID, packet.led_status, packet.timestamp);
 }
 
-inline *char getPacketInfos(const Packet& packet){
+inline *char getPacketInfos(const Packet& packet){ // TODO supprimer toute dépendances à string
     std::string result;
 
     std::string str_nodeID = "nodeID : ";
