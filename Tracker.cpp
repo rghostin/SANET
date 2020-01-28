@@ -14,9 +14,9 @@ void Tracker::Notify(Packet packet){
     LOG_F(INFO, "[TRACKER] Added packet : {nodeID=%d, led_status=%d, timestamp=%d}", packet.nodeID, packet.led_status, packet.timestamp);
 }
 
+
 void Tracker::_updateHashMap(){
     Packet packet;
-    uint32_t timestamp ;
     Position pos(0.f,0.f);  // POS by default
 
     while(true){
@@ -31,35 +31,40 @@ void Tracker::_updateHashMap(){
     }
 }
 
-void Tracker::_changeFlag(){
-    m.lock();
-    ALERT_PEER_LOST = true;
-    m.unlock();
-    LOG_F(INFO, "[TRACKER] ALERT_PEER_LOST - Flag fixed on True");
-}
 
-void Tracker::_resetFlag(){
+void Tracker::_changeFlag(bool newValue){
     m.lock();
-    ALERT_PEER_LOST = false;
+    ALERT_PEER_LOST = newValue;
     m.unlock();
-    LOG_F(INFO, "[TRACKER] ALERT_PEER_LOST - Flag fixed on False");
+
+    if (newValue) {
+        LOG_F(INFO, "[TRACKER] ALERT_PEER_LOST - Flag fixed on True");
+        // RECALCULER l'area
+    }
+    else {
+        LOG_F(INFO, "[TRACKER] ALERT_PEER_LOST - Flag fixed on False");
+    }
 }
 
 
 void Tracker::_checkTimestamp(){
-    m.lock();
     uint32_t actualTimestamp = std::time(nullptr);
 
-    for (auto const&[key, val] : _hashmap ){
-        if((actualTimestamp-std::get<1>(val))>_timeout){
-            //dead drone
-            _hashmap.erase(key);
-            LOG_F(INFO, "[TRACKER] Removed NodeID : {nodeID=%d}", key);
-            _changeFlag();
+    while (true) {
+        m.lock();
+        for (auto const&[key, val] : _hashmap ){
+            if((actualTimestamp-std::get<1>(val))>_timeout){
+                //dead drone
+                _hashmap.erase(key);
+                LOG_F(INFO, "[TRACKER] Removed NodeID : {nodeID=%d}", key);
+                _changeFlag(true);
+            }
         }
+        m.unlock();
+        sleep(TIMESTAMP_LAPS);
     }
-    m.unlock();
 }
+
 
 Tracker::~Tracker(){
     if(_threadUpdateHash.joinable()){

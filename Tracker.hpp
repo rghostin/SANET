@@ -7,8 +7,10 @@
 #include "packets.hpp"
 #include "Position.hpp"
 #include "loguru.hpp"
+#include <unistd.h>
 
 #define DEFAULT_TIMEOUT 30
+#define TIMESTAMP_LAPS 30
 
 class Tracker {
 private :
@@ -19,8 +21,7 @@ private :
     std::thread _threadUpdateHash;
     std::thread _threadTimeCheck;
 
-    void _changeFlag();
-    void _resetFlag();
+    void _changeFlag(bool);
     void _updateHashMap();
     void _checkTimestamp();
 
