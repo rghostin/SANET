@@ -1,4 +1,4 @@
-CXX:=g++
+CXX:=g++-8
 CXXFLAGS := -std=c++17 -Wall -Werror -pedantic
 LDFLAGS:=-lpthread -ldl
 
@@ -16,5 +16,3 @@ packetsender: packetsender.cpp
 .PHONY: clean
 clean:
 	clear; rm -rf *.o; rm -rf robin
-
-
