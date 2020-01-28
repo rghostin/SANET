@@ -2,3 +2,4 @@
 *.o
 robin
 packetsender
+/cmake-build-debug/
