@@ -22,6 +22,8 @@ Packet input_packet() {
 
     std::cout << "led_status : ";
     std::cin >> packet.led_status;
+    std::cout << "Timestamp : ";
+    std::cin >> packet.timestamp;
     return packet;
 }
 
