@@ -6,6 +6,7 @@
 #include <map>
 #include "packets.hpp"
 #include "Position.hpp"
+#include "loguru.hpp"
 
 #define DEFAULT_TIMEOUT 30
 
