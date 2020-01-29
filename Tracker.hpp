@@ -19,12 +19,12 @@ private :
     std::map<unsigned short, std::pair<Position, uint32_t>> _status_node_map;
     bool ALERT_PEER_LOST;
     unsigned short _peer_lost_timeout;
-    std::thread _threadUpdateHash;
-    std::thread _threadTimeCheck;
+    std::thread _thread_update_statusNodeMap;
+    std::thread _thread_checktimestamp;
 
     void _set_peer_lostFlag();
     void _reset_peer_lostFlag();
-    void _updateHashMap();
+    void _update_status_node_map();
     void _checkTimestamp();
 
 public :

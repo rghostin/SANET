@@ -4,15 +4,15 @@ std::mutex mutex_status_node_map;
 std::mutex mutex_peer_lost_flag;
 
 
-Tracker::Tracker() : _packetqueue(), _status_node_map(), ALERT_PEER_LOST(false), _peer_lost_timeout(DEFAULT_TIMEOUT), _threadUpdateHash(), _threadTimeCheck() {}
+Tracker::Tracker() : _packetqueue(), _status_node_map(), ALERT_PEER_LOST(false), _peer_lost_timeout(DEFAULT_TIMEOUT), _thread_update_statusNodeMap(), _thread_checktimestamp() {}
 
 
-Tracker::Tracker(unsigned short timeout) : _packetqueue(), _status_node_map(), ALERT_PEER_LOST(false), _peer_lost_timeout(timeout), _threadUpdateHash(), _threadTimeCheck() {}
+Tracker::Tracker(unsigned short timeout) : _packetqueue(), _status_node_map(), ALERT_PEER_LOST(false), _peer_lost_timeout(timeout), _thread_update_statusNodeMap(), _thread_checktimestamp() {}
 
 
 void Tracker::start() {
-    _threadUpdateHash = std::thread(&Tracker::_updateHashMap, this);
-    _threadTimeCheck = std::thread(&Tracker::_checkTimestamp, this);
+    _thread_update_statusNodeMap = std::thread(&Tracker::_update_status_node_map, this);
+    _thread_checktimestamp = std::thread(&Tracker::_checkTimestamp, this);
 
     loguru::set_thread_name("Tracker");
 }
@@ -25,7 +25,7 @@ void Tracker::notify(Packet packet){
 }
 
 
-void Tracker::_updateHashMap(){
+void Tracker::_update_status_node_map(){
     Packet packet;
     Position pos = {0, 0};  // POS by default
 
@@ -79,11 +79,11 @@ void Tracker::_checkTimestamp(){
 
 
 Tracker::~Tracker(){
-    if(_threadUpdateHash.joinable()){
-        _threadUpdateHash.join();
+    if(_thread_update_statusNodeMap.joinable()){
+        _thread_update_statusNodeMap.join();
     }
 
-    if(_threadTimeCheck.joinable()){
-        _threadTimeCheck.join();
+    if(_thread_checktimestamp.joinable()){
+        _thread_checktimestamp.join();
     }
 }
