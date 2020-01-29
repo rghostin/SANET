@@ -32,6 +32,7 @@ public :
     Tracker(unsigned short);
     void start();
     void notify(Packet);
+    bool is_peer_lost();
     ~Tracker();
 };
 

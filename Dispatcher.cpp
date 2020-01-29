@@ -66,7 +66,7 @@ void Dispatcher::start() {
             throw;
         }
 
-        LOG_F(INFO, "Received packet : {nodeID=%d, led_status=%d}", packet.nodeID, packet.led_status);
+        LOG_F(INFO, "Received packet : %s", get_packetInfos(packet).c_str());
         _tracker.notify(packet);
     }
 }
@@ -78,21 +78,21 @@ void Dispatcher::_hearbeat() {
     socklen_t len_to_sockaddr = sizeof(sockaddr);
 
     // fill receiver address
-    memset(&to_sockaddr, 0, sizeof(to_sockaddr));
-    to_sockaddr.sin_family = AF_INET;
-    to_sockaddr.sin_addr.s_addr = htonl(INADDR_BROADCAST); //inet_addr("192.168.1.33"); //INET_BROADCAST  // todo fix
-    to_sockaddr.sin_port = htons(_port);
+    memset(&bc_sockaddr, 0, sizeof(bc_sockaddr));
+    bc_sockaddr.sin_family = AF_INET;
+    bc_sockaddr.sin_addr.s_addr = htonl(INADDR_BROADCAST); //inet_addr("192.168.1.33"); //INET_BROADCAST  // todo fix
+    bc_sockaddr.sin_port = htons(_port);
 
     while (true) {
         packet.timestamp = std::time(nullptr);
 
-        if ( sendto(sockfd, &packet, sizeof(packet), 0, reinterpret_cast<const sockaddr*>(&to_sockaddr), len_to_sockaddr)  < 0 ) {
+        if ( sendto(sockfd, &packet, sizeof(packet), 0, reinterpret_cast<const sockaddr*>(&bc_sockaddr), len_to_sockaddr)  < 0 ) {
             close(sockfd);
             perror("Cannot sendto");
             throw;
         }
 
-        LOG_F(INFO, "Sent packet : {nodeID=%d, led_status=%d, timestamp=%d}", packet.nodeID, packet.led_status, packet.timestamp);
+        LOG_F(INFO, "Sent packet : %s", get_packetInfos(packet).c_str());
         sleep(_heartTimer);
     }
 }

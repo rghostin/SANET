@@ -27,7 +27,7 @@ private:
     const unsigned short _port;
     int sockfd;
     sockaddr_in srvaddr;
-    sockaddr_in to_sockaddr;
+    sockaddr_in bc_sockaddr;
     uint8_t _nodeID;
     Tracker& _tracker;
     std::thread _threadHeartBeat;
