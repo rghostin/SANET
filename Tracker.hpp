@@ -3,7 +3,7 @@
 
 #include <thread>
 #include <mutex>
-#include <deque>
+#include <queue>
 #include <map>
 #include "packets.hpp"
 #include "Position.hpp"
@@ -15,7 +15,7 @@
 
 class Tracker {
 private :
-    std::deque<Packet> _packetqueue;
+    std::queue<Packet> _packetqueue;
     std::map<unsigned short, std::pair<Position, uint32_t>> _status_node_map;
     bool ALERT_PEER_LOST;
     unsigned short _peer_lost_timeout;

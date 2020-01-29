@@ -20,7 +20,7 @@ void Tracker::start() {
 
 //Add the received packet to the queue
 void Tracker::notify(Packet packet){
-    _packetqueue.push_back(packet);
+    _packetqueue.push(packet);
     LOG_F(INFO, "Added packet : {nodeID=%d, led_status=%d, timestamp=%d}", packet.nodeID, packet.led_status, packet.timestamp);
 }
 
@@ -32,7 +32,7 @@ void Tracker::_updateHashMap(){
     while (true) {
         if (_packetqueue.size() > 0) {
             packet = _packetqueue.front();
-            _packetqueue.pop_front();
+            _packetqueue.pop();
             mutex_status_node_map.lock();
             _status_node_map[packet.nodeID] = {pos, packet.timestamp};
             mutex_status_node_map.unlock();
