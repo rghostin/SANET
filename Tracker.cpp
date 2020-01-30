@@ -19,6 +19,8 @@ void Tracker::start() {
 
 //Add the received packet to the queue
 void Tracker::notify(Packet packet) {
+    loguru::set_thread_name("Tracker");
+
     std::lock_guard<std::mutex> lock(mutex_packetqueue);
     _packetqueue.push(packet);
     LOG_F(INFO, "Added packet : %s", get_packetInfos(packet).c_str());
@@ -67,16 +69,23 @@ void Tracker::_checkTimestamp(){
     uint32_t actualTimestamp = std::time(nullptr);
     loguru::set_thread_name("Tracker");
     LOG_F(INFO, "Startup of _checkTimestamp");
+    std::map<unsigned short, std::pair<Position, uint32_t>>::iterator it;
 
     while (true) {
         {  // Scope spécifique sinon lock_guard va dans le sleep
             std::lock_guard<std::mutex> lock(mutex_status_node_map);
-            for (auto const&[key, val] : _status_node_map ) {
-                if ((actualTimestamp - std::get<1>(val)) >_peer_lost_timeout) {
-                    //dead drone
-                    _status_node_map.erase(key);
-                    LOG_F(WARNING, "Peer lost with the following NodeID : {nodeID=%d}", key);
-                    _set_peer_lostFlag();
+            if (_status_node_map.size() > 0) {
+                it = _status_node_map.begin();
+                while (it != _status_node_map.end()) {
+                    if ((actualTimestamp - std::get<1>(it->second)) >_peer_lost_timeout) {
+                        //dead drone
+                        LOG_F(WARNING, "Peer lost with the following NodeID : %d", it->first);
+                        _status_node_map.erase(it++);
+                        _set_peer_lostFlag();
+                    }
+                    else {
+                        ++it;
+                    }
                 }
             }
         }

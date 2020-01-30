@@ -17,7 +17,7 @@ inline void print_packet(const Packet& packet) {
 
 
 inline std::string get_packetInfos(const Packet& packet) {
-    return "nodeID : " + std::to_string(packet.nodeID) + "\nled_status: " + std::to_string(packet.led_status) + "\ntimestamp: " + std::to_string(packet.timestamp);
+    return "nodeID : " + std::to_string(packet.nodeID) + " | led_status: " + std::to_string(packet.led_status) + " | timestamp: " + std::to_string(packet.timestamp);
 }
 
 #endif

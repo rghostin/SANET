@@ -76,6 +76,7 @@ void Dispatcher::start() {
 void Dispatcher::_hearbeat() {
     Packet packet;
     packet.nodeID = _nodeID;
+    loguru::set_thread_name("Dispatcher");
 
     socklen_t len_to_sockaddr = sizeof(sockaddr);
 
