@@ -29,6 +29,7 @@ void Tracker::_update_status_node_map(){
     Packet packet;
     Position pos = {0, 0};  // POS by default
     loguru::set_thread_name("Tracker");
+    LOG_F(INFO, "Startup of _update_status_node_map");
 
     while (true) {
         if (_packetqueue.size() > 0) {
@@ -65,6 +66,7 @@ bool Tracker::is_peer_lost() {
 void Tracker::_checkTimestamp(){
     uint32_t actualTimestamp = std::time(nullptr);
     loguru::set_thread_name("Tracker");
+    LOG_F(INFO, "Startup of _checkTimestamp");
 
     while (true) {
         {  // Scope spécifique sinon lock_guard va dans le sleep

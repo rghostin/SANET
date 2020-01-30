@@ -66,8 +66,10 @@ void Dispatcher::start() {
             throw;
         }
 
-        LOG_F(INFO, "Received packet : %s", get_packetInfos(packet).c_str());
-        _tracker.notify(packet);
+        if (packet.nodeID != _nodeID) {
+            LOG_F(INFO, "Received packet : %s", get_packetInfos(packet).c_str());
+            _tracker.notify(packet);
+        }
     }
 }
 

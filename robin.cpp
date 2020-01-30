@@ -15,7 +15,12 @@ int main(int argc, char** argv) {
     loguru::init(argc, argv);
     loguru::add_file("robin.log", loguru::Append, loguru::Verbosity_WARNING);
 
-    dispatcher.start();
+    std::thread dispatch(&Dispatcher::start, &dispatcher);
     tracker.start();
+
+    if (dispatch.joinable()) {
+            dispatch.join();
+    }
+
     return 0;
 }
