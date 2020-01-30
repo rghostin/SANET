@@ -5,10 +5,7 @@ std::mutex mutex_packetqueue;
 std::mutex mutex_peer_lost_flag;
 
 
-Tracker::Tracker() : _packetqueue(), _status_node_map(), ALERT_PEER_LOST(false), _peer_lost_timeout(DEFAULT_TIMEOUT), _thread_update_statusNodeMap(), _thread_checktimestamp() {}
-
-
-Tracker::Tracker(unsigned short timeout) : _packetqueue(), _status_node_map(), ALERT_PEER_LOST(false), _peer_lost_timeout(timeout), _thread_update_statusNodeMap(), _thread_checktimestamp() {}
+Tracker::Tracker(unsigned short timeout, unsigned short intervalTime) : _packetqueue(), _status_node_map(), ALERT_PEER_LOST(false), _peer_lost_timeout(timeout), _intervalTime_checkTimestamp(intervalTime), _thread_update_statusNodeMap(), _thread_checktimestamp() {}
 
 
 void Tracker::start() {
@@ -77,7 +74,7 @@ void Tracker::_checkTimestamp(){
             if (_status_node_map.size() > 0) {
                 it = _status_node_map.begin();
                 while (it != _status_node_map.end()) {
-                    if ((actualTimestamp - std::get<1>(it->second)) >_peer_lost_timeout) {
+                    if ((actualTimestamp - std::get<1>(it->second)) > _peer_lost_timeout) {
                         //dead drone
                         LOG_F(WARNING, "Peer lost with the following NodeID : %d", it->first);
                         _status_node_map.erase(it++);
@@ -89,7 +86,7 @@ void Tracker::_checkTimestamp(){
                 }
             }
         }
-        sleep(TIMESTAMP_LAPS);
+        sleep(_intervalTime_checkTimestamp);
     }
 }
 

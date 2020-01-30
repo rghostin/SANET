@@ -8,6 +8,7 @@
 #include <sys/ioctl.h>
 #include <net/if.h>
 #include <time.h>
+#include <ctime>
 #include "packets.hpp"
 
 #define EXIT_PROG_CODE 99
@@ -43,6 +44,10 @@ Packet input_packet() {
     std::cin >> packet.led_status;
     std::cout << "Timestamp : ";
     std::cin >> packet.timestamp;
+
+    if (packet.timestamp == -42) {  // Code spécial pour envoyer le timestamp actuel
+        packet.timestamp = std::time(nullptr);
+    }
 
     return packet;
 }

@@ -1,8 +1,6 @@
 #ifndef __DISPATCHER_HPP_
 #define __DISPATCHER_HPP_
 
-#define DEFAULTHEARTTIMER 30
-
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
@@ -37,7 +35,6 @@ private:
     void _hearbeat();
     
 public:
-    Dispatcher(unsigned short port, uint8_t nodeID, Tracker &tracker);
     Dispatcher(unsigned short port, uint8_t nodeID, Tracker &tracker, unsigned short heartTimer);
     Dispatcher(const Dispatcher&) = delete;
     Dispatcher(Dispatcher&&) = delete;

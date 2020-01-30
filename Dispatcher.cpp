@@ -1,8 +1,5 @@
 #include "Dispatcher.hpp"
 
-Dispatcher::Dispatcher(unsigned short port, uint8_t nodeID, Tracker &tracker) : _port(port), sockfd(), srvaddr(), _nodeID(nodeID), _tracker(tracker), _threadHeartBeat(), _heartTimer(DEFAULTHEARTTIMER) {}
-
-
 Dispatcher::Dispatcher(unsigned short port, uint8_t nodeID, Tracker &tracker, unsigned short heartTimer) : _port(port), sockfd(), srvaddr(), _nodeID(nodeID), _tracker(tracker), _threadHeartBeat(), _heartTimer(heartTimer) {}
 
 
