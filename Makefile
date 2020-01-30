@@ -6,7 +6,7 @@ all: robin packetsender
 
 rebuild : clean all
 
-robin: robin.cpp Dispatcher.o Tracker.o Position.o loguru.o
+robin: robin.cpp Dispatcher.o Tracker.o loguru.o
 	$(CXX) $(CFLAGS) $^ -o $@ $(LDFLAGS)
 
 
