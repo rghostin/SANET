@@ -39,7 +39,6 @@ void Tracker::_update_status_node_map(){
             _status_node_map[packet.nodeID] = {pos, packet.timestamp};
             LOG_F(INFO, "Updated NodeID : %s", get_packetInfos(packet).c_str());
         }
-
     }
 }
 
@@ -63,6 +62,7 @@ bool Tracker::is_peer_lost() {
 
 
 void Tracker::_checkTimestamp(){
+    bool call_set_peer_lost(false);
     uint32_t actualTimestamp;
     loguru::set_thread_name("Tracker");
     LOG_F(INFO, "Startup of _checkTimestamp");
@@ -79,14 +79,23 @@ void Tracker::_checkTimestamp(){
                         //dead drone
                         LOG_F(WARNING, "Peer lost with the following NodeID : %d", it->first);
                         _status_node_map.erase(it++);
-                        _set_peer_lostFlag();
+
+                        if (not call_set_peer_lost) {
+                            call_set_peer_lost = true;
+                        }
                     }
                     else {
                         ++it;
                     }
                 }
+
+                if (call_set_peer_lost) {
+                    _set_peer_lostFlag();
+                    call_set_peer_lost = false;  // reset du booleen d'appel
+                }
             }
         }
+
         sleep(_intervalTime_checkTimestamp);
     }
 }
