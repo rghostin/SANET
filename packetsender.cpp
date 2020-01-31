@@ -96,7 +96,7 @@ int main(int argc, char** argv) {
             throw;
         }
 
-        print_packet(packet);
+        printf("Packet: " PACKET_FMT, PACKET_REPR(packet));
     }
 
     close(sockfd);

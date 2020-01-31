@@ -1,112 +1,113 @@
 #include "Tracker.hpp"
 
-std::mutex mutex_status_node_map;
+//std::mutex mutex_node_status_map;
 std::mutex mutex_packetqueue;
 std::mutex mutex_peer_lost_flag;
 
 
-Tracker::Tracker(unsigned short timeout, unsigned short intervalTime) : _packetqueue(), _status_node_map(), ALERT_PEER_LOST(false), _peer_lost_timeout(timeout), _intervalTime_checkTimestamp(intervalTime), _thread_update_statusNodeMap(), _thread_checktimestamp() {}
+Tracker::Tracker(unsigned short peer_lost_timeout, unsigned short period_mapcheck) : 
+    _packetqueue(), _status_node_map(),
+    _peer_lost_timeout(peer_lost_timeout), _period_mapcheck(period_mapcheck),
+    _thread_check_node_map() {}
 
 
-void Tracker::start() {
-    _thread_update_statusNodeMap = std::thread(&Tracker::_update_status_node_map, this);
-    _thread_checktimestamp = std::thread(&Tracker::_checkTimestamp, this);
+Tracker::~Tracker(){ // TODO research how to destroy gracefully
+    if(_thread_check_node_map.joinable()){
+        _thread_check_node_map.join();
+    }
 }
 
 
-//Add the received packet to the queue
-void Tracker::notify(Packet packet) {
-    loguru::set_thread_name("Tracker");
+void Tracker::_set_peer_lost_flag() {
+    {
+        std::lock_guard<std::mutex> lock(mutex_peer_lost_flag);
+        _ALERT_PEER_LOST = true;
+    }
+    LOG_F(3, "ALERT_PEER_LOST_FLAG set");
+}
 
-    std::lock_guard<std::mutex> lock(mutex_packetqueue);
-    _packetqueue.push(packet);
-    LOG_F(INFO, "Added packet : %s", get_packetInfos(packet).c_str());
+
+void Tracker::_reset_peer_lost_flag() {
+    {
+        std::lock_guard<std::mutex> lock(mutex_peer_lost_flag);
+        _ALERT_PEER_LOST = false;
+    }
+    LOG_F(3, "ALERT_PEER_LOST_FLAG reset");    
+}
+
+
+bool Tracker::is_peer_lost() {
+    std::lock_guard<std::mutex> lock(mutex_peer_lost_flag);
+    return _ALERT_PEER_LOST;
+}
+
+
+void Tracker::notify(Packet packet) {
+    {
+        std::lock_guard<std::mutex> lock(mutex_packetqueue);
+        _packetqueue.push(packet);
+    }
+    LOG_F(3, "Added packet to tracker  queue :" PACKET_FMT, PACKET_REPR(packet));
 }
 
 
 void Tracker::_update_status_node_map(){
     Packet packet;
     Position pos = {0, 0};  // POS by default
-    loguru::set_thread_name("Tracker");
-    LOG_F(INFO, "Startup of _update_status_node_map");
+    std::queue<Packet> copy_queue;
 
-    while (true) {
-        if (not _packetqueue.empty()) {
-            std::lock_guard<std::mutex> lock(mutex_packetqueue);
-            packet = _packetqueue.front();
-            _packetqueue.pop();
-            std::lock_guard<std::mutex> lock2(mutex_status_node_map);
-            _status_node_map[packet.nodeID] = {pos, packet.timestamp};
-            LOG_F(INFO, "Updated NodeID : %s", get_packetInfos(packet).c_str());
-        }
+    {
+        std::lock_guard<std::mutex> lock(mutex_packetqueue);
+        copy_queue = _packetqueue;
+    }
+
+    while (! copy_queue.empty()){
+        packet = copy_queue.front();
+        copy_queue.pop();
+        _status_node_map[packet.nodeID] = {pos, packet.timestamp};
+        LOG_F(INFO, "Updated NodeID : " PACKET_FMT, PACKET_REPR(packet));
     }
 }
 
 
-void Tracker::_set_peer_lostFlag() {
-    std::lock_guard<std::mutex> lock(mutex_peer_lost_flag);
-    ALERT_PEER_LOST = true;
-}
-
-
-void Tracker::_reset_peer_lostFlag() {
-    std::lock_guard<std::mutex> lock(mutex_peer_lost_flag);
-    ALERT_PEER_LOST = false;
-}
-
-
-bool Tracker::is_peer_lost() {
-    std::lock_guard<std::mutex> lock(mutex_peer_lost_flag);
-    return ALERT_PEER_LOST;
-}
-
-
-void Tracker::_checkTimestamp(){
-    bool call_set_peer_lost(false);
+void Tracker::_check_node_map(){
+    bool call_set_peer_lost=false;
     uint32_t actualTimestamp;
-    loguru::set_thread_name("Tracker");
-    LOG_F(INFO, "Startup of _checkTimestamp");
-    std::map<unsigned short, std::pair<Position, uint32_t>>::iterator it;
+
+    LOG_F(INFO, "Starting _check_node_map");
+
+    std::map<uint8_t, std::pair<Position, uint32_t>>::const_iterator it;
 
     while (true) {
+        
+        _update_status_node_map();
+
         {  // Scope spécifique sinon lock_guard va dans le sleep
-            std::lock_guard<std::mutex> lock(mutex_status_node_map);
-            if (not _status_node_map.empty()) {
-                it = _status_node_map.begin();
-                while (it != _status_node_map.end()) {
-                    actualTimestamp = std::time(nullptr);
-                    if ((actualTimestamp - std::get<1>(it->second)) > _peer_lost_timeout) {
-                        //dead drone
-                        LOG_F(WARNING, "Peer lost with the following NodeID : %d", it->first);
-                        _status_node_map.erase(it++);
+            for (it = _status_node_map.cbegin(); it != _status_node_map.cend(); /*no increment*/ ) {
+                actualTimestamp = static_cast<uint32_t>(std::time(nullptr));
 
-                        if (not call_set_peer_lost) {
-                            call_set_peer_lost = true;
-                        }
-                    }
-                    else {
-                        ++it;
-                    }
+                if ((actualTimestamp - std::get<1>(it->second)) > _peer_lost_timeout) {
+                    //dead drone
+                    LOG_F(WARNING, "Peer lost NodeID=%d", it->first);
+                    _status_node_map.erase(it++);
+                    call_set_peer_lost = true;
+                } else {
+                    ++it;
                 }
+            }
 
-                if (call_set_peer_lost) {
-                    _set_peer_lostFlag();
-                    call_set_peer_lost = false;  // reset du booleen d'appel
-                }
+            if (call_set_peer_lost) {
+                _set_peer_lost_flag();
+                call_set_peer_lost = false;  // reset du booleen d'appel
             }
         }
 
-        sleep(_intervalTime_checkTimestamp);
+        sleep(_period_mapcheck);
     }
 }
 
 
-Tracker::~Tracker(){
-    if(_thread_update_statusNodeMap.joinable()){
-        _thread_update_statusNodeMap.join();
-    }
-
-    if(_thread_checktimestamp.joinable()){
-        _thread_checktimestamp.join();
-    }
+void Tracker::start() {
+    loguru::set_thread_name("Tracker");
+    _check_node_map();
 }
