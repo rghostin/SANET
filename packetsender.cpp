@@ -44,6 +44,8 @@ Packet input_packet() {
     std::cin >> packet.led_status;
     std::cout << "Timestamp : ";
     std::cin >> packet.timestamp;
+    std::cout << "seqnum : ";
+    std::cin >> packet.seqnum;
 
     if (packet.timestamp == -42) {  // Code spécial pour envoyer le timestamp actuel
         packet.timestamp = std::time(nullptr);
@@ -96,7 +98,7 @@ int main(int argc, char** argv) {
             throw;
         }
 
-        printf("Packet: " PACKET_FMT, PACKET_REPR(packet));
+        printf("Packet: " PACKET_FMT "\n", PACKET_REPR(packet));
     }
 
     close(sockfd);

@@ -11,8 +11,6 @@
 #include "Position.hpp"
 
 
-
-
 class Tracker final {
 private :
     std::queue<Packet> _packetqueue;

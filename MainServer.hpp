@@ -19,8 +19,12 @@
 #define MAXBUFSIZE 1024     // todo recheck according to img size
 
 
-class MainServer final {
+class MainServer {
 private:
+    std::mutex _mutex_next_seqnum;
+    uint32_t _next_seqnum=0;
+
+protected:
     // self information and settings
     const uint8_t _nodeID;
     unsigned short _heart_period;
@@ -31,16 +35,20 @@ private:
     sockaddr_in _srvaddr;
     sockaddr_in _bc_sockaddr;
 
-    // threads handles
     std::thread _thread_receiver;
-    //std::thread _threadHeartBeat;
 
     // delegation 
     Tracker& _tracker;
     
     void _setup_socket_bind();
+
+    // packet methods
+    Packet _produce_packet(bool led_status=false);
+    virtual bool _to_be_ignored(const Packet&) const;
+    virtual void _process_packet(const Packet&) const;
+
     void _hearbeat();
-    void _receiver();
+    virtual void _receiver();
     
 public:
     MainServer(unsigned short port, uint8_t nodeID, Tracker &tracker, unsigned short heartTimer);
@@ -48,9 +56,9 @@ public:
     MainServer(MainServer&&) = delete;
     MainServer& operator=(const MainServer&) = delete;
     MainServer& operator=(const MainServer&&) = delete;
-    ~MainServer();
+    virtual ~MainServer();
 
-    void start();
+    virtual void start();
 };
 
 #endif
