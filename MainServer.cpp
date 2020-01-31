@@ -1,9 +1,8 @@
 #include "MainServer.hpp"
 
-MainServer::MainServer(unsigned short port, uint8_t nodeID, Tracker &tracker, unsigned short heartTimer) : 
-    _nodeID(nodeID), _heart_period(heartTimer),
-    _port(port), sockfd(), _srvaddr(), _bc_sockaddr(),
-    _mutex_next_seqnum(), _next_seqnum(0),
+MainServer::MainServer(unsigned short port, uint8_t nodeID, Tracker &tracker, unsigned short heart_period) : 
+    _port(port),
+    _nodeID(nodeID), _heart_period(heart_period),
     _tracker(tracker) 
 {
     // setup reception sockaddr
@@ -24,6 +23,10 @@ MainServer::~MainServer() {     // TODO research how to destroy gracefully
     if (_thread_receiver.joinable()) {
         _thread_receiver.join();
     }
+
+    if (_thread_heartbeat.joinable()) {
+        _thread_heartbeat.join();
+    }
     close(sockfd);
 }
 
@@ -43,8 +46,8 @@ void MainServer::_setup_socket_bind() {
         throw;
     }
 
-    // setting interface for bat0
-    // todo
+    // TODO setting interface for bat0
+    // 
 
     // binding to port
     if ( bind(sockfd, reinterpret_cast<const struct sockaddr*>(&_srvaddr), sizeof(_srvaddr)) < 0 ) {
@@ -73,13 +76,13 @@ inline bool MainServer::_to_be_ignored(const Packet& packet) const {
 }
 
 
-void MainServer::_process_packet(const Packet& packet) const {
+void MainServer::_process_packet(const Packet& packet) {
     LOG_F(INFO, "Processing packet: " PACKET_FMT, PACKET_REPR(packet));
     _tracker.notify(packet);
 }
 
 
-void MainServer::_hearbeat() {
+void MainServer::_tr_hearbeat() {
     socklen_t len_to_sockaddr = sizeof(sockaddr);
     uint32_t curr_timestamp;
 
@@ -102,7 +105,7 @@ void MainServer::_hearbeat() {
 }
 
 
-void MainServer::_receiver() {
+void MainServer::_tr_receiver() {
     Packet packet;
 
     loguru::set_thread_name("Server:Receiver");
@@ -119,20 +122,24 @@ void MainServer::_receiver() {
         }
 
         LOG_F(3, "Received packet: " PACKET_FMT, PACKET_REPR(packet));
-
         if (_to_be_ignored(packet)){
+            LOG_F(3, "Ignored packet: " PACKET_FMT, PACKET_REPR(packet));
             continue;
         }
-
         _process_packet(packet);
     }
 }
 
 
 void MainServer::start() {
+    LOG_F(WARNING, "Starting server");
     _setup_socket_bind();
-    _thread_receiver = std::thread(&MainServer::_receiver, this);
-    _hearbeat();
+    _thread_receiver = std::thread(&MainServer::_tr_receiver, this);
+    _thread_heartbeat = std::thread(&MainServer::_tr_hearbeat, this);
+}
 
+void MainServer::join() {
+    _thread_heartbeat.join();
     _thread_receiver.join();
+    LOG_F(3, "All threads joined");
 }

@@ -6,7 +6,6 @@
 #include <netinet/in.h>
 #include <sys/types.h>
 #include <unistd.h>
-//#include <net/if.h>
 #include <cstring>
 #include <cstdio>
 #include <ctime>
@@ -16,39 +15,40 @@
 #include "packets.hpp"
 #include "Tracker.hpp"
 
-#define MAXBUFSIZE 1024     // todo recheck according to img size
-
 
 class MainServer {
 private:
-    std::mutex _mutex_next_seqnum;
-    uint32_t _next_seqnum=0;
-
-protected:
     // self information and settings
     const uint8_t _nodeID;
     unsigned short _heart_period;
 
-    // connection
+    // private connection vars
     const unsigned short _port;
-    int sockfd;
     sockaddr_in _srvaddr;
+
+    // delegations
+    Tracker& _tracker;
+
+    // threads
+    std::thread _thread_receiver;
+    std::thread _thread_heartbeat;
+
+    // next sequence for packet
+    std::mutex _mutex_next_seqnum;
+    uint32_t _next_seqnum=0;
+
+    void _setup_socket_bind();
+    Packet _produce_packet(bool led_status=false);
+    void _tr_hearbeat();
+    void _tr_receiver();
+
+protected:
+    // protected connection vars
+    int sockfd;
     sockaddr_in _bc_sockaddr;
 
-    std::thread _thread_receiver;
-
-    // delegation 
-    Tracker& _tracker;
-    
-    void _setup_socket_bind();
-
-    // packet methods
-    Packet _produce_packet(bool led_status=false);
     virtual bool _to_be_ignored(const Packet&) const;
-    virtual void _process_packet(const Packet&) const;
-
-    void _hearbeat();
-    virtual void _receiver();
+    virtual void _process_packet(const Packet&);
     
 public:
     MainServer(unsigned short port, uint8_t nodeID, Tracker &tracker, unsigned short heartTimer);
@@ -59,6 +59,7 @@ public:
     virtual ~MainServer();
 
     virtual void start();
+    virtual void join();
 };
 
 #endif

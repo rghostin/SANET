@@ -79,13 +79,13 @@ int main(int argc, char** argv) {
         throw;
     }
 
-    // setting interface for bat0
-    //todo
+    // TODO setting interface for bat0
+    //
 
     // filling socket information for reception
     memset(&srvaddr, 0, sizeof(srvaddr));
     srvaddr.sin_family = AF_INET;
-    srvaddr.sin_addr.s_addr = INADDR_ANY;       // todo bat0 ?
+    srvaddr.sin_addr.s_addr = INADDR_ANY;
     srvaddr.sin_port = htons(SRVPORT);
     // networking - end
 

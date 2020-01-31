@@ -1,5 +1,7 @@
 #include "Tracker.hpp"
 
+// TODO remove global var !
+
 //std::mutex mutex_node_status_map;
 std::mutex mutex_packetqueue;
 std::mutex mutex_peer_lost_flag;
