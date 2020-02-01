@@ -8,8 +8,11 @@
 #include <sys/ioctl.h>
 #include <net/if.h>
 #include <time.h>
+#include <limits>
+#include <iomanip>
 #include <ctime>
 #include "packets.hpp"
+
 
 #define EXIT_PROG_CODE 99
 #define SRVPORT 5820
@@ -23,7 +26,11 @@ uint8_t input_uint8() {
     std::cin >> tmp_uint8_input;
     int x = std::atoi(tmp_uint8_input);
 
-    if (x < 0 or LIMITUINT8 < x) {
+    if(*tmp_uint8_input==0x0A){
+        char uint8_x;
+        uint8_x ='\n';
+    }
+    else if (x < 0 or LIMITUINT8 < x) {
         perror("Invalid input uint8_t");
         throw;
     }
@@ -39,18 +46,41 @@ Packet input_packet() {
     Packet packet;
 
     std::cout << "nodeID : ";
-    packet.nodeID = input_uint8();
-    std::cout << "led_status : ";
-    std::cin >> packet.led_status;
-    std::cout << "Timestamp : ";
-    std::cin >> packet.timestamp;
-    std::cout << "seqnum : ";
-    std::cin >> packet.seqnum;
-
-    if (packet.timestamp == -42) {  // Code spécial pour envoyer le timestamp actuel
-        packet.timestamp = std::time(nullptr);
+    //packet.nodeID = input_uint8();
+    if (std::cin.peek() != '\n') {
+        std::cin >> packet.nodeID;
     }
-
+    else{
+        packet.nodeID = 212; //default value
+    };
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    std::cout << "led_status : ";
+    if (std::cin.peek() != '\n') {
+        std::cin >> packet.led_status;
+    }
+    else{
+        packet.led_status = 1; //default value
+    };
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    std::cout << "Timestamp : ";
+    if (std::cin.peek() != '\n') {
+        std::cin >> packet.timestamp;
+        if(packet.timestamp==-42){
+            packet.timestamp = std::time(nullptr); //default value (actual timestamp);
+        }
+    }
+    else{
+        packet.timestamp = std::time(nullptr); //default value (actual timestamp)
+    };
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    std::cout << "seqnum : ";
+    if (std::cin.peek() != '\n') {
+        std::cin >> packet.seqnum;
+    }
+    else{
+        packet.seqnum = 0; //default value
+    };
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     return packet;
 }
 
@@ -104,3 +134,4 @@ int main(int argc, char** argv) {
     close(sockfd);
     return 0;
 }
+
