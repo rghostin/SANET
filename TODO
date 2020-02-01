@@ -26,6 +26,7 @@ FEATURE/BUGFIX PROCEDURE
     * bug:
         - Fix tracker global mutex  (cfr. ReliableMainServer.hpp)  | H
         - research destroy gracefully  | H
+        - Empty _packetqueue | H
     * feature:
 
 * Robin:
