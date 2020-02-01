@@ -12,7 +12,7 @@ FEATURE/BUGFIX PROCEDURE
 
 * global:
     * bug:
-        - research destroy gracefully servers with threads (MainServer, ReliableMainServer, Tracker)
+        - research destroy gracefully servers with threads (MainServer, ReliableMainServer, Tracker)  | Last
 
 * MainServer:
     * bug:
@@ -24,23 +24,23 @@ FEATURE/BUGFIX PROCEDURE
 
 * Tracker:
     * bug:
-        - Fix tracker global mutex  (cfr. ReliableMainServer.hpp)
-        - research destroy gracefully
+        - Fix tracker global mutex  (cfr. ReliableMainServer.hpp)  | H
+        - research destroy gracefully  | H
     * feature:
 
 * Robin:
     * bug:
     * feature:
-        - execution param for reliable ON/OFF:  --unreliable-broadcast / --reliable-broadcast  (ON by default)
+        - execution param for reliable ON/OFF:  --unreliable-broadcast / --reliable-broadcast  (ON by default) | S
 
 * Packetsender:
     * bug:
     * feature:
-        - default cin values for quick testing
+        - default cin values for quick testing  | S 
 
 * Packet:
     * bug :
     * feature : 
-        - integrate Position in packet ( & update tracker accordingly)
+        - integrate Position in packet ( & update tracker accordingly)  | H
 
 
