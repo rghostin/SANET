@@ -27,13 +27,11 @@ uint8_t input_uint8() {
         std::cin >> tmp_uint8_input;
         int x = std::atoi(tmp_uint8_input);
 
-        if (*tmp_uint8_input == 0x0A) {
-            char uint8_x;
-            uint8_x = '\n';
-        } else if (x < 0 or LIMITUINT8 < x) {
+        if (x < 0 or LIMITUINT8 < x) {
             perror("Invalid input uint8_t");
             throw;
-        } else {
+        }
+        else {
             uint8_x = static_cast<uint8_t>(x);
         }
     }
