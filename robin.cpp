@@ -15,8 +15,18 @@
 int main(int argc, char** argv) {
     uint8_t nodeID = 0;
     Tracker tracker(PEER_LOSS_TIMEOUT, PERIOD_CHECK_NODEMAP);
-    //MainServer mainserver(MAINSERVER_PORT, nodeID, tracker, HEARTBEAT_PERIOD);
-    ReliableMainServer relmainserver(MAINSERVER_PORT, nodeID, tracker, HEARTBEAT_PERIOD, RELIABLE_PACKET_MAX_AGE);
+    int i=1;
+    int param_broadcast=0; // 0 = no specification (reliable by default) ; 1 = reliable ; 2 = unreliable
+    while(i<argc && param_broadcast==0) {
+        if (argv[i] == "--reliable-broadcast") {
+            ReliableMainServer reliableMainServer(MAINSERVER_PORT, nodeID, tracker, HEARTBEAT_PERIOD, RELIABLE_PACKET_MAX_AGE);
+            param_broadcast=1;
+        } else if (argv[i] == "--unreliable-broadcast") {
+            MainServer mainServer(MAINSERVER_PORT, nodeID, tracker, HEARTBEAT_PERIOD);
+            param_broadcast=2;
+        }
+        ++i;
+    }
 
     loguru::init(argc, argv);
     loguru::add_file("robin.log", loguru::Append, loguru::Verbosity_WARNING);
@@ -25,13 +35,18 @@ int main(int argc, char** argv) {
     // start all services on parallel threads
     std::thread thread_tracker(&Tracker::start, &tracker);
 
-    // start server on current thread
-    //mainserver.start();
-    relmainserver.start();
-
-    // join all services
-    relmainserver.join();
-    //mainserver.join();
+    if(param_broadcast==0 or param_broadcast==1){
+        // start server on current thread
+        reliableMainServer.start();
+        // join all services
+        reliableMainServer.join();
+    }
+    else {
+        // start server on current thread
+        mainServer.start();
+        // join all services
+        mainServer.join();
+    }
     thread_tracker.join();
 
     return 0;
