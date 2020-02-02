@@ -1,5 +1,6 @@
 #include <map>
 #include <mutex>
+#include "common.hpp"
 #include "MainServer.hpp"
 #include "packets.hpp"
 

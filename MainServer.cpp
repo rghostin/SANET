@@ -86,10 +86,10 @@ void MainServer::_tr_hearbeat() {
     socklen_t len_to_sockaddr = sizeof(sockaddr);
     uint32_t curr_timestamp;
 
-    loguru::set_thread_name("Server:Heartbeat");
+    loguru::set_thread_name("MainServer:Heartbeat");
     LOG_F(WARNING, "Starting heartbeat with period=%d", _heart_period);
 
-    while (true) {
+    while (! process_stop) {
         curr_timestamp = static_cast<uint32_t>(std::time(nullptr));
         Packet packet = _produce_packet();
 
@@ -100,22 +100,48 @@ void MainServer::_tr_hearbeat() {
         }
 
         LOG_F(INFO, "Sent hearbeat packet: " PACKET_FMT, PACKET_REPR(packet));
-        sleep(_heart_period);
+        std::this_thread::sleep_for(std::chrono::seconds(_heart_period));
     }
+    LOG_F(INFO, "MS heartbeat process_stop=true; exiting");
 }
 
 
 void MainServer::_tr_receiver() {
     Packet packet;
+    int sts_recv;
+    fd_set readfds, masterfds;
 
-    loguru::set_thread_name("Server:Receiver");
+    loguru::set_thread_name("MainServer:Receiver");
     LOG_F(WARNING, "Starting server receiver");
 
-    while (true) {
+    FD_ZERO(&masterfds);
+    FD_ZERO(&readfds);
+    FD_SET(sockfd, &masterfds);
+
+    while (! process_stop) {
         sockaddr cli_addr;
         socklen_t len_cli_addr;
+        timeval rcv_to = {1,0};
 
-        if ( recvfrom(sockfd, &packet, sizeof(Packet), 0, &cli_addr, &len_cli_addr) < 0 ) {
+        memcpy(&readfds, &masterfds, sizeof(fd_set));
+
+        if (select(sockfd+1, &readfds, nullptr, nullptr, &rcv_to) < 0) {
+            perror("Cannot select");
+            throw;
+        }
+
+        if (! FD_ISSET(sockfd, &readfds)) {
+            // timeout
+            continue;
+        }
+
+        sts_recv = recvfrom(sockfd, &packet, sizeof(Packet), 0, &cli_addr, &len_cli_addr);
+        if (sts_recv == EAGAIN || sts_recv==EWOULDBLOCK) {
+            printf("to\n");
+        }
+
+        if ( sts_recv <= 0) { // if error excluding timeout
+            printf("%d\n", sts_recv);
             close(sockfd);
             perror("Cannot recvfrom");
             throw;
@@ -128,6 +154,7 @@ void MainServer::_tr_receiver() {
         }
         _process_packet(packet);
     }
+    LOG_F(INFO, "MS receiver - process_stop=true; exiting");
 }
 
 
@@ -141,5 +168,6 @@ void MainServer::start() {
 void MainServer::join() {
     _thread_heartbeat.join();
     _thread_receiver.join();
-    LOG_F(3, "All threads joined");
+    LOG_F(WARNING, "MainServer: joined all threads");
+
 }

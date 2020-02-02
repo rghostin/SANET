@@ -1,5 +1,8 @@
 #include <thread>
+#include <atomic>
+#include <csignal>
 #include "loguru.hpp"
+#include "common.hpp"
 #include "MainServer.hpp"
 #include "ReliableMainServer.hpp"
 #include "Tracker.hpp"
@@ -12,15 +15,33 @@
 #define MAINSERVER_PORT 5820
 
 
+
+/* Stopping mechanism -start */
+
+std::atomic<bool> process_stop(false);
+
+void exit_handler(int s) {
+    LOG_F(WARNING, "Caught signal %d", s);
+    process_stop = true;
+    LOG_F(INFO, "program_stop=true");
+}
+/* Stopping mechanism - end */
+
+
+
 int main(int argc, char** argv) {
     uint8_t nodeID = 0;
     Tracker tracker(PEER_LOSS_TIMEOUT, PERIOD_CHECK_NODEMAP);
     //MainServer mainserver(MAINSERVER_PORT, nodeID, tracker, HEARTBEAT_PERIOD);
     ReliableMainServer relmainserver(MAINSERVER_PORT, nodeID, tracker, HEARTBEAT_PERIOD, RELIABLE_PACKET_MAX_AGE);
 
-    loguru::init(argc, argv);
+    // setup signals
+    signal(SIGINT, exit_handler);
+
+    // setup logs - TODO -v for verbosity
+    loguru::g_stderr_verbosity = loguru::Verbosity_INFO;
     loguru::add_file("robin.log", loguru::Append, loguru::Verbosity_WARNING);
-    loguru::set_thread_name("main");
+    loguru::set_thread_name("robin main");
 
     // start all services on parallel threads
     std::thread thread_tracker(&Tracker::start, &tracker);
@@ -34,5 +55,6 @@ int main(int argc, char** argv) {
     //mainserver.join();
     thread_tracker.join();
 
+    LOG_F(WARNING, "Robin exiting");
     return 0;
 }

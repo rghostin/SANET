@@ -58,7 +58,8 @@ void ReliableMainServer::_process_packet(const Packet& packet)  {
 
 
 void ReliableMainServer::_tr_update_last_seq_map() {
-    while (true) {
+    loguru::set_thread_name("RelMainServer:PacketLastSeq");
+    while (! process_stop) {
         {
             std::lock_guard<std::mutex> lock(_mutex_last_seq_map);
             LOG_F(3, "_last_seq_map size: %lu", _last_seq_map.size());
@@ -72,8 +73,9 @@ void ReliableMainServer::_tr_update_last_seq_map() {
                 }
             }
         }
-        sleep(1);
+        std::this_thread::sleep_for(std::chrono::seconds(1));
     }
+    LOG_F(INFO, "RMS updateLastSeq process_stop=true; exiting");
 }
 
 void ReliableMainServer::start() {
@@ -84,4 +86,6 @@ void ReliableMainServer::start() {
 void ReliableMainServer::join() {
     _thread_update_last_seq_map.join();
     MainServer::join();
+    LOG_F(WARNING, "ReliableMainServer: joined all threads");
+
 }
