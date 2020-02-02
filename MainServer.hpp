@@ -12,6 +12,7 @@
 #include <thread>
 #include <mutex>
 #include "loguru.hpp"
+#include "common.hpp"
 #include "packets.hpp"
 #include "Tracker.hpp"
 

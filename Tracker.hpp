@@ -7,6 +7,7 @@
 #include <map>
 #include <unistd.h>
 #include "loguru.hpp"
+#include "common.hpp"
 #include "packets.hpp"
 #include "Position.hpp"
 
@@ -24,7 +25,7 @@ private :
     void _reset_peer_lost_flag();
 
     void _update_status_node_map();
-    void _check_node_map();
+    void _tr_check_node_map();
 
 public :
     Tracker(unsigned short, unsigned short);
@@ -37,6 +38,7 @@ public :
     void start();
     void notify(Packet);
     bool is_peer_lost();
+    void join();
     
 };
 

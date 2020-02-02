@@ -72,7 +72,7 @@ void Tracker::_update_status_node_map(){
 }
 
 
-void Tracker::_check_node_map(){
+void Tracker::_tr_check_node_map(){
     bool call_set_peer_lost=false;
     uint32_t actualTimestamp;
 
@@ -80,7 +80,7 @@ void Tracker::_check_node_map(){
 
     std::map<uint8_t, std::pair<Position, uint32_t>>::const_iterator it;
 
-    while (true) {
+    while (! process_stop) {
         
         _update_status_node_map();
 
@@ -103,13 +103,18 @@ void Tracker::_check_node_map(){
                 call_set_peer_lost = false;  // reset du booleen d'appel
             }
         }
-
-        sleep(_period_mapcheck);
+        std::this_thread::sleep_for(std::chrono::seconds(_period_mapcheck));
     }
+    LOG_F(INFO, "Tracker checkNodeMap - process_stop=true; exiting");
 }
 
 
 void Tracker::start() {
     loguru::set_thread_name("Tracker");
-    _check_node_map();
+    _tr_check_node_map();
+}
+
+void Tracker::join() {
+    _thread_check_node_map.join();
+    LOG_F(WARNING, "Tracker: joined all threads");
 }
