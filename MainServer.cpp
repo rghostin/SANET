@@ -19,7 +19,7 @@ MainServer::MainServer(unsigned short port, uint8_t nodeID, Tracker &tracker, un
 }
 
 
-MainServer::~MainServer() {     // TODO research how to destroy gracefully
+MainServer::~MainServer() {     // TODO research how to destroy gracefully -> use MainServer::join() ?
     if (_thread_receiver.joinable()) {
         _thread_receiver.join();
     }
@@ -61,13 +61,20 @@ void MainServer::_setup_socket_bind() {
 
 Packet MainServer::_produce_packet(bool led_status) {
     Packet packet;
+    Position position = _produce_position();  // TODO relier pos actuelle à c
     {   
         std::lock_guard<std::mutex> lock(_mutex_next_seqnum);
         uint32_t curr_timestamp = static_cast<uint32_t>(std::time(nullptr)); 
-        packet = Packet(_nodeID, led_status, curr_timestamp, _next_seqnum++);
+        packet = Packet(_nodeID, led_status, curr_timestamp, _next_seqnum++, position);
     }
     LOG_F(3, "Generated packet: " PACKET_FMT, PACKET_REPR(packet));
     return packet;    
+}
+
+
+Position MainServer::_produce_position() {
+    Position position;  // TODO construire pos actuelle
+    return position;
 }
 
 
@@ -90,7 +97,7 @@ void MainServer::_tr_hearbeat() {
     LOG_F(WARNING, "Starting heartbeat with period=%d", _heart_period);
 
     while (! process_stop) {
-        curr_timestamp = static_cast<uint32_t>(std::time(nullptr));
+        curr_timestamp = static_cast<uint32_t>(std::time(nullptr));  // TODO check si c'est encore utilisé (vu que _produce_packet())
         Packet packet = _produce_packet();
 
         if ( sendto(sockfd, &packet, sizeof(packet), 0, reinterpret_cast<const sockaddr*>(&_bc_sockaddr), len_to_sockaddr)  < 0 ) {
@@ -169,5 +176,4 @@ void MainServer::join() {
     _thread_heartbeat.join();
     _thread_receiver.join();
     LOG_F(WARNING, "MainServer: joined all threads");
-
 }
