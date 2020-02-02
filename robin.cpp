@@ -16,14 +16,15 @@ int main(int argc, char** argv) {
     uint8_t nodeID = 0;
     Tracker tracker(PEER_LOSS_TIMEOUT, PERIOD_CHECK_NODEMAP);
     int i=1;
-    int param_broadcast=0; // 0 = no specification (reliable by default) ; 1 = reliable ; 2 = unreliable
-    while(i<argc && param_broadcast==0) {
+    MainServer mainServer;
+
+    while(i<argc) {
         if (argv[i] == "--reliable-broadcast") {
-            ReliableMainServer reliableMainServer(MAINSERVER_PORT, nodeID, tracker, HEARTBEAT_PERIOD, RELIABLE_PACKET_MAX_AGE);
-            param_broadcast=1;
+            mainServer = ReliableMainServer(MAINSERVER_PORT, nodeID, tracker, HEARTBEAT_PERIOD, RELIABLE_PACKET_MAX_AGE);
         } else if (argv[i] == "--unreliable-broadcast") {
-            MainServer mainServer(MAINSERVER_PORT, nodeID, tracker, HEARTBEAT_PERIOD);
-            param_broadcast=2;
+            mainServer = MainServer(MAINSERVER_PORT, nodeID, tracker, HEARTBEAT_PERIOD);
+        } else if (argv[i] == "-v" ){
+            loguru::g_stderr_verbosity (default: loguru::Verbosity_INFO);
         }
         ++i;
     }
