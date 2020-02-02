@@ -61,7 +61,7 @@ void MainServer::_setup_socket_bind() {
 
 Packet MainServer::_produce_packet(bool led_status) {
     Packet packet;
-    Position position = _produce_position();  // TODO relier pos actuelle à c
+    Position position = _get_current_position();  // TODO relier pos actuelle à c
     {   
         std::lock_guard<std::mutex> lock(_mutex_next_seqnum);
         uint32_t curr_timestamp = static_cast<uint32_t>(std::time(nullptr)); 
@@ -72,7 +72,7 @@ Packet MainServer::_produce_packet(bool led_status) {
 }
 
 
-Position MainServer::_produce_position() {
+Position MainServer::_get_current_position() {
     Position position;  // TODO construire pos actuelle
     return position;
 }
