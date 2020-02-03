@@ -23,17 +23,15 @@ uint8_t input_uint8() {
     uint8_t uint8_x(212);  //default value
     char tmp_uint8_input[3];
 
-    if (std::cin.peek() != '\n') {
-        std::cin >> tmp_uint8_input;
-        int x = std::atoi(tmp_uint8_input);
+    std::cin >> tmp_uint8_input;
+    int x = std::atoi(tmp_uint8_input);
 
-        if (x < 0 or LIMITUINT8 < x) {
-            perror("Invalid input uint8_t");
-            throw;
-        }
-        else {
-            uint8_x = static_cast<uint8_t>(x);
-        }
+    if (x < 0 or LIMITUINT8 < x) {
+        perror("Invalid input uint8_t");
+        throw;
+    }
+    else {
+        uint8_x = static_cast<uint8_t>(x);
     }
 
     return uint8_x;
@@ -41,31 +39,26 @@ uint8_t input_uint8() {
 
 
 Packet input_packet() {
-    Packet packet;
+    Packet packet(212, false, static_cast<uint32_t>(std::time(nullptr)), 0);  // Paquet par défaut
 
     std::cout << "nodeID : ";
-    packet.nodeID = input_uint8();
-
+    if (std::cin.peek() != '\n') {
+        packet.nodeID = input_uint8();
+    }
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
     std::cout << "led_status : ";
     if (std::cin.peek() != '\n') {
         std::cin >> packet.led_status;
     }
-    else{
-        packet.led_status = false;  //default value
-    };
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-
-    packet.timestamp = static_cast<uint32_t>(std::time(nullptr));  //default value (actual timestamp)
 
     std::cout << "seqnum : ";
     if (std::cin.peek() != '\n') {
         std::cin >> packet.seqnum;
     }
-    else{
-        packet.seqnum = 0;  //default value
-    };
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
     return packet;
 }
 
