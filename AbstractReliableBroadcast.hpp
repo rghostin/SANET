@@ -30,7 +30,7 @@ protected:
     virtual P _produce_packet() override;
 
 public:
-    AbstractReliableBroadcastNode(uint8_t nodeID, unsigned short port, time_t max_packet_age);
+    AbstractReliableBroadcastNode(uint8_t nodeID, unsigned short port, const char* name, time_t max_packet_age);
     virtual ~AbstractReliableBroadcastNode() = 0;   // forcing abstract
 
     virtual void start() override;
@@ -41,8 +41,8 @@ public:
 // implementation
 
 template<typename P>
-AbstractReliableBroadcastNode<P>::AbstractReliableBroadcastNode(uint8_t nodeID, unsigned short port, time_t max_packet_age)  :
-    AbstractBroadcastNode<P>(nodeID, port),
+AbstractReliableBroadcastNode<P>::AbstractReliableBroadcastNode(uint8_t nodeID, unsigned short port, const char* name, time_t max_packet_age)  :
+    AbstractBroadcastNode<P>(nodeID, port, name),
     _max_packet_age(max_packet_age) {}
 
 
@@ -57,23 +57,24 @@ AbstractReliableBroadcastNode<P>::~AbstractReliableBroadcastNode() {
 template<typename P>
 void AbstractReliableBroadcastNode<P>::_tr_update_last_seq_map() {
     loguru::set_thread_name(this->threadname("AgeSeqCheck").c_str());
+    LOG_F(INFO,"Starting %s last_mapt_check", this->_name.c_str());
     while (! process_stop) {
         {
             std::lock_guard<std::mutex> lock(_mutex_last_seq_map);
-            LOG_F(3, "_last_seq_map size: %lu", _last_seq_map.size());
-            for (auto it=_last_seq_map.begin(); it != _last_seq_map.end(); ++it) {
+            for (auto it=_last_seq_map.begin(); it != _last_seq_map.end(); /*no increment*/ ) {
                 unsigned int& age = (it->second).second;
                 if (age <= 0) {
-                    LOG_F(3, "Erasing from _last_seq_map nodeID=%d", it->first);
-                    it = _last_seq_map.erase(it);
+                    LOG_F(3, "Erasing from _last_seq_map nodeID=%d, size=%lu", it->first, _last_seq_map.size());
+                    _last_seq_map.erase(it++);
                 } else {
                     age--;
+                    ++it;
                 }
             }
         }
         std::this_thread::sleep_for(std::chrono::seconds(1));
     }
-    LOG_F(INFO, "RelBNode updateLastSeq process_stop=true; exiting");
+    LOG_F(INFO, "process_stop=true; exiting");
 }
 
 
@@ -86,7 +87,7 @@ bool AbstractReliableBroadcastNode<P>::_is_already_processed(const P& packet) co
         const uint32_t& age = (it->second).second;
         return (packet.seqnum <= seqnum || age <= 0);
     }
-    LOG_F(3, "Packet NOT already processed: -norepr");
+    LOG_F(3, "Packet NOT already processed: %s", packet.repr().c_str());
     return false;
 }
 
@@ -101,10 +102,12 @@ template<typename P>
 void AbstractReliableBroadcastNode<P>::_process_packet(const P& packet) {
     {
         std::lock_guard<std::mutex> lock(_mutex_last_seq_map);
-         _last_seq_map[packet.nodeID] = std::pair<uint32_t, unsigned int>(packet.seqnum, _max_packet_age);
+        _last_seq_map[packet.nodeID] = std::pair<uint32_t, unsigned int>(packet.seqnum, _max_packet_age);
+        LOG_F(3, "Inserted in _last_seq_map for nodeID=%d, size: %lu", packet.nodeID, _last_seq_map.size());
+
     }
     // in addition to the standard server, echo a broadcast of the packet for reliable broadcast
-    LOG_F(INFO, "Echoing packet: -norepr-");
+    LOG_F(3, "Echoing packet: %s", packet.repr().c_str());
     this->broadcast(packet);
 }
 
@@ -115,7 +118,7 @@ P AbstractReliableBroadcastNode<P>::_produce_packet() {
         std::lock_guard<std::mutex> lock(_mutex_next_seqnum);
         packet.seqnum = _next_seqnum++;
     }
-    LOG_F(3, "Generated packet: -norepr- ");
+    LOG_F(3, "Generated packet: %s", packet.repr().c_str());
     return packet;    
 }
 

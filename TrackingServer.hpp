@@ -19,7 +19,7 @@
 #include "Tracker.hpp"
 
 
-class TrackingServer final : public AbstractReliableBroadcastNode<Packet> {
+class TrackingServer final : public AbstractReliableBroadcastNode<TrackPacket> {
 private:
     // self information and settings
     unsigned short _heart_period;
@@ -30,10 +30,10 @@ private:
     std::thread _thread_heartbeat;
     void _tr_hearbeat();
 
-    Packet _produce_packet() override;
+    TrackPacket _produce_packet() override;
     Position _get_current_position() const;
 
-    virtual void _process_packet(const Packet&) override;
+    virtual void _process_packet(const TrackPacket&) override;
     
     
 public:

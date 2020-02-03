@@ -35,17 +35,23 @@ uint8_t input_uint8() {
 }
 
 
-Packet input_packet() {
-    Packet packet;
+TrackPacket input_packet() {
+    TrackPacket packet;
 
-    std::cout << "nodeID : ";
+    /*std::cout << "nodeID : ";
     packet.nodeID = input_uint8();
     std::cout << "led_status : ";
     std::cin >> packet.led_status;
     std::cout << "Timestamp : ";
     std::cin >> packet.timestamp;
     std::cout << "seqnum : ";
-    std::cin >> packet.seqnum;
+    std::cin >> packet.seqnum;*/
+
+    packet.nodeID = 200;
+    packet.led_status = false;
+    packet.timestamp = -42;
+    packet.seqnum = 454;
+
 
     if (packet.timestamp == -42) {  // Code spécial pour envoyer le timestamp actuel
         packet.timestamp = std::time(nullptr);
@@ -91,14 +97,15 @@ int main(int argc, char** argv) {
 
 
     while (! stop) {
-        Packet packet = input_packet();
-        if ( sendto(sockfd, &packet, sizeof(Packet), 0, reinterpret_cast<const sockaddr*>(&srvaddr), len_srvaddr)  < 0 ) {
+        TrackPacket packet = input_packet();
+        if ( sendto(sockfd, &packet, sizeof(TrackPacket), 0, reinterpret_cast<const sockaddr*>(&srvaddr), len_srvaddr)  < 0 ) {
             close(sockfd);
             perror("Cannot sendto");
             throw;
         }
 
-        printf("Packet: " PACKET_FMT "\n", PACKET_REPR(packet));
+        printf("TrackPacket: %s\n", packet.repr().c_str());
+        getchar();
     }
 
     close(sockfd);

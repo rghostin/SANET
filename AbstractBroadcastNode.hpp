@@ -35,7 +35,6 @@ protected:
     std::string _name;
     virtual std::string threadname(std::string) const;
 
-
     const uint8_t _nodeID;
 
     virtual bool _to_be_ignored(const P&) const;
@@ -43,9 +42,8 @@ protected:
     virtual P _produce_packet();
 
 public:
-    AbstractBroadcastNode(uint8_t nodeID, unsigned short port);
+    AbstractBroadcastNode(uint8_t nodeID, unsigned short port, const char* name);
     virtual ~AbstractBroadcastNode();
-
 
     virtual void start();
     virtual void join();
@@ -56,8 +54,8 @@ public:
 
 // Implementation
 template<typename P>
-AbstractBroadcastNode<P>::AbstractBroadcastNode(uint8_t nodeID, unsigned short port):
-    _port(port), _nodeID(nodeID)
+AbstractBroadcastNode<P>::AbstractBroadcastNode(uint8_t nodeID, unsigned short port, const char* name):
+    _port(port), _nodeID(nodeID), _name(name)
 {
     // setup reception sockaddr
     memset(&_srvaddr, 0, sizeof(_srvaddr));
@@ -107,7 +105,7 @@ void AbstractBroadcastNode<P>::_setup_socket_bind() {
         perror("Cannot bind");
         throw;
     }
-    LOG_F(WARNING, "Broadcast socket listening on port %d", _port);
+    LOG_F(INFO, "Broadcast socket listening on port %d", _port);
 }
 
 
@@ -117,7 +115,7 @@ void AbstractBroadcastNode<P>::_tr_receiver() {
     fd_set readfds, masterfds;
 
     loguru::set_thread_name( this->threadname(":receiver").c_str());
-    LOG_F(WARNING, "Starting broadcastNode receiver");
+    LOG_F(INFO, "Starting %s receiver", _name.c_str());
 
     FD_ZERO(&masterfds);
     FD_ZERO(&readfds);
@@ -142,9 +140,9 @@ void AbstractBroadcastNode<P>::_tr_receiver() {
                 throw;
             }
 
-            LOG_F(3, "Received P packet: -norepr-");
+            LOG_F(3, "Received P packet: %s", packet.repr().c_str());
             if (_to_be_ignored(packet)){
-                LOG_F(3, "Ignored packet: -norepr-");
+                LOG_F(3, "Ignored packet: %s", packet.repr().c_str());
                 continue;
             }
             _process_packet(packet);
@@ -153,7 +151,7 @@ void AbstractBroadcastNode<P>::_tr_receiver() {
 
         
     }
-    LOG_F(INFO, "BNode receiver - process_stop=true; exiting");
+    LOG_F(INFO, "process_stop=true; exiting");
 }
 
 
@@ -161,7 +159,6 @@ template<typename P>
 inline std::string AbstractBroadcastNode<P>::threadname(std::string suffix) const {
     return _name+":"+suffix;
 }
-
 
 template<typename P>
 void AbstractBroadcastNode<P>::broadcast(const P& packet) const {
@@ -171,7 +168,7 @@ void AbstractBroadcastNode<P>::broadcast(const P& packet) const {
         perror("Cannot sendto");
         throw;
     }
-    LOG_F(INFO, "sent packet: -norepr-");
+    LOG_F(3, "sent packet: %s", packet.repr().c_str());
 }
 
 template<typename P>
@@ -189,7 +186,7 @@ inline P AbstractBroadcastNode<P>::_produce_packet() {
 
 template<typename P>
 void AbstractBroadcastNode<P>::start() {
-    LOG_F(WARNING, "Starting BroadcastNode");
+    LOG_F(WARNING, "Starting %s", _name.c_str());
     _setup_socket_bind();
     _thread_receiver = std::thread(&AbstractBroadcastNode::_tr_receiver, this);
 }
