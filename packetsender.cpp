@@ -20,7 +20,7 @@
 
 
 uint8_t input_uint8() {
-    uint8_t uint8_x(212);  //default value
+    uint8_t uint8_x;
     char tmp_uint8_input[3];
 
     std::cin >> tmp_uint8_input;
