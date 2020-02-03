@@ -62,16 +62,14 @@ void ReliableMainServer::_tr_update_last_seq_map() {
     while (! process_stop) {
         {
             std::lock_guard<std::mutex> lock(_mutex_last_seq_map);
-            if (not _last_seq_map.empty()) {
-                LOG_F(3, "_last_seq_map size: %lu", _last_seq_map.size());
-                for (auto it=_last_seq_map.begin(); it != _last_seq_map.end(); ++it) {
-                    unsigned int& age = (it->second).second;
-                    if (age <= 0) {
-                        LOG_F(3, "Erasing from _last_seq_map nodeID=%d", it->first);
-                        it = _last_seq_map.erase(it);
-                    } else {
-                        age--;
-                    }
+            LOG_F(3, "_last_seq_map size: %lu", _last_seq_map.size());
+            for (auto it=_last_seq_map.begin(); it != _last_seq_map.end(); ++it) {
+                unsigned int& age = (it->second).second;
+                if (age <= 0) {
+                    LOG_F(3, "Erasing from _last_seq_map nodeID=%d", it->first);
+                    it = _last_seq_map.erase(it);
+                } else {
+                    age--;
                 }
             }
         }

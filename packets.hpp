@@ -3,7 +3,7 @@
 
 #include "Position.hpp"
 
-#define PACKET_FMT "{nodeID=%d | led_status=%d | timestamp=%d | seqnum=%d | Position=(longitude=%f, latitude=%f)}"
+#define PACKET_FMT "{nodeID=%d | led_status=%d | timestamp=%d | seqnum=%d | Pos=(%f, %f)}"
 #define PACKET_REPR(p) (p).nodeID, (p).led_status, (p).timestamp, (p).seqnum, (p).position.longitude, (p).position.latitude
 
 struct Packet {

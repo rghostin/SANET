@@ -19,7 +19,7 @@ MainServer::MainServer(unsigned short port, uint8_t nodeID, Tracker &tracker, un
 }
 
 
-MainServer::~MainServer() {     // TODO research how to destroy gracefully -> use MainServer::join() ?
+MainServer::~MainServer() {     // TODO research how to destroy gracefully
     if (_thread_receiver.joinable()) {
         _thread_receiver.join();
     }
@@ -72,7 +72,7 @@ Packet MainServer::_produce_packet(bool led_status) {
 }
 
 
-Position MainServer::_get_current_position() {
+Position MainServer::_get_current_position() const {
     Position position;  // TODO construire pos actuelle
     return position;
 }
@@ -91,13 +91,11 @@ void MainServer::_process_packet(const Packet& packet) {
 
 void MainServer::_tr_hearbeat() {
     socklen_t len_to_sockaddr = sizeof(sockaddr);
-    uint32_t curr_timestamp;
 
     loguru::set_thread_name("MainServer:Heartbeat");
     LOG_F(WARNING, "Starting heartbeat with period=%d", _heart_period);
 
     while (! process_stop) {
-        curr_timestamp = static_cast<uint32_t>(std::time(nullptr));  // TODO check si c'est encore utilisé (vu que _produce_packet())
         Packet packet = _produce_packet();
 
         if ( sendto(sockfd, &packet, sizeof(packet), 0, reinterpret_cast<const sockaddr*>(&_bc_sockaddr), len_to_sockaddr)  < 0 ) {

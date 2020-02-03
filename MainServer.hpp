@@ -40,7 +40,7 @@ private:
 
     void _setup_socket_bind();
     Packet _produce_packet(bool led_status=false);
-    Position _get_current_position();
+    Position _get_current_position() const;
     void _tr_hearbeat();
     void _tr_receiver();
 
