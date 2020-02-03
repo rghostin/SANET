@@ -67,7 +67,7 @@ void ReliableMainServer::_tr_update_last_seq_map() {
                 unsigned int& age = (it->second).second;
                 if (age <= 0) {
                     LOG_F(3, "Erasing from _last_seq_map nodeID=%d", it->first);
-                    _last_seq_map.erase(it);
+                    it = _last_seq_map.erase(it);
                 } else {
                     age--;
                 }

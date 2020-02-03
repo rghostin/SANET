@@ -19,7 +19,7 @@ MainServer::MainServer(unsigned short port, uint8_t nodeID, Tracker &tracker, un
 }
 
 
-MainServer::~MainServer() {     // TODO research how to destroy gracefully
+MainServer::~MainServer() {
     if (_thread_receiver.joinable()) {
         _thread_receiver.join();
     }
@@ -38,7 +38,7 @@ void MainServer::_setup_socket_bind() {
         throw;
     }
 
-    int broadcast_flag = 1;  // TODO check rawad
+    int broadcast_flag = 1;
     // Enable broadcast
     if (setsockopt(sockfd, SOL_SOCKET, SO_BROADCAST, &broadcast_flag, sizeof(broadcast_flag)) < 0) {
         close(sockfd);
@@ -61,13 +61,20 @@ void MainServer::_setup_socket_bind() {
 
 Packet MainServer::_produce_packet(bool led_status) {
     Packet packet;
+    Position position = _get_current_position();
     {   
         std::lock_guard<std::mutex> lock(_mutex_next_seqnum);
         uint32_t curr_timestamp = static_cast<uint32_t>(std::time(nullptr)); 
-        packet = Packet(_nodeID, led_status, curr_timestamp, _next_seqnum++);
+        packet = Packet(_nodeID, led_status, curr_timestamp, _next_seqnum++, position);
     }
     LOG_F(3, "Generated packet: " PACKET_FMT, PACKET_REPR(packet));
     return packet;    
+}
+
+
+Position MainServer::_get_current_position() const {
+    Position position;  // TODO construire pos actuelle
+    return position;
 }
 
 
@@ -84,13 +91,11 @@ void MainServer::_process_packet(const Packet& packet) {
 
 void MainServer::_tr_hearbeat() {
     socklen_t len_to_sockaddr = sizeof(sockaddr);
-    uint32_t curr_timestamp;
 
     loguru::set_thread_name("MainServer:Heartbeat");
     LOG_F(WARNING, "Starting heartbeat with period=%d", _heart_period);
 
     while (! process_stop) {
-        curr_timestamp = static_cast<uint32_t>(std::time(nullptr));
         Packet packet = _produce_packet();
 
         if ( sendto(sockfd, &packet, sizeof(packet), 0, reinterpret_cast<const sockaddr*>(&_bc_sockaddr), len_to_sockaddr)  < 0 ) {
@@ -169,5 +174,4 @@ void MainServer::join() {
     _thread_heartbeat.join();
     _thread_receiver.join();
     LOG_F(WARNING, "MainServer: joined all threads");
-
 }

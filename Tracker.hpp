@@ -19,7 +19,11 @@ private :
     bool _ALERT_PEER_LOST=false;
     unsigned short _peer_lost_timeout;
     unsigned short _period_mapcheck;
+
+    // threads && mutex
     std::thread _thread_check_node_map;
+    std::mutex _mutex_packetqueue;
+    std::mutex _mutex_peer_lost_flag;
 
     void _set_peer_lost_flag();
     void _reset_peer_lost_flag();
@@ -39,7 +43,6 @@ public :
     void notify(Packet);
     bool is_peer_lost();
     void join();
-    
 };
 
 #endif
