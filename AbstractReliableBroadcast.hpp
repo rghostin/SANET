@@ -7,6 +7,7 @@
 #include "common.hpp"
 #include "AbstractBroadcastNode.hpp"
 
+
 template<typename P>
 class AbstractReliableBroadcastNode : public AbstractBroadcastNode<P> {
 private:
@@ -22,10 +23,10 @@ private:
     std::mutex _mutex_next_seqnum;
     uint32_t _next_seqnum=0;    
 
-
-protected:
     bool _is_already_processed(const P&) const;
     virtual bool _to_be_ignored(const P&) const override;
+
+protected:
     virtual void _process_packet(const P&) override;
     virtual P _produce_packet() override;
 
@@ -57,15 +58,15 @@ AbstractReliableBroadcastNode<P>::~AbstractReliableBroadcastNode() {
 template<typename P>
 void AbstractReliableBroadcastNode<P>::_tr_update_last_seq_map() {
     loguru::set_thread_name(this->threadname("AgeSeqCheck").c_str());
-    LOG_F(INFO,"Starting %s last_mapt_check", this->_name.c_str());
+    LOG_F(INFO,"Starting %s last_mapt_check", this->_name);
     while (! process_stop) {
         {
             std::lock_guard<std::mutex> lock(_mutex_last_seq_map);
             for (auto it=_last_seq_map.begin(); it != _last_seq_map.end(); /*no increment*/ ) {
                 unsigned int& age = (it->second).second;
                 if (age <= 0) {
-                    LOG_F(3, "Erasing from _last_seq_map nodeID=%d, size=%lu", it->first, _last_seq_map.size());
                     _last_seq_map.erase(it++);
+                    LOG_F(3, "Erased from _last_seq_map nodeID=%d, size=%lu", it->first, _last_seq_map.size());
                 } else {
                     age--;
                     ++it;
@@ -100,6 +101,7 @@ inline bool AbstractReliableBroadcastNode<P>::_to_be_ignored(const P& packet) co
 
 template<typename P>
 void AbstractReliableBroadcastNode<P>::_process_packet(const P& packet) {
+    LOG_F(INFO, "Processing packet: %s", packet.repr().c_str());
     {
         std::lock_guard<std::mutex> lock(_mutex_last_seq_map);
         _last_seq_map[packet.nodeID] = std::pair<uint32_t, unsigned int>(packet.seqnum, _max_packet_age);

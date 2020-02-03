@@ -40,8 +40,8 @@ void TrackingServer::_process_packet(const TrackPacket& packet) {
 
 
 void TrackingServer::_tr_hearbeat() {
-    loguru::set_thread_name( (_name + ":heartbeat").c_str()); 
-    LOG_F(INFO, "Starting %s heartbeat with period=%d", _name.c_str(),_heart_period);
+    loguru::set_thread_name( this->threadname("heartbeat").c_str()); 
+    LOG_F(INFO, "Starting %s heartbeat with period=%d", _name,_heart_period);
 
     while (! process_stop) {
         TrackPacket packet = _produce_packet();

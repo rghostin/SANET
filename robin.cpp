@@ -7,12 +7,11 @@
 #include "TrackingServer.hpp"
 #include "Tracker.hpp"
 
-// TODO: maxpacket_age param
-// tracket intenal
+// TODO:
+// tracker intenal
 
 
-/* Stopping mechanism -start */
-
+// Stopping mechanism 
 std::atomic<bool> process_stop(false);
 
 void exit_handler(int s) {
@@ -20,7 +19,6 @@ void exit_handler(int s) {
     process_stop = true;
     LOG_F(INFO, "program_stop=true"); 
 }
-/* Stopping mechanism - end */
 
 
 
@@ -30,18 +28,17 @@ int main(int argc, char** argv) {
     TrackingServer trackingserver(TRACKING_SERVER_PORT, nodeID, tracker, TRACKING_HEARTBEAT_PERIOD);
 
     // setup signals
-    //signal(SIGINT, exit_handler);
+    signal(SIGINT, exit_handler);
 
     // setup logs - TODO -v for verbosity
     loguru::g_stderr_verbosity = loguru::Verbosity_3;
-    loguru::add_file("robin.log", loguru::Append, loguru::Verbosity_WARNING);
+    loguru::add_file("robin.log", loguru::Append, loguru::Verbosity_INFO);
     loguru::set_thread_name("robin_main");
 
     // start all services on parallel threads
     std::thread thread_tracker(&Tracker::start, &tracker);
 
     // start server on current thread
-    //mainserver.start();
     trackingserver.start();
 
     // join all services

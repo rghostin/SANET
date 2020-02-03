@@ -31,11 +31,9 @@ private:
     void _tr_hearbeat();
 
     TrackPacket _produce_packet() override;
+    virtual void _process_packet(const TrackPacket&) override;  
     Position _get_current_position() const;
 
-    virtual void _process_packet(const TrackPacket&) override;
-    
-    
 public:
     TrackingServer(unsigned short port, uint8_t nodeID, Tracker &tracker, unsigned short heart_period=TRACKING_HEARTBEAT_PERIOD);
     TrackingServer(const TrackingServer&) = delete;

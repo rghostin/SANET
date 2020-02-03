@@ -42,7 +42,7 @@ void Tracker::notify(TrackPacket packet) {
         std::lock_guard<std::mutex> lock(_mutex_packetqueue);
         _packetqueue.push(packet);
     }
-    LOG_F(3, "Added packet to tracker  queue : %s", packet.repr());
+    LOG_F(3, "Added packet to tracker  queue : %s", packet.repr().c_str());
 }
 
 
@@ -61,7 +61,7 @@ void Tracker::_update_status_node_map(){
         packet = copy_queue.front();
         copy_queue.pop();
         _status_node_map[packet.nodeID] = {packet.position, packet.timestamp};
-        LOG_F(INFO, "Updated NodeID : %s", packet.repr());
+        LOG_F(INFO, "Updated NodeID : %s", packet.repr().c_str());
     }
 }
 

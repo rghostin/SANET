@@ -4,9 +4,6 @@
 #include <string>
 #include "Position.hpp"
 
-
-
-
 struct TrackPacket  {
     uint8_t nodeID=0;
     uint32_t seqnum=0;
@@ -26,8 +23,7 @@ struct TrackPacket  {
         char buffer[len];
         snprintf(buffer, len, "{nodeID=%d|seqnum=%d|timestamp=%d|Pos=(%f,%f)}", nodeID, led_status, timestamp, seqnum, position.longitude, position.latitude);
         return buffer;
-    }
-    
+    }    
 };
 
 
