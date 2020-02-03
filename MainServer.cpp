@@ -19,7 +19,7 @@ MainServer::MainServer(unsigned short port, uint8_t nodeID, Tracker &tracker, un
 }
 
 
-MainServer::~MainServer() {     // TODO research how to destroy gracefully
+MainServer::~MainServer() {
     if (_thread_receiver.joinable()) {
         _thread_receiver.join();
     }
@@ -38,7 +38,7 @@ void MainServer::_setup_socket_bind() {
         throw;
     }
 
-    int broadcast_flag = 1;  // TODO check rawad
+    int broadcast_flag = 1;
     // Enable broadcast
     if (setsockopt(sockfd, SOL_SOCKET, SO_BROADCAST, &broadcast_flag, sizeof(broadcast_flag)) < 0) {
         close(sockfd);
@@ -61,7 +61,7 @@ void MainServer::_setup_socket_bind() {
 
 Packet MainServer::_produce_packet(bool led_status) {
     Packet packet;
-    Position position = _get_current_position();  // TODO relier pos actuelle à c
+    Position position = _get_current_position();
     {   
         std::lock_guard<std::mutex> lock(_mutex_next_seqnum);
         uint32_t curr_timestamp = static_cast<uint32_t>(std::time(nullptr)); 

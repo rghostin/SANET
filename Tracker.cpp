@@ -6,7 +6,7 @@ Tracker::Tracker(unsigned short peer_lost_timeout, unsigned short period_mapchec
     _thread_check_node_map() {}
 
 
-Tracker::~Tracker(){ // TODO research how to destroy gracefully
+Tracker::~Tracker(){
     if(_thread_check_node_map.joinable()){
         _thread_check_node_map.join();
     }
