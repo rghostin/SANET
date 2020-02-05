@@ -8,11 +8,9 @@
 #include <sys/ioctl.h>
 #include <net/if.h>
 #include <time.h>
-#include <limits>
-#include <iomanip>
 #include <ctime>
+#include <limits>
 #include "packets.hpp"
-
 
 #define EXIT_PROG_CODE 99
 #define SRVPORT 5820
@@ -38,8 +36,23 @@ uint8_t input_uint8() {
 }
 
 
-Packet input_packet() {
-    Packet packet(212, false, static_cast<uint32_t>(std::time(nullptr)), 0);  // Paquet par défaut
+TrackPacket input_packet() {
+    TrackPacket packet;
+
+    /*std::cout << "nodeID : ";
+    packet.nodeID = input_uint8();
+    std::cout << "led_status : ";
+    std::cin >> packet.led_status;
+    std::cout << "Timestamp : ";
+    std::cin >> packet.timestamp;
+    std::cout << "seqnum : ";
+    std::cin >> packet.seqnum;*/
+
+    packet.nodeID = 200;
+    packet.seqnum = 454;
+    packet.timestamp = std::time(nullptr);
+    packet.position = Position(0,0);
+    packet.led_status = false;
 
     std::cout << "nodeID : ";
     if (std::cin.peek() != '\n') {
@@ -47,15 +60,22 @@ Packet input_packet() {
     }
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
-    std::cout << "led_status : ";
-    if (std::cin.peek() != '\n') {
-        std::cin >> packet.led_status;
-    }
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-
     std::cout << "seqnum : ";
     if (std::cin.peek() != '\n') {
         std::cin >> packet.seqnum;
+    }
+
+    std::cout << "Position : ";
+    if (std::cin.peek() != '\n') {
+        std::cout << "Longitude:";
+        std::cin >> packet.position.longitude;
+        std::cout << "Latitude:";
+        std::cin >> packet.position.latitude;
+    }
+
+    std::cout << "led_status : ";
+    if (std::cin.peek() != '\n') {
+        std::cin >> packet.led_status;
     }
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
@@ -99,17 +119,17 @@ int main(int argc, char** argv) {
 
 
     while (! stop) {
-        Packet packet = input_packet();
-        if ( sendto(sockfd, &packet, sizeof(Packet), 0, reinterpret_cast<const sockaddr*>(&srvaddr), len_srvaddr)  < 0 ) {
+        TrackPacket packet = input_packet();
+        if ( sendto(sockfd, &packet, sizeof(TrackPacket), 0, reinterpret_cast<const sockaddr*>(&srvaddr), len_srvaddr)  < 0 ) {
             close(sockfd);
             perror("Cannot sendto");
             throw;
         }
 
-        printf("Packet: " PACKET_FMT "\n", PACKET_REPR(packet));
+        printf("TrackPacket: %s\n", packet.repr().c_str());
+        getchar();
     }
 
     close(sockfd);
     return 0;
 }
-

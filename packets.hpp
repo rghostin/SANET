@@ -1,18 +1,29 @@
 #ifndef __PACKETS_HPP__
 #define __PACKETS_HPP__
 
-#define PACKET_FMT "{nodeID=%d | led_status=%d | timestamp=%d | seqnum=%d}"
-#define PACKET_REPR(p) (p).nodeID, (p).led_status, (p).timestamp, (p).seqnum
+#include <string>
+#include "Position.hpp"
 
-struct Packet {
-    uint8_t nodeID;
-    bool led_status=0;
-    uint32_t timestamp;
+struct TrackPacket  {
+    uint8_t nodeID=0;
     uint32_t seqnum=0;
+    uint32_t timestamp;
+    Position position;
+    bool led_status=false;
 
-    Packet() : nodeID(0), led_status(false), timestamp(0), seqnum(0) {}
-    Packet(uint8_t nodeID, bool led_status, uint32_t timestamp, uint32_t seqnum) :
-        nodeID(nodeID), led_status(led_status), timestamp(timestamp), seqnum(seqnum) {}
+
+    TrackPacket(uint8_t nodeID, uint32_t seqnum, uint32_t timestamp, Position pos, bool led_status) :
+        nodeID(nodeID), seqnum(seqnum), timestamp(timestamp), position(pos), led_status(led_status) {}
+    TrackPacket() :
+        nodeID(0), seqnum(0), timestamp(0), position(0,0), led_status(false) {}
+    
+
+    std::string repr() const {
+        const size_t len=256;
+        char buffer[len];
+        snprintf(buffer, len, "{nodeID=%d|seqnum=%d|timestamp=%d|Pos=(%f,%f), led_status=%d}", nodeID, seqnum, timestamp, position.longitude, position.latitude, led_status);
+        return buffer;
+    }    
 };
 
 
