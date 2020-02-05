@@ -7,8 +7,7 @@
 #include "TrackingServer.hpp"
 #include "Tracker.hpp"
 
-// TODO:
-// tracker intenal
+// TODO: // tracker intenal
 
 
 // Stopping mechanism 

@@ -41,6 +41,10 @@ protected:
 
 public:
     AbstractBroadcastNode(uint8_t nodeID, unsigned short port, const char* name);
+    AbstractBroadcastNode(const AbstractBroadcastNode&) = delete;
+    AbstractBroadcastNode(AbstractBroadcastNode&&) = delete;
+    AbstractBroadcastNode& operator=(const AbstractBroadcastNode&) = delete;
+    AbstractBroadcastNode& operator=(const AbstractBroadcastNode&&) = delete;
     virtual ~AbstractBroadcastNode();
 
     virtual void start();
