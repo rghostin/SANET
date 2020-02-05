@@ -9,6 +9,7 @@
 #include <net/if.h>
 #include <time.h>
 #include <ctime>
+#include <limits>
 #include "packets.hpp"
 
 #define EXIT_PROG_CODE 99
@@ -48,14 +49,35 @@ TrackPacket input_packet() {
     std::cin >> packet.seqnum;*/
 
     packet.nodeID = 200;
-    packet.led_status = false;
-    packet.timestamp = -42;
     packet.seqnum = 454;
+    packet.timestamp = std::time(nullptr);
+    packet.position = Position(0,0);
+    packet.led_status = false;
 
-
-    if (packet.timestamp == -42) {  // Code spécial pour envoyer le timestamp actuel
-        packet.timestamp = std::time(nullptr);
+    std::cout << "nodeID : ";
+    if (std::cin.peek() != '\n') {
+        packet.nodeID = input_uint8();
     }
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+    std::cout << "seqnum : ";
+    if (std::cin.peek() != '\n') {
+        std::cin >> packet.seqnum;
+    }
+
+    std::cout << "Position : ";
+    if (std::cin.peek() != '\n') {
+        std::cout << "Longitude:";
+        std::cin >> packet.position.longitude;
+        std::cout << "Latitude:";
+        std::cin >> packet.position.latitude;
+    }
+
+    std::cout << "led_status : ";
+    if (std::cin.peek() != '\n') {
+        std::cin >> packet.led_status;
+    }
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
     return packet;
 }

@@ -34,7 +34,23 @@ int main(int argc, char** argv) {
     loguru::add_file("robin.log", loguru::Append, loguru::Verbosity_INFO);
     loguru::set_thread_name("robin_main");
 
+
+    if (argc > 1) {
+        for (int i = 1; i < argc; ++i) {
+            if (std::strcmp(argv[i], "-v") == 0 and i + 1 < argc) {
+                char *checkLong;
+                long int verbose_value(strtol (argv[i + 1], &checkLong, 10));
+
+                if (std::strcmp(checkLong, "\0") == 0 and (-2 <= verbose_value) and (verbose_value <= 9)) {
+                    loguru::g_stderr_verbosity = static_cast<int>(verbose_value);
+                    LOG_F(WARNING, "Logging changed to the value -> {%d} through parameter -v", loguru::g_stderr_verbosity);
+                }
+            }
+        }
+    }
+
     // start all services on parallel threads
+    // TODO fix thread start inside tracker
     std::thread thread_tracker(&Tracker::start, &tracker);
 
     // start server on current thread
