@@ -51,14 +51,14 @@ int main(int argc, char** argv) {
 
     // start all services on parallel threads
     // TODO fix thread start inside tracker
-    std::thread thread_tracker(&Tracker::start, &tracker);
+    //std::thread thread_tracker(&Tracker::start, &tracker);
 
     // start server on current thread
     trackingserver.start();
 
     // join all services
     trackingserver.join();
-    thread_tracker.join();
+    //thread_tracker.join();
 
     LOG_F(WARNING, "Robin exiting");
     return 0;
