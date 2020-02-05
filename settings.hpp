@@ -1,6 +1,8 @@
 #ifndef _SETTINGS_HPP_
 #define _SETTINGS_HPP_
 
+// Global settings
+#define CFG_NODEID_FNAME "nodeid.cfg"
 
 // Tracking settings
 #define TRACKING_SERVER_PORT 5820
