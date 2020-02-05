@@ -14,7 +14,7 @@
 
 class Tracker final {
 private :
-    std::queue<Packet> _packetqueue;
+    std::queue<TrackPacket> _packetqueue;
     std::map<uint8_t, std::pair<Position, uint32_t>> _status_node_map;
     bool _ALERT_PEER_LOST=false;
     unsigned short _peer_lost_timeout;
@@ -40,7 +40,7 @@ public :
     ~Tracker();
 
     void start();
-    void notify(Packet);
+    void notify(TrackPacket);
     bool is_peer_lost();
     void join();
 };

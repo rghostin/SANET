@@ -37,18 +37,18 @@ bool Tracker::is_peer_lost() {
 }
 
 
-void Tracker::notify(Packet packet) {
+void Tracker::notify(TrackPacket packet) {
     {
         std::lock_guard<std::mutex> lock(_mutex_packetqueue);
         _packetqueue.push(packet);
     }
-    LOG_F(3, "Added packet to tracker  queue :" PACKET_FMT, PACKET_REPR(packet));
+    LOG_F(3, "Added packet to tracker  queue : %s", packet.repr().c_str());
 }
 
 
 void Tracker::_update_status_node_map(){
-    Packet packet;
-    std::queue<Packet> copy_queue;
+    TrackPacket packet;
+    std::queue<TrackPacket> copy_queue;
 
     {
         std::lock_guard<std::mutex> lock(_mutex_packetqueue);
@@ -61,7 +61,7 @@ void Tracker::_update_status_node_map(){
         packet = copy_queue.front();
         copy_queue.pop();
         _status_node_map[packet.nodeID] = {packet.position, packet.timestamp};
-        LOG_F(INFO, "Updated NodeID : " PACKET_FMT, PACKET_REPR(packet));
+        LOG_F(INFO, "Updated NodeID : %s", packet.repr().c_str());
     }
 }
 
@@ -70,7 +70,7 @@ void Tracker::_tr_check_node_map(){
     bool call_set_peer_lost=false;
     uint32_t actualTimestamp;
 
-    LOG_F(INFO, "Starting _check_node_map");
+    LOG_F(INFO, "Starting tracker _check_node_map");
 
     std::map<uint8_t, std::pair<Position, uint32_t>>::const_iterator it;
 
