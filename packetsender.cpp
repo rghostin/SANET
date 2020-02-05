@@ -50,7 +50,7 @@ TrackPacket input_packet() {
 
     packet.nodeID = 200;
     packet.seqnum = 454;
-    packet.timestamp = std::time(nullptr);
+    packet.timestamp = static_cast<uint32_t>(std::time(nullptr));
     packet.position = Position(0,0);
     packet.led_status = false;
 
@@ -64,6 +64,7 @@ TrackPacket input_packet() {
     if (std::cin.peek() != '\n') {
         std::cin >> packet.seqnum;
     }
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
     std::cout << "Position : ";
     if (std::cin.peek() != '\n') {
@@ -72,12 +73,12 @@ TrackPacket input_packet() {
         std::cout << "Latitude:";
         std::cin >> packet.position.latitude;
     }
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
     std::cout << "led_status : ";
     if (std::cin.peek() != '\n') {
         std::cin >> packet.led_status;
     }
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
     return packet;
 }
