@@ -113,7 +113,7 @@ int main(int argc, char** argv) {
     // filling socket information for reception
     memset(&srvaddr, 0, sizeof(srvaddr));
     srvaddr.sin_family = AF_INET;
-    srvaddr.sin_addr.s_addr = INADDR_ANY;
+    srvaddr.sin_addr.s_addr = htonl(INADDR_BROADCAST); // inet_addr("164.15.121.78");
     srvaddr.sin_port = htons(SRVPORT);
     // networking - end
 
