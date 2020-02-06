@@ -1,4 +1,5 @@
 #include "TrackingServer.hpp"
+#include "Tracker.hpp"
 
 TrackingServer::TrackingServer(unsigned short port, uint8_t nodeID, Tracker &tracker, unsigned short heart_period) : 
     AbstractReliableBroadcastNode<TrackPacket>(nodeID, port, "TrackSrv", RELBC_PACKET_MAX_AGE),
@@ -13,7 +14,6 @@ TrackingServer::~TrackingServer() {
         _thread_heartbeat.join();
     }
 }
-
 
 
 TrackPacket TrackingServer::_produce_packet() {
@@ -57,11 +57,13 @@ void TrackingServer::_tr_hearbeat() {
 void TrackingServer::start() {
     LOG_F(WARNING, "Starting Tracking server");
     AbstractReliableBroadcastNode<TrackPacket>::start();
+    _tracker.start();
     _thread_heartbeat = std::thread(&TrackingServer::_tr_hearbeat, this);
 }
 
 void TrackingServer::join() {
     AbstractReliableBroadcastNode<TrackPacket>::join();
     _thread_heartbeat.join();
+    _tracker.join();
     LOG_F(WARNING, "TrServer: joined all threads");
 }
