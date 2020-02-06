@@ -4,6 +4,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
+#include <net/if.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include <cstring>
@@ -23,6 +24,8 @@ private:
     int sockfd;
     sockaddr_in _srvaddr;
     sockaddr_in _bc_sockaddr;
+    ifreq b_iface;
+    const char* b_iface_name=BATMAN_IFACE;
 
     // threads
     std::thread _thread_receiver;
@@ -98,7 +101,15 @@ void AbstractBroadcastNode<P>::_setup_socket_bind() {
     }
 
     // TODO setting interface for bat0
-    // 
+    #ifdef __arm__
+    memset(&b_iface, 0, sizeof(b_iface));
+    snprintf(b_iface.ifr_name, sizeof(b_iface.ifr_name), b_iface_name);
+    if (setsockopt(sockfd, SOL_SOCKET, SO_BINDTODEVICE, (void)*&b_iface, sizeof(b_iface) < 0) {
+        close(sockfd);
+        perror("setsockopt (SO_BINDTODEVICE)");
+        throw;
+    }
+    #endif
 
     // binding to port
     if ( bind(sockfd, reinterpret_cast<const struct sockaddr*>(&_srvaddr), sizeof(_srvaddr)) < 0 ) {
