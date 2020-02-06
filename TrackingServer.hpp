@@ -26,7 +26,6 @@ private:
 
     // delegations
     Tracker& _tracker;
-
     std::thread _thread_heartbeat;
     void _tr_hearbeat();
 

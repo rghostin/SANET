@@ -105,7 +105,7 @@ void Tracker::_tr_check_node_map(){
 
 void Tracker::start() {
     loguru::set_thread_name("Tracker");
-    _tr_check_node_map();
+    _thread_check_node_map = std::thread(&Tracker::_tr_check_node_map, this);
 }
 
 void Tracker::join() {
