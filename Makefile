@@ -18,4 +18,4 @@ packetsender: packetsender.cpp
 .PHONY: clean
 clean:
 	#clear; rm -rf *.o *.log; rm -rf robin packetsender
-        find . -type f -name "*.o" -name "*.log" ! -name "loguru.o" --delete; rm -rf robin packetsender
+	find . \( -type f -name "*.o" -and ! -name "loguru.o" -or -name "*.log" \) -delete; rm -rf robin packetsender
