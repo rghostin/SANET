@@ -7,6 +7,9 @@
 #include "common.hpp"
 #include "AbstractBroadcastNode.hpp"
 
+#include "utils_log.hpp" //TODO rm
+
+
 
 template<typename P>
 class AbstractReliableBroadcastNode : public AbstractBroadcastNode<P> {
@@ -62,6 +65,7 @@ void AbstractReliableBroadcastNode<P>::_tr_update_last_seq_map() {
     while (! process_stop) {
         {
             std::lock_guard<std::mutex> lock(_mutex_last_seq_map);
+            LOG_F(7, "last seq map:\n%s", print_log_map(_last_seq_map).c_str());
             for (auto it=_last_seq_map.begin(); it != _last_seq_map.end(); /*no increment*/ ) {
                 unsigned int& age = (it->second).second;
                 if (age <= 0) {
@@ -106,7 +110,6 @@ void AbstractReliableBroadcastNode<P>::_process_packet(const P& packet) {
         std::lock_guard<std::mutex> lock(_mutex_last_seq_map);
         _last_seq_map[packet.nodeID] = std::pair<uint32_t, unsigned int>(packet.seqnum, _max_packet_age);
         LOG_F(3, "Inserted in _last_seq_map for nodeID=%d, size: %lu", packet.nodeID, _last_seq_map.size());
-
     }
     // in addition to the standard server, echo a broadcast of the packet for reliable broadcast
     LOG_F(3, "Echoing packet: %s", packet.repr().c_str());

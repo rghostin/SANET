@@ -1,4 +1,4 @@
-#ifndef __ABSTRACTBROADCASTNODE_HPP_
+#ifndef _ABSTRACTBROADCASTNODE_HPP_
 #define _ABSTRACTBROADCASTNODE_HPP_
 
 #include <sys/socket.h>

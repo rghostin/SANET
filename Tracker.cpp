@@ -63,6 +63,8 @@ void Tracker::_update_status_node_map(){
         _status_node_map[packet.nodeID] = {packet.position, packet.timestamp};
         LOG_F(INFO, "Updated NodeID : %s", packet.repr().c_str());
     }
+    LOG_F(7, "status_node_map:\n%s", print_log_map(_status_node_map).c_str());
+
 }
 
 
