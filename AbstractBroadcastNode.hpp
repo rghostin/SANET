@@ -101,11 +101,11 @@ void AbstractBroadcastNode<P>::_setup_socket_bind() {
     }
 
     // TODO setting interface for bat0
-    #ifdef __arm__
+    #ifdef __aarch64__
         LOG_F(WARNING, "ARM architecture detected");
         memset(&b_iface, 0, sizeof(b_iface));
         snprintf(b_iface.ifr_name, sizeof(b_iface.ifr_name), b_iface_name);
-        if (setsockopt(sockfd, SOL_SOCKET, SO_BINDTODEVICE, (void)*&b_iface, sizeof(b_iface) < 0) {
+        if (setsockopt(sockfd, SOL_SOCKET, SO_BINDTODEVICE, (void)*&b_iface, sizeof(b_iface)) < 0) {
             close(sockfd);
             perror("setsockopt (SO_BINDTODEVICE)");
             throw;
