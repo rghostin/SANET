@@ -28,7 +28,7 @@ fi
 
 # params validation
 # param1 : nodeid
-if [[ ! $1 =~ '^[0-9]+$' ]]; then
+if [[ ! $1 =~ ^[0-9]+$ ]]; then
   echo "Error: param nodeid must be an integer"
   exit 1
 fi
@@ -38,7 +38,7 @@ NODEID="$1"
 echo "[*] Cleaning up"
 systemctl stop wpa_supplicant
 systemctl mask wpa_supplicant
-"$KILLWIFI_SCRIPT"
+./"$KILLWIFI_SCRIPT"
 
 #  Mesh wireless configuration
 echo "[*] Setting up mesh wireless interface"

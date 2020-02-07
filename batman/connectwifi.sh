@@ -29,7 +29,7 @@ fi
 
 
 # disconnect wifi
-"$KILLWIFI_SCRIPT"
+./"$KILLWIFI_SCRIPT"
 
 # Connect to Wifi
 echo '[*] Connecting to wifi'
