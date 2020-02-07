@@ -69,8 +69,8 @@ void AbstractReliableBroadcastNode<P>::_tr_update_last_seq_map() {
             for (auto it=_last_seq_map.begin(); it != _last_seq_map.end(); /*no increment*/ ) {
                 unsigned int& age = (it->second).second;
                 if (age <= 0) {
+                    LOG_F(3, "Erased from _last_seq_map nodeID=%d, size=%lu", it->first, _last_seq_map.size()-1);
                     _last_seq_map.erase(it++);
-                    LOG_F(3, "Erased from _last_seq_map nodeID=%d, size=%lu", it->first, _last_seq_map.size());
                 } else {
                     age--;
                     ++it;
