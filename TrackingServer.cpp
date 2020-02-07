@@ -3,9 +3,8 @@
 
 TrackingServer::TrackingServer(unsigned short port, uint8_t nodeID, Tracker &tracker, unsigned short heart_period) : 
     AbstractReliableBroadcastNode<TrackPacket>(nodeID, port, "TrackSrv", RELBC_PACKET_MAX_AGE),
-    _heart_period(heart_period), _thread_heartbeat(),
-    _tracker(tracker) 
-    { 
+    _heart_period(heart_period), _tracker(tracker), _thread_heartbeat()
+    {
     }
 
 

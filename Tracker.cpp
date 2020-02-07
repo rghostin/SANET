@@ -3,7 +3,7 @@
 Tracker::Tracker(unsigned short peer_lost_timeout, unsigned short period_mapcheck) : 
     _packetqueue(), _status_node_map(),
     _peer_lost_timeout(peer_lost_timeout), _period_mapcheck(period_mapcheck),
-    _thread_check_node_map() {}
+    _thread_check_node_map(), _mutex_packetqueue(), _mutex_peer_lost_flag() {}
 
 
 Tracker::~Tracker(){

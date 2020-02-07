@@ -59,7 +59,7 @@ public:
 
 template<typename P>
 AbstractBroadcastNode<P>::AbstractBroadcastNode(uint8_t nodeID, unsigned short port, const char* name):
-    _port(port), _nodeID(nodeID), _name(name)
+    _port(port), sockfd(), _srvaddr(), _bc_sockaddr(), b_iface(), _thread_receiver(), _nodeID(nodeID), _name(name)
 {
     // setup reception sockaddr
     memset(&_srvaddr, 0, sizeof(_srvaddr));
@@ -105,7 +105,7 @@ void AbstractBroadcastNode<P>::_setup_socket_bind() {
         LOG_F(WARNING, "ARM architecture detected");
         memset(&b_iface, 0, sizeof(b_iface));
         snprintf(b_iface.ifr_name, sizeof(b_iface.ifr_name), b_iface_name);
-        if (setsockopt(sockfd, SOL_SOCKET, SO_BINDTODEVICE, (void)*&b_iface, sizeof(b_iface)) < 0) {
+        if (setsockopt(sockfd, SOL_SOCKET, SO_BINDTODEVICE, (void*)&b_iface, sizeof(b_iface)) < 0) {
             close(sockfd);
             perror("setsockopt (SO_BINDTODEVICE)");
             throw;
