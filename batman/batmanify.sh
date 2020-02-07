@@ -38,7 +38,7 @@ NODEID="$1"
 echo "[*] Cleaning up"
 systemctl stop wpa_supplicant
 systemctl mask wpa_supplicant
-./"$KILLWIFI_SCRIPT"
+"$KILLWIFI_SCRIPT"
 
 #  Mesh wireless configuration
 echo "[*] Setting up mesh wireless interface"
