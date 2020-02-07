@@ -1,17 +1,15 @@
 #!/bin/bash
 
-# default settings
-W_IFACE="wlan0"
-B_IFACE="bat0"
-MESH_W_ESSID="meshnetw"
-MESH_W_CHANNEL="3"	# TODO
-MESH_W_FREQ="2432"
-MESH_W_MTU="1500"
+ROOT='/home/ubuntu/sanet'
+BATMAN_PATH="$ROOT/batman"
+GLOBALS_SCRIPT="$BATMAN_PATH/globals.sh"
+
 SLEEP_PERIOD='2'
 
-KILLWIFI_SCRIPT="${PWD}/killwifi.sh"
-
 set -e
+
+source globals.sh
+
 
 # force run as root
 if [[ $EUID -ne 0 ]]; then

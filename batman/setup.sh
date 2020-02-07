@@ -1,23 +1,13 @@
 #!/bin/bash
 
-# settings
-ROOT='/home/ubuntu/meshnet'
-W_IFACE="wlan0"
-KBLAYOUT="fr"
-
-# paths
-TESTGPIO="$ROOT/testgpio"
-BATMANIFY="$ROOT/batmanify.sh"
-HOSTID_CONF="$ROOT//hostid.conf"
-RSRC_DIR="$ROOT/rsrc"
-CONNETCTWIFI="$ROOT/connectwifi.sh"
-KILLWIFI="$ROOT/killwifi.sh"
-ROBIN_SRC_DIR="$ROOT/src"
-ROBIN="$ROBIN_SRC_DIR/robin"
-DIRLPGPIO="$ROBIN_SRC_DIR/lib/pigpio-master"
-RUN="$ROOT/run.sh"
+ROOT='/home/ubuntu/sanet'
+BATMAN_PATH="$ROOT/batman"
+GLOBALS_SCRIPT="$BATMAN_PATH/globals.sh"
 
 set -e
+
+source globals.sh
+
 
 function changeKeyboard {
     newValue="$1" 

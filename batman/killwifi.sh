@@ -1,6 +1,12 @@
 #!/bin/bash
-W_IFACE="wlan0"
-B_IFACE="bat0"
+
+ROOT='/home/ubuntu/sanet'
+BATMAN_PATH="$ROOT/batman"
+GLOBALS_SCRIPT="$BATMAN_PATH/globals.sh"
+
+set -e
+
+source globals.sh
 
 function check_interface_exists {
     local interface="$1"

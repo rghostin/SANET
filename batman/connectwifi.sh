@@ -1,14 +1,11 @@
 #!/bin/bash
-
-B_IFACE="bat0"
-
-# Connection settings
-CONN_IDENTITY="hlloreda@ulb.ac.be"
-CONN_PASSWORD="^nNxNx6k"
-
-KILLWIFI_SCRIPT="${PWD}/killwifi.sh"
+ROOT='/home/ubuntu/sanet'
+BATMAN_PATH="$ROOT/batman"
+GLOBALS_SCRIPT="$BATMAN_PATH/globals.sh"
 
 set -e
+
+source globals.sh
 
 function check_connectivity {
     local test_ip
