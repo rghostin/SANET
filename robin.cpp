@@ -25,6 +25,12 @@ void exit_handler(int s) {
 
 int main(int argc, char** argv) {
     uint8_t nodeID; // = read_int_from_file(CFG_NODEID_FNAME);
+     if (argc !=  2) {
+        throw;
+    }
+    nodeID=static_cast<uint8_t>(atoi(argv[1]));
+    LOG_F(WARNING, "NodeID=%d", nodeID);
+
     Tracker tracker(TRACKING_PEER_LOSS_TIMEOUT, TRACKING_PERIOD_CHECK_NODEMAP);
     TrackingServer trackingserver(TRACKING_SERVER_PORT, nodeID, tracker, TRACKING_HEARTBEAT_PERIOD);
 
@@ -60,14 +66,6 @@ int main(int argc, char** argv) {
             }
         }
     }*/
-
-    if (argc !=  2) {
-        throw;
-    }
-    nodeID=static_cast<uint8_t>(atoi(argv[1]));
-    LOG_F(WARNING, "NodeID=%d", nodeID);
- 
-    
 
     // start server on current thread
     trackingserver.start();
