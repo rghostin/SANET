@@ -6,7 +6,7 @@ GLOBALS_SCRIPT="$BATMAN_PATH/globals.sh"
 
 set -e
 
-source globals.sh
+source "$GLOBALS_SCRIPT"
 
 function check_interface_exists {
     local interface="$1"

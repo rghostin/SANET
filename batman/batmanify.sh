@@ -8,7 +8,7 @@ SLEEP_PERIOD='2'
 
 set -e
 
-source globals.sh
+source "$GLOBALS_SCRIPT"
 
 
 # force run as root
