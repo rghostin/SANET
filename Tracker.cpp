@@ -63,7 +63,7 @@ void Tracker::_update_status_node_map(){
         _status_node_map[packet.nodeID] = {packet.position, packet.timestamp};
         LOG_F(INFO, "Updated NodeID : %s", packet.repr().c_str());
     }
-    LOG_F(7, "status_node_map:\n%s", print_log_map(_status_node_map).c_str());
+    LOG_F(3, "status_node_map:\n%s", print_log_map(_status_node_map).c_str());
 
 }
 
@@ -72,6 +72,7 @@ void Tracker::_tr_check_node_map(){
     bool call_set_peer_lost=false;
     uint32_t actualTimestamp;
 
+    loguru::set_thread_name("Tracker");
     LOG_F(INFO, "Starting tracker _check_node_map");
 
     std::map<uint8_t, std::pair<Position, uint32_t>>::const_iterator it;
