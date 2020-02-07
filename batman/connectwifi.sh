@@ -6,7 +6,7 @@ B_IFACE="bat0"
 CONN_IDENTITY="hlloreda@ulb.ac.be"
 CONN_PASSWORD="^nNxNx6k"
 
-KILLWIFI_SCRIPT="killwifi.sh"
+KILLWIFI_SCRIPT="${PWD}/killwifi.sh"
 
 set -e
 

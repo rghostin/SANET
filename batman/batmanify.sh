@@ -9,7 +9,7 @@ MESH_W_FREQ="2432"
 MESH_W_MTU="1500"
 SLEEP_PERIOD='2'
 
-KILLWIFI_SCRIPT="killwifi.sh"
+KILLWIFI_SCRIPT="${PWD}/killwifi.sh"
 
 set -e
 
