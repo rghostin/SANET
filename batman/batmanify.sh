@@ -20,7 +20,7 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 # check number of params
-if [[ $# -ne 2 ]]; then
+if [[ $# -ne 1 ]]; then
    echo "Error: Invalid number of arguments"
    exit 1
 fi
