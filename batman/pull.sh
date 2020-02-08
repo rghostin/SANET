@@ -7,7 +7,30 @@ set -e
 
 source "$GLOBALS_SCRIPT"
 
+function usage() { echo "Usage: $0 [-r]" 1>&2; exit 1; }
+
+
+flag_rebuild='false'
+while getopts ":r" o; do
+    case "${o}" in
+        r)
+            flag_rebuild='true'
+            ;;
+        *)
+            usage
+            ;;
+    esac
+done
+shift $((OPTIND-1))
+
 cd "$ROOT"
 "$CONNECTWIFI_SCRIPT"
 git pull --all
-make rebuild
+
+
+if ${flag_rebuild}; then
+    echo "Rebuilding source"
+    make rebuild
+else
+    echo "No rebuild flag specified"
+fi
