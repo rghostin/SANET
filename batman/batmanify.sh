@@ -36,7 +36,7 @@ NODEID="$1"
 echo "[*] Cleaning up"
 systemctl stop wpa_supplicant
 systemctl mask wpa_supplicant
-iwconfig "$W_IFACE" power off   # power management off
+iwconfig "$W_IFACE" power off  || true # power management off
 "$KILLWIFI_SCRIPT"
 
 #  Mesh wireless configuration
