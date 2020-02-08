@@ -36,6 +36,7 @@ NODEID="$1"
 echo "[*] Cleaning up"
 systemctl stop wpa_supplicant
 systemctl mask wpa_supplicant
+iwconfig "$W_IFACE" power off   # power management off
 "$KILLWIFI_SCRIPT"
 
 #  Mesh wireless configuration
@@ -53,14 +54,13 @@ echo "- Setting $W_IFACE up"
 ip link set dev "$W_IFACE" up
 echo "- Joining $MESH_W_ESSID wireless" 
 iw "$W_IFACE" ibss join "$MESH_W_ESSID" "$MESH_W_FREQ"
-iwconfig "$W_IFACE" power off   # power management off
 
 # batman configuration
 echo "[*] Setting up batman"
 echo "- Activating batman-adv kernel module"
 modprobe batman-adv
 echo "- Adding $W_IFACE to batman-adv"
-batctl if add "$W_IFACE" 
+batctl if add "$W_IFACE"
 ip link set dev "$W_IFACE" up
 echo " - Setting $B_IFACE up"
 ip link set dev "$B_IFACE" up
