@@ -8,6 +8,6 @@ set -e
 source "$GLOBALS_SCRIPT"
 
 cd "$ROOT"
-"$CONNETCTWIFI_SCRIPT"
+"$CONNECTWIFI_SCRIPT"
 git pull --all
 make rebuild

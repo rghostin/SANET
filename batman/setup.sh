@@ -53,7 +53,7 @@ echo "changing hostname to $2"
 hostnamectl set-hostname "$2"
 
 echo '[*] Connecting to wifi'
-"$CONNETCTWIFI"
+"$CONNECTWIFI"
 
 echo '[*] Updating server'
 apt update
