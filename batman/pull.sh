@@ -10,3 +10,4 @@ source "$GLOBALS_SCRIPT"
 cd "$ROOT"
 "$CONNETCTWIFI_SCRIPT"
 git pull --all
+make rebuild
