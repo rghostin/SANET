@@ -24,6 +24,7 @@ void exit_handler(int s) {
 
 
 int main(int argc, char** argv) {
+
     uint8_t nodeID(255); // = read_int_from_file(CFG_NODEID_FNAME);
     int opt;
     char *checkLong;

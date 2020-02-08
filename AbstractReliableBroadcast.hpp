@@ -27,7 +27,7 @@ private:
     uint32_t _next_seqnum=0;    
 
     bool _is_already_processed(const P&) const;
-    virtual bool _to_be_ignored(const P&) const override;
+    bool _to_be_ignored(const P&) const override;
 
 protected:
     virtual void _process_packet(const P&) override;
@@ -47,7 +47,7 @@ public:
 template<typename P>
 AbstractReliableBroadcastNode<P>::AbstractReliableBroadcastNode(uint8_t nodeID, unsigned short port, const char* name, time_t max_packet_age)  :
     AbstractBroadcastNode<P>(nodeID, port, name),
-    _max_packet_age(max_packet_age) {}
+    _max_packet_age(max_packet_age), _mutex_last_seq_map(), _last_seq_map(), _thread_update_last_seq_map(), _mutex_next_seqnum()  {}
 
 
 template<typename P>
@@ -86,7 +86,7 @@ void AbstractReliableBroadcastNode<P>::_tr_update_last_seq_map() {
 template<typename P>
 bool AbstractReliableBroadcastNode<P>::_is_already_processed(const P& packet) const {
     std::lock_guard<std::mutex> lock(_mutex_last_seq_map);
-    const std::map<uint8_t, std::pair<uint32_t, unsigned int>>::const_iterator it = _last_seq_map.find(packet.nodeID);
+    const auto it = _last_seq_map.find(packet.nodeID);
     if (it != _last_seq_map.end()) {
         const uint32_t& seqnum = (it->second).first;
         const uint32_t& age = (it->second).second;

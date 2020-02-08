@@ -59,7 +59,7 @@ public:
 
 template<typename P>
 AbstractBroadcastNode<P>::AbstractBroadcastNode(uint8_t nodeID, unsigned short port, const char* name):
-    _port(port), _nodeID(nodeID), _name(name)
+    _port(port), sockfd(), _srvaddr(), _bc_sockaddr(), b_iface(), _thread_receiver(), _nodeID(nodeID), _name(name)
 {
     // setup reception sockaddr
     memset(&_srvaddr, 0, sizeof(_srvaddr));
