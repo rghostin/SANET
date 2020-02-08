@@ -56,7 +56,7 @@ int main(int argc, char** argv) {
             case 'i':
                 verbose_value = strtol (optarg, &checkLong, 10);
 
-                if (std::strcmp(checkLong, "\0") == 0 and (0 <= verbose_value) and (verbose_value <= 100)) {
+                if (std::strcmp(checkLong, "\0") == 0 and (0 <= verbose_value) and (verbose_value <= 254)) {
                     nodeID = static_cast<uint8_t>(verbose_value);
                 }
                 else {
