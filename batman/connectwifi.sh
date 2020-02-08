@@ -24,6 +24,11 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
+check_connectivity
+if [[ $? -eq 0 ]]; then
+	echo "Already connected"
+	exit 0
+fi
 
 # disconnect wifi
 "$KILLWIFI_SCRIPT"
