@@ -19,5 +19,7 @@ if [[ $# -ne 1 ]]; then
    exit 1
 fi
 
+cd "$ROOT"
+make rebuild
 "$BATMANIFY_SCRIPT" "$1"
 "$ROBIN_PROG" -i "$1"
