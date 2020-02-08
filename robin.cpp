@@ -24,11 +24,10 @@ void exit_handler(int s) {
 
 
 int main(int argc, char** argv) {
-    uint8_t nodeID; // = read_int_from_file(CFG_NODEID_FNAME);
+    uint8_t nodeID(255); // = read_int_from_file(CFG_NODEID_FNAME);
     int opt;
-//    char *checkLong;
-//    long int verbose_value;
-    bool nodeid_fixed(false);
+    char *checkLong;
+    long int verbose_value;
 
 #ifdef __aarch64__
     auto user_running(getuid());
@@ -54,50 +53,32 @@ int main(int argc, char** argv) {
         switch(opt)
         {
             case 'i':
-                nodeid_fixed = true;
-                nodeID = static_cast<uint8_t>(atoi(optarg));  // Mais pas de check >< strtol + pas de check négatif
+                verbose_value = strtol (optarg, &checkLong, 10);
 
-                if ((0 > nodeID) or (nodeID > 100)) {
-                    perror("[NodeID] - OPTARG not in range [0:100] !");
+                if (std::strcmp(checkLong, "\0") == 0 and (0 <= verbose_value) and (verbose_value <= 100)) {
+                    nodeID = static_cast<uint8_t>(verbose_value);
+                }
+                else {
+                    perror("[NodeID] - OPTARG not an integer or not in range [0:100] !");
                     throw;
                 }
-
-                // OU
-//                verbose_value = strtol (optarg, &checkLong, 10);
-//
-//                if (std::strcmp(checkLong, "\0") == 0 and (0 <= verbose_value) and (verbose_value <= 100)) {
-//                    nodeID = static_cast<uint8_t>(verbose_value);
-//                }
-//                else {
-//                    perror("[NodeID] - OPTARG not an integer or not in range [0:100] !");
-//                    throw;
-//                }
 
                 LOG_F(WARNING, "NodeID=%d", nodeID);
 
                 break;
             case 'v':
-                int verbose_value = static_cast<int>(atoi(optarg));
+                verbose_value = strtol (optarg, &checkLong, 10);
 
-                if ((-2 <= verbose_value) and (verbose_value <= 9)) {
-                    loguru::g_stderr_verbosity = verbose_value;
+                if (std::strcmp(checkLong, "\0") == 0 and (-2 <= verbose_value) and (verbose_value <= 9)) {
+                    loguru::g_stderr_verbosity = static_cast<int>(verbose_value);
                     LOG_F(WARNING, "Logging changed to the value -> {%d} through parameter -v", loguru::g_stderr_verbosity);
                 }
-
-                // OU
-
-//                verbose_value = strtol (optarg, &checkLong, 10);
-//
-//                if (std::strcmp(checkLong, "\0") == 0 and (-2 <= verbose_value) and (verbose_value <= 9)) {
-//                    loguru::g_stderr_verbosity = static_cast<int>(verbose_value);
-//                    LOG_F(WARNING, "Logging changed to the value -> {%d} through parameter -v", loguru::g_stderr_verbosity);
-//                }
 
                 break;
         }
     }
 
-    if (not nodeid_fixed) {
+    if (nodeID == 255) {
         perror("NodeID not fixed !");
         throw;
     }
