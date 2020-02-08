@@ -15,27 +15,10 @@ function changeKeyboard {
     echo " - Keyboard has been changed to $newValue"
 }
 
-function compileLPIGPIO {
-    cd "$DIRLPGPIO"
-    "make"
-    "make" "install"
-    echo "Pigpio INSTALLED"
 
-    echo "TESTING Pigpio"
-    "./x_pigpio"
+function usage() {}
 
-    echo "COMPILING Pigpio"
-    gcc -Wall -pthread  "${TESTGPIO}.c" -o "$TESTGPIO" -lpigpio -lrt
-
-    echo "DONE : Dependencies installed"
-    cd "$ROOT"
-}
-
-function compileRobin {
-  cd "$ROBIN_SRC_DIR"
-  make rebuild
-  cd "$ROOT"
-}
+cd "$ROOT"
 
 # force run as root
 if [[ $EUID -ne 0 ]]; then
@@ -49,11 +32,29 @@ if [[ $# != 2 ]]; then
   exit 1
 fi
 
-echo "changing hostname to $2"
-hostnamectl set-hostname "$2"
+# getting params
+while getopts ":h:i:" o; do
+    case "${o}" in
+        i)
+            i=${OPTARG}
+            (( i >= 0 && i <= 254 )) || usage
+            ;;
+        h)
+            h=${OPTARG}
+            ;;
+        *)
+            usage
+            ;;
+    esac
+done
+shift $((OPTIND-1))
+
+
+echo "changing hostname to $h"
+hostnamectl set-hostname "$h"
 
 echo '[*] Connecting to wifi'
-"$CONNECTWIFI"
+"$CONNECTWIFI_SCRIPT"
 
 echo '[*] Updating server'
 apt update
@@ -72,23 +73,12 @@ cp "$RSRC_DIR"/config_std.txt /boot/firmware/
 cp "$RSRC_DIR"/config_waveshare.txt /boot/firmware/
 
 echo '[*] Writing hostid configuration'
-echo -n "$1" > "$HOSTID_CONF"
-
-echo "[*] Compiling LPIGPIO"
-compileLPIGPIO
+echo -n "$i" > "$NODEID_CONF"
 
 echo "[*] Compiling robin"
-compileRobin
-
-echo '[*] Setting up batman'
-chmod +x "$BATMANIFY_SCRIPT"
-"$BATMANIFY_SCRIPT"  # --hostid-conf "$HOSTID_CONF"
+make rebuild
 
 echo '[*] Enabling batman and robin on reboot'
-echo "@reboot   root    $RUN" >> /etc/crontab
-#g(crontab -l 2>/dev/null; echo "@reboot $RUN") | crontab -
-
-echo '[*] Starting Robin'
-"$ROBIN"
+echo "@reboot   root    ${RUN_SCRIPT}" >> /etc/crontab
 
 echo '[*] Done'

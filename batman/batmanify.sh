@@ -53,6 +53,7 @@ echo "- Setting $W_IFACE up"
 ip link set dev "$W_IFACE" up
 echo "- Joining $MESH_W_ESSID wireless" 
 iw "$W_IFACE" ibss join "$MESH_W_ESSID" "$MESH_W_FREQ"
+iwconfig "$W_IFACE" power off   # power management off
 
 # batman configuration
 echo "[*] Setting up batman"
