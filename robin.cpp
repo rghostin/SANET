@@ -45,7 +45,7 @@ int main(int argc, char** argv) {
 
     // setup logs - TODO -v for verbosity
     loguru::g_stderr_verbosity = loguru::Verbosity_3;
-    loguru::add_file("robin.log", loguru::Append, loguru::Verbosity_7);
+    loguru::add_file("robin.log", loguru::Truncate, loguru::Verbosity_7);
     loguru::set_thread_name("robin_main");
 
 
