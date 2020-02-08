@@ -19,12 +19,18 @@ fi
 
 
 start_global=$(date +%s)
-for i in $(seq 1 24); do    
+for i in $(seq 1 12); do    
     start_iter=$(date +%s)
     
     "$CONNECTWIFI_SCRIPT"
     sleep 5
     "$BATMANIFY_SCRIPT" "$1"
+    
+    # monitored sleep 10
+    for j in $(seq 1 10); do
+        batctl neighbors
+        sleep 1
+    done
 
     end_iter=$(date +%s)
     runtime_iter=$((end_iter-start_iter))
