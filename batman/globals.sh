@@ -14,12 +14,13 @@ CONN_PASSWORD="^nNxNx6k"
 KBLAYOUT="be"
 
 # paths
+ROBIN_PROG="$ROOT/robin"
+
 BATMAN_PATH="$ROOT/batman"
-#ROBIN="$ROBIN_SRC_DIR/robin"
 TESTGPIO="$BATMAN_PATH/testgpio"
-BATMANIFY="$BATMAN_PATH/batmanify.sh"
+BATMANIFY_SCRIPT="$BATMAN_PATH/batmanify.sh"
 RSRC_DIR="$BATMAN_PATH/rsrc"
-CONNETCTWIFI="$BATMAN_PATH/connectwifi.sh"
+CONNETCTWIFI_SCRIPT="$BATMAN_PATH/connectwifi.sh"
 KILLWIFI_SCRIPT="$BATMAN_PATH/killwifi.sh"
 DIRLPGPIO="$ROBIN_SRC_DIR/lib/pigpio-master"
 RUN="$ROOT/run.sh"

@@ -81,8 +81,8 @@ echo "[*] Compiling robin"
 compileRobin
 
 echo '[*] Setting up batman'
-chmod +x "$BATMANIFY"
-"$BATMANIFY"  # --hostid-conf "$HOSTID_CONF"
+chmod +x "$BATMANIFY_SCRIPT"
+"$BATMANIFY_SCRIPT"  # --hostid-conf "$HOSTID_CONF"
 
 echo '[*] Enabling batman and robin on reboot'
 echo "@reboot   root    $RUN" >> /etc/crontab
