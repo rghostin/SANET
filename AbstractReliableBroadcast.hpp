@@ -6,8 +6,7 @@
 #include "loguru.hpp"
 #include "common.hpp"
 #include "AbstractBroadcastNode.hpp"
-
-#include "utils_log.hpp" //TODO rm
+#include "utils_log.hpp"
 
 
 

@@ -39,15 +39,6 @@ uint8_t input_uint8() {
 TrackPacket input_packet() {
     TrackPacket packet;
 
-    /*std::cout << "nodeID : ";
-    packet.nodeID = input_uint8();
-    std::cout << "led_status : ";
-    std::cin >> packet.led_status;
-    std::cout << "Timestamp : ";
-    std::cin >> packet.timestamp;
-    std::cout << "seqnum : ";
-    std::cin >> packet.seqnum;*/
-
     packet.nodeID = 200;
     packet.seqnum = 454;
     packet.timestamp = static_cast<uint32_t>(std::time(nullptr));
@@ -114,7 +105,7 @@ int main(int argc, char** argv) {
     // filling socket information for reception
     memset(&srvaddr, 0, sizeof(srvaddr));
     srvaddr.sin_family = AF_INET;
-    srvaddr.sin_addr.s_addr = htonl(INADDR_BROADCAST); // inet_addr("164.15.121.78");
+    srvaddr.sin_addr.s_addr = htonl(INADDR_BROADCAST);
     srvaddr.sin_port = htons(SRVPORT);
     // networking - end
 
