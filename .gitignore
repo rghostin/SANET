@@ -4,3 +4,4 @@ robin
 packetsender
 /cmake-build-debug/
 .vscode/
+/nodeid.cfg
