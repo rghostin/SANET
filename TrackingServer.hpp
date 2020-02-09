@@ -22,10 +22,10 @@
 class TrackingServer final : public AbstractReliableBroadcastNode<TrackPacket> {
 private:
     // self information and settings
-    unsigned short _heart_period;
+    const unsigned short _heart_period=TRACKING_HEARTBEAT_PERIOD;
 
     // delegations
-    Tracker& _tracker;
+    Tracker _tracker;
     std::thread _thread_heartbeat;
     void _tr_hearbeat();
 
@@ -34,7 +34,7 @@ private:
     Position _get_current_position() const;
 
 public:
-    TrackingServer(unsigned short port, uint8_t nodeID, Tracker &tracker, unsigned short heart_period=TRACKING_HEARTBEAT_PERIOD);
+    TrackingServer(unsigned short port, uint8_t nodeID);
     TrackingServer(const TrackingServer&) = delete;
     TrackingServer(TrackingServer&&) = delete;
     TrackingServer& operator=(const TrackingServer&) = delete;
