@@ -2,7 +2,7 @@
 #include "Tracker.hpp"
 
 TrackingServer::TrackingServer(unsigned short port, uint8_t nodeID, Tracker &tracker, unsigned short heart_period) : 
-    AbstractReliableBroadcastNode<TrackPacket>(nodeID, port, "TrackSrv", RELBC_PACKET_MAX_AGE),
+    AbstractReliableBroadcastNode<TrackPacket>(nodeID, port, "TrackSrv"),
     _heart_period(heart_period), _tracker(tracker), _thread_heartbeat()
     {
     }

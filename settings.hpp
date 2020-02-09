@@ -4,6 +4,10 @@
 // Global settings
 #define CFG_NODEID "nodeid.cfg"
 
+// Command&Control settings
+#define CC_SERVER_PORT  6280
+#define CC_GC_PERIOD    10
+
 // Batman specific settings
 #define BATMAN_IFACE "bat0"
 
