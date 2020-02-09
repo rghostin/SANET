@@ -8,10 +8,6 @@
 #include "TrackingServer.hpp"
 #include "Tracker.hpp"
 
-//#include "utils_log.hpp"
-
-// TODO: getopt, nodeID mandatory, -v optional default 0
-
 
 // Stopping mechanism 
 std::atomic<bool> process_stop(false);
@@ -44,8 +40,8 @@ int main(int argc, char** argv) {
     }
 
     // setup logs - TODO -v for verbosity
-    loguru::g_stderr_verbosity = loguru::Verbosity_3;
-    loguru::add_file("robin.log", loguru::Truncate, loguru::Verbosity_7);
+    loguru::g_stderr_verbosity = loguru::Verbosity_INFO;
+    loguru::add_file("robin.log", loguru::Truncate, loguru::Verbosity_3);
     loguru::set_thread_name("robin_main");
 
 

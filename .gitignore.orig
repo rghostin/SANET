@@ -1,0 +1,12 @@
+*.log
+*.o
+robin
+packetsender
+/cmake-build-debug/
+.vscode/
+<<<<<<< HEAD
+nodeid.cfg
+
+=======
+/nodeid.cfg
+>>>>>>> f28b2626f8e051b4d099ea4cebd3d25e13d012d7
