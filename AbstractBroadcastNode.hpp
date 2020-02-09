@@ -1,9 +1,10 @@
-#ifndef __ABSTRACTBROADCASTNODE_HPP_
+#ifndef _ABSTRACTBROADCASTNODE_HPP_
 #define _ABSTRACTBROADCASTNODE_HPP_
 
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
+#include <net/if.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include <cstring>
@@ -23,6 +24,8 @@ private:
     int sockfd;
     sockaddr_in _srvaddr;
     sockaddr_in _bc_sockaddr;
+    ifreq b_iface;
+    const char* b_iface_name=BATMAN_IFACE;
 
     // threads
     std::thread _thread_receiver;
@@ -56,7 +59,7 @@ public:
 
 template<typename P>
 AbstractBroadcastNode<P>::AbstractBroadcastNode(uint8_t nodeID, unsigned short port, const char* name):
-    _port(port), _nodeID(nodeID), _name(name)
+    _port(port), sockfd(), _srvaddr(), _bc_sockaddr(), b_iface(), _thread_receiver(), _nodeID(nodeID), _name(name)
 {
     // setup reception sockaddr
     memset(&_srvaddr, 0, sizeof(_srvaddr));
@@ -97,8 +100,18 @@ void AbstractBroadcastNode<P>::_setup_socket_bind() {
         throw;
     }
 
-    // TODO setting interface for bat0
-    // 
+    #ifdef __aarch64__
+        LOG_F(WARNING, "ARM architecture detected");
+        memset(&b_iface, 0, sizeof(b_iface));
+        snprintf(b_iface.ifr_name, sizeof(b_iface.ifr_name), b_iface_name);
+        if (setsockopt(sockfd, SOL_SOCKET, SO_BINDTODEVICE, (void*)&b_iface, sizeof(b_iface)) < 0) {
+            close(sockfd);
+            perror("setsockopt (SO_BINDTODEVICE)");
+            throw;
+        }
+    #else
+     LOG_F(WARNING, "Standard architecture detected");
+    #endif
 
     // binding to port
     if ( bind(sockfd, reinterpret_cast<const struct sockaddr*>(&_srvaddr), sizeof(_srvaddr)) < 0 ) {

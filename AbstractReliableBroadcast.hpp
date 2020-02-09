@@ -6,6 +6,8 @@
 #include "loguru.hpp"
 #include "common.hpp"
 #include "AbstractBroadcastNode.hpp"
+#include "utils_log.hpp"
+
 
 
 template<typename P>
@@ -24,7 +26,7 @@ private:
     uint32_t _next_seqnum=0;    
 
     bool _is_already_processed(const P&) const;
-    virtual bool _to_be_ignored(const P&) const override;
+    bool _to_be_ignored(const P&) const override;
 
 protected:
     virtual void _process_packet(const P&) override;
@@ -44,7 +46,7 @@ public:
 template<typename P>
 AbstractReliableBroadcastNode<P>::AbstractReliableBroadcastNode(uint8_t nodeID, unsigned short port, const char* name, time_t max_packet_age)  :
     AbstractBroadcastNode<P>(nodeID, port, name),
-    _max_packet_age(max_packet_age) {}
+    _max_packet_age(max_packet_age), _mutex_last_seq_map(), _last_seq_map(), _thread_update_last_seq_map(), _mutex_next_seqnum()  {}
 
 
 template<typename P>
@@ -62,11 +64,12 @@ void AbstractReliableBroadcastNode<P>::_tr_update_last_seq_map() {
     while (! process_stop) {
         {
             std::lock_guard<std::mutex> lock(_mutex_last_seq_map);
+            LOG_F(7, "last seq map:\n%s", print_log_map(_last_seq_map).c_str());
             for (auto it=_last_seq_map.begin(); it != _last_seq_map.end(); /*no increment*/ ) {
                 unsigned int& age = (it->second).second;
                 if (age <= 0) {
+                    LOG_F(3, "Erased from _last_seq_map nodeID=%d, size=%lu", it->first, _last_seq_map.size()-1);
                     _last_seq_map.erase(it++);
-                    LOG_F(3, "Erased from _last_seq_map nodeID=%d, size=%lu", it->first, _last_seq_map.size());
                 } else {
                     age--;
                     ++it;
@@ -82,7 +85,7 @@ void AbstractReliableBroadcastNode<P>::_tr_update_last_seq_map() {
 template<typename P>
 bool AbstractReliableBroadcastNode<P>::_is_already_processed(const P& packet) const {
     std::lock_guard<std::mutex> lock(_mutex_last_seq_map);
-    const std::map<uint8_t, std::pair<uint32_t, unsigned int>>::const_iterator it = _last_seq_map.find(packet.nodeID);
+    const auto it = _last_seq_map.find(packet.nodeID);
     if (it != _last_seq_map.end()) {
         const uint32_t& seqnum = (it->second).first;
         const uint32_t& age = (it->second).second;
@@ -106,7 +109,6 @@ void AbstractReliableBroadcastNode<P>::_process_packet(const P& packet) {
         std::lock_guard<std::mutex> lock(_mutex_last_seq_map);
         _last_seq_map[packet.nodeID] = std::pair<uint32_t, unsigned int>(packet.seqnum, _max_packet_age);
         LOG_F(3, "Inserted in _last_seq_map for nodeID=%d, size: %lu", packet.nodeID, _last_seq_map.size());
-
     }
     // in addition to the standard server, echo a broadcast of the packet for reliable broadcast
     LOG_F(3, "Echoing packet: %s", packet.repr().c_str());

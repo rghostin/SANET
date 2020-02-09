@@ -39,18 +39,9 @@ uint8_t input_uint8() {
 TrackPacket input_packet() {
     TrackPacket packet;
 
-    /*std::cout << "nodeID : ";
-    packet.nodeID = input_uint8();
-    std::cout << "led_status : ";
-    std::cin >> packet.led_status;
-    std::cout << "Timestamp : ";
-    std::cin >> packet.timestamp;
-    std::cout << "seqnum : ";
-    std::cin >> packet.seqnum;*/
-
     packet.nodeID = 200;
     packet.seqnum = 454;
-    packet.timestamp = std::time(nullptr);
+    packet.timestamp = static_cast<uint32_t>(std::time(nullptr));
     packet.position = Position(0,0);
     packet.led_status = false;
 
@@ -64,6 +55,7 @@ TrackPacket input_packet() {
     if (std::cin.peek() != '\n') {
         std::cin >> packet.seqnum;
     }
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
     std::cout << "Position : ";
     if (std::cin.peek() != '\n') {
@@ -72,12 +64,12 @@ TrackPacket input_packet() {
         std::cout << "Latitude:";
         std::cin >> packet.position.latitude;
     }
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
     std::cout << "led_status : ";
     if (std::cin.peek() != '\n') {
         std::cin >> packet.led_status;
     }
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
     return packet;
 }
@@ -107,13 +99,23 @@ int main(int argc, char** argv) {
         throw;
     }
 
-    // TODO setting interface for bat0
-    //
+    #ifdef __aarch64__
+        std::cout << "ARM architecture detected" << std::endl;
+        memset(&b_iface, 0, sizeof(b_iface));
+        snprintf(b_iface.ifr_name, sizeof(b_iface.ifr_name), b_iface_name);
+        if (setsockopt(sockfd, SOL_SOCKET, SO_BINDTODEVICE, (void*)&b_iface, sizeof(b_iface)) < 0) {
+            close(sockfd);
+            perror("setsockopt (SO_BINDTODEVICE)");
+            throw;
+        }
+    #else
+     std::cout << "Standard architecture detected" << std::endl;
+    #endif
 
     // filling socket information for reception
     memset(&srvaddr, 0, sizeof(srvaddr));
     srvaddr.sin_family = AF_INET;
-    srvaddr.sin_addr.s_addr = INADDR_ANY;
+    srvaddr.sin_addr.s_addr = htonl(INADDR_BROADCAST);
     srvaddr.sin_port = htons(SRVPORT);
     // networking - end
 
