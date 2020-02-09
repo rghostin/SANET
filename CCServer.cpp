@@ -16,16 +16,15 @@ bool add_socket(int* array, const size_t max_size, int newsockfd) {
 }
 
  
-CCServer::CCServer(unsigned short port, uint8_t nodeID) : _port(port), _nodeID(nodeID) {
+CCServer::CCServer(unsigned short port, uint8_t nodeID) : 
+_port(port), _nodeID(nodeID),
+sockfd(), _srvaddr(), b_iface(), _thread_receiver()
+{
     // setup reception sockaddr
     memset(&_srvaddr, 0, sizeof(_srvaddr));
     _srvaddr.sin_family = AF_INET;
     _srvaddr.sin_addr.s_addr = INADDR_ANY;
     _srvaddr.sin_port = htons(_port);
-
-    for (unsigned i=0; i<CC_MAX_CONNECTIONS; ++i) {
-        _online_sockets[i] = 0;
-    }
 }  
 
 CCServer::~CCServer() {
@@ -33,16 +32,15 @@ CCServer::~CCServer() {
         _thread_receiver.join();
     }
 
-    if (close(mastersockfd) < 0) {
+    if (close(sockfd) < 0) {
         perror("Cannot close socket");
-        throw;
     }
 }
 
 
 void CCServer::_setup_socket() {
     // create socket
-    if ( (mastersockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+    if ( (sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         perror("Cannot create socket");
         throw;
     } 
@@ -61,20 +59,20 @@ void CCServer::_setup_socket() {
     #endif
 
     int opt=1;
-    if (setsockopt(mastersockfd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt))) { 
+    if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt))) { 
         perror("setsockopt (SO_REUSEADDR"); 
         throw; 
     } 
 
     // binding to port
-    if ( bind(mastersockfd, reinterpret_cast<const struct sockaddr*>(&_srvaddr), sizeof(_srvaddr)) < 0 ) {
-        close(mastersockfd);
+    if ( bind(sockfd, reinterpret_cast<const struct sockaddr*>(&_srvaddr), sizeof(_srvaddr)) < 0 ) {
+        close(sockfd);
         perror("Cannot bind");
         throw;
     }
     LOG_F(INFO, "Socket bound to port %d", _port);
 
-    if (listen(mastersockfd, 3) < 0) { 
+    if (listen(sockfd, 3) < 0) { 
         perror("Cannot listen to port"); 
         throw; 
     } 
@@ -86,7 +84,8 @@ void CCServer::_setup_socket() {
 void CCServer::_tr_receiver() {
     fd_set readfds;
     timeval rcv_timeout = {1,0}; 
-    int max_sd, nrecv;
+    int max_sd;
+    long int nrecv;
 
     loguru::set_thread_name("CC:receiver");
 
@@ -97,8 +96,8 @@ void CCServer::_tr_receiver() {
 
         // initialize fdset
         FD_ZERO(&readfds);
-        FD_SET(mastersockfd, &readfds);
-        max_sd = mastersockfd;
+        FD_SET(sockfd, &readfds);
+        max_sd = sockfd;
         for (int i=0;i < CC_MAX_CONNECTIONS; ++i) {
             int sd = _online_sockets[i];
             if (sd > 0){
@@ -116,9 +115,9 @@ void CCServer::_tr_receiver() {
         }
 
         // process activity
-        if ( FD_ISSET(mastersockfd, &readfds)) {
+        if ( FD_ISSET(sockfd, &readfds)) {
             // new connection
-            if ( (connsockfd = accept(mastersockfd, reinterpret_cast<sockaddr*>(&cliaddr), &len_cliaddr)) < 0 ) {
+            if ( (connsockfd = accept(sockfd, reinterpret_cast<sockaddr*>(&cliaddr), &len_cliaddr)) < 0 ) {
                 perror("Cannot accept connection");
                 throw;
             }
@@ -137,11 +136,12 @@ void CCServer::_tr_receiver() {
                 }
 
                 if (FD_ISSET(sd, &readfds)) {
-                    char buffer[1024];
+                    uint8_t command;
+                    nrecv = recv(sd, &command, sizeof(command),0);      // todo ntoh, hton, ...
+                    getpeername(sd , reinterpret_cast<sockaddr*>(&cliaddr) , &len_cliaddr); 
 
-                    if ( (nrecv=recv(sd, &buffer, sizeof(buffer),0)) == 0 ) {
+                    if ( nrecv == 0 ) {
                         // client hang up
-                        getpeername(sd , (struct sockaddr*)&cliaddr , &len_cliaddr); 
                         LOG_F(WARNING, "Host disconnected , (%s:%d) \n" ,  inet_ntoa(cliaddr.sin_addr) , ntohs(cliaddr.sin_port));
                         _online_sockets[i] = 0; // reset to 0 in _online_sockets
                         if (close(sd) < 0){
@@ -151,8 +151,7 @@ void CCServer::_tr_receiver() {
                         
                     } else {
                         // data received
-                        buffer[nrecv] = 0x00;
-                        LOG_F(INFO, "received %s", buffer);
+                        LOG_F(INFO, "received from (%s:%d) command=%d", inet_ntoa(cliaddr.sin_addr) , ntohs(cliaddr.sin_port), command);
                     }
                 }
 

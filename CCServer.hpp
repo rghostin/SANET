@@ -18,14 +18,15 @@
 
 class CCServer final {
 private:
-    const uint8_t _nodeID;
     const unsigned short _port;
+    const uint8_t _nodeID;
 
-    int mastersockfd;
+
+    int sockfd;
     sockaddr_in _srvaddr;
     ifreq b_iface;
     const char* b_iface_name=BATMAN_IFACE;
-    int _online_sockets[CC_MAX_CONNECTIONS];
+    int _online_sockets[CC_MAX_CONNECTIONS] = {0};
 
     std::thread _thread_receiver;
 

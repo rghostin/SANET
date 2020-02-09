@@ -83,7 +83,6 @@ AbstractBroadcastNode<P>::~AbstractBroadcastNode() {
     
     if (close(sockfd) < 0) {
         perror("Cannot close socket");
-        throw;
     }
 }
 
