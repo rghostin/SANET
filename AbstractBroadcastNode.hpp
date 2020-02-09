@@ -100,7 +100,6 @@ void AbstractBroadcastNode<P>::_setup_socket_bind() {
         throw;
     }
 
-    // TODO setting interface for bat0
     #ifdef __aarch64__
         LOG_F(WARNING, "ARM architecture detected");
         memset(&b_iface, 0, sizeof(b_iface));
