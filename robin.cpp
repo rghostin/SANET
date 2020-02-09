@@ -88,7 +88,7 @@ int main(int argc, char** argv) {
     // trackingserver.start();
 
     // Command&Control server
-    CCServer ccserver(CC_SERVER_PORT);
+    CCServer ccserver(CC_SERVER_PORT, nodeID);
     ccserver.start();
 
 

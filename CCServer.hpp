@@ -5,8 +5,11 @@
 #include <sys/socket.h> 
 #include <stdlib.h> 
 #include <netinet/in.h> 
+#include <sys/types.h>  
+#include <arpa/inet.h> 
 #include <net/if.h>
 #include <cstring> 
+#include <string>
 #include <map>
 #include "loguru.hpp"
 #include "common.hpp"
@@ -15,28 +18,22 @@
 
 class CCServer final {
 private:
+    const uint8_t _nodeID;
     const unsigned short _port;
-    const unsigned int _gc_period=CC_GC_PERIOD;
 
-    int sockfd;
+    int mastersockfd;
     sockaddr_in _srvaddr;
     ifreq b_iface;
     const char* b_iface_name=BATMAN_IFACE;
+    int _online_sockets[CC_MAX_CONNECTIONS];
 
-    std::mutex _mutex_cli_receiver_threads_map;
-    std::map<int, std::thread> _cli_receiver_threads_map;
-
-    std::thread _thread_welcome_receiver;
-    std::thread _thread_cli_receiver_gcollector;
+    std::thread _thread_receiver;
 
     void _setup_socket();
-
-    void _tr_welcome_receiver();
-    void _tr_cli_receiver(int connsockfd);
-    void _tr_cli_receiver_gcollector();
+    void _tr_receiver();
 
 public:
-    CCServer(unsigned short port);
+    CCServer(unsigned short port, uint8_t nodeID);
     CCServer(const CCServer&) = delete;
     CCServer(CCServer&&) = delete;
     CCServer& operator=(const CCServer&) = delete;
