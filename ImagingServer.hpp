@@ -12,6 +12,7 @@
 #include <thread>
 #include <mutex>
 #include <map>
+#include <queue>
 #include "loguru.hpp"
 #include "settings.hpp"
 #include "AbstractReliableBroadcast.hpp"
@@ -20,18 +21,18 @@
 #include "Image.hpp"
 
 
-template<unsigned int N>
 class ImagingServer : public AbstractReliableBroadcastNode<ImageChunkPacket> {
 private:
     // self information and settings
     std::queue<ImageChunkPacket> _chunkpacketqueue;
     unsigned short _image_reception_timeout;
-    std::map<uint8_t, Image<char[N]>> _image_map;
-    std::map<uint8_t, Image<char[N]>> _construction_image_map;
+    std::map<uint8_t, Image> _image_map;
+    std::map<uint8_t, Image> _construction_image_map;
 
     // delegations
     std::thread _thread_check_img_in_construct;
     std::mutex _mutex_check_img_in_construct;
+    std::mutex _mutex_img_map;
 
     ImageChunkPacket _produce_packet() override;
     void _process_packet(const ImageChunkPacket&) override;

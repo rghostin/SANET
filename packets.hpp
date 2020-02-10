@@ -35,16 +35,11 @@ struct ImageChunkPacket  {  // Image identified by <nodeID, timestamp>
     uint32_t timestamp;
     unsigned int offset;
     unsigned int sizeImage;
-    char chunk_content[CHUNK_SIZE];
+    std::array<char,CHUNK_SIZE> chunk_content;
     
 
-    ImageChunkPacket(uint8_t nodeID, uint32_t seqnum, const char chunk_content_p[CHUNK_SIZE], unsigned int offset, uint32_t timestamp, unsigned int sizeImage) :
-        nodeID(nodeID), seqnum(seqnum), timestamp(timestamp), offset(offset), sizeImage(sizeImage), chunk_content() {
-        for (int i = 0; i < CHUNK_SIZE; ++i) {
-            chunk_content[i] = chunk_content_p[i];
-
-        }
-    }
+    ImageChunkPacket(uint8_t nodeID, uint32_t seqnum, const std::array<char,CHUNK_SIZE> chunk_content_p, unsigned int offset, uint32_t timestamp, unsigned int sizeImage) :
+        nodeID(nodeID), seqnum(seqnum), timestamp(timestamp), offset(offset), sizeImage(sizeImage), chunk_content(chunk_content_p) {}
     ImageChunkPacket() :
         nodeID(0), seqnum(0), timestamp(0), offset(0), sizeImage(0), chunk_content() {}
 
