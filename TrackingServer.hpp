@@ -30,7 +30,7 @@ private:
     void _tr_hearbeat();
 
     TrackPacket _produce_packet() override;
-    virtual void _process_packet(const TrackPacket&) override;  
+    void _process_packet(const TrackPacket&) override;
     Position _get_current_position() const;
 
 public:
@@ -39,10 +39,10 @@ public:
     TrackingServer(TrackingServer&&) = delete;
     TrackingServer& operator=(const TrackingServer&) = delete;
     TrackingServer& operator=(const TrackingServer&&) = delete;
-    virtual ~TrackingServer();
+    ~TrackingServer() override;
 
-    virtual void start() override;
-    virtual void join() override;
+    void start() override;
+    void join() override;
 };
 
 #endif

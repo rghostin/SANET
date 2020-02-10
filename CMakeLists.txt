@@ -10,7 +10,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}" )
 # Pour lancer les différents programmes
 add_executable(robin robin.cpp)
 add_executable(packetsender packetsender.cpp)
-add_library(MyLib AbstractBroadcastNode.hpp AbstractReliableBroadcast.hpp common.hpp loguru.hpp loguru.cpp packets.hpp Position.hpp Tracker.hpp Tracker.cpp TrackingServer.hpp TrackingServer.cpp utils.hpp robin.cpp)
+add_library(MyLib AbstractBroadcastNode.hpp AbstractReliableBroadcast.hpp common.hpp loguru.hpp loguru.cpp packets.hpp Position.hpp Tracker.hpp Tracker.cpp TrackingServer.hpp TrackingServer.cpp utils.hpp robin.cpp ImagingServer.cpp ImagingServer.hpp Image.cpp Image.hpp)
 
 target_link_libraries(robin MyLib)
 target_link_libraries(packetsender MyLib)
