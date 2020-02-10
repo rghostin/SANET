@@ -1,11 +1,30 @@
 #include "ImageBuilder.hpp"
 
+ImageBuilder::ImageBuilder() :_nodeID(0), _timestamp(0), _position(), _sizeImage(0),
+        _mutex_is_complete(), _image(), _img_building_vec(), _fillstate_vec() {}
+
+
 ImageBuilder::ImageBuilder(ImageChunkPacket packet) :
         _nodeID(packet.nodeID), _timestamp(packet.timestamp), _position(packet.position), _sizeImage(packet.sizeImage),
         _mutex_is_complete(), _image(), _img_building_vec(packet.sizeImage/IMG_CHUNK_SIZE),
-        _fillstate_array(packet.sizeImage/IMG_CHUNK_SIZE) {
+        _fillstate_vec(packet.sizeImage/IMG_CHUNK_SIZE) {
     this->add_chunk(packet);
 }
+
+ImageBuilder::ImageBuilder(ImageBuilder&& other) : _nodeID(0), _timestamp(0), _position(), _sizeImage(0),
+        _mutex_is_complete(), _image(), _img_building_vec(), _fillstate_vec() 
+        {
+            _nodeID = other._nodeID;
+            _timestamp = other._timestamp;
+            _position = other._position;
+            _sizeImage = other._sizeImage;
+            _is_complete = other._is_complete;
+            // _mutex already initialized
+            _image = std::move(other._image);
+            _img_building_vec = std::move(other._img_building_vec);
+            _fillstate_vec = std::move(other._fillstate_vec);
+
+        }
 
 
 //ImageBuilder &ImageBuilder::operator=(const ImageBuilder &&imageBuilderCopy) {
@@ -35,12 +54,12 @@ void ImageBuilder::add_chunk(ImageChunkPacket packet) {
 
     uint32_t index(packet.offset/IMG_CHUNK_SIZE);
 
-    if (not _fillstate_array[index]) {
+    if (not _fillstate_vec[index]) {
         _img_building_vec[index] = packet.chunk_content;
-        _fillstate_array[index] = true;
+        _fillstate_vec[index] = true;
         LOG_F(3, "Added chunk to img_building_vec : %s", packet.repr().c_str());
 
-        if ( std::all_of(_fillstate_array.begin(), _fillstate_array.end(), [](bool b){return b;}) ){
+        if ( std::all_of(_fillstate_vec.begin(), _fillstate_vec.end(), [](bool b){return b;}) ){
             std::lock_guard<std::mutex> lock(_mutex_is_complete);
             _is_complete = true;
 

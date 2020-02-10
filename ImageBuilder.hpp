@@ -23,12 +23,13 @@ private :
     mutable std::mutex _mutex_is_complete;
     Image _image;
     std::vector<std::array<char, IMG_CHUNK_SIZE>> _img_building_vec;
-    std::vector<bool> _fillstate_array;
+    std::vector<bool> _fillstate_vec;
 
 public :
+    ImageBuilder();
     explicit ImageBuilder(ImageChunkPacket);
     ImageBuilder(const ImageBuilder&)=delete;
-    ImageBuilder(ImageBuilder&&)=delete;
+    ImageBuilder(ImageBuilder&&);
     ImageBuilder& operator=(const ImageBuilder&)=delete;
     ImageBuilder& operator=(const ImageBuilder&&)=delete;
     ~ImageBuilder()=default;

@@ -58,7 +58,7 @@ void ImagingServer::_process_packet(const ImageChunkPacket& packet) {
     std::lock_guard<std::mutex> lock_building(_mutex_check_img_in_construct);
 
     if (_building_image_map.find(packet.nodeID) == _building_image_map.end()) {  // New Image
-        _building_image_map[packet.nodeID] = ImageBuilder(packet);
+        _building_image_map.emplace(packet.nodeID, ImageBuilder(packet));
     }
     else {
         _building_image_map[packet.nodeID].add_chunk(packet);
