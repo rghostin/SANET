@@ -17,6 +17,7 @@
 #define IMAGING_SERVER_PORT 5821
 #define IMG_CHUNK_SIZE 250
 #define IMAGE_RECEPTION_TIMEOUT 60
+#define IMAGE_RECEPTION_CHECK 30
 
 // Reliable Broadcast settings
 #define RELBC_PACKET_MAX_AGE 2 * TRACKING_HEARTBEAT_PERIOD // heartbeat < max_packet_age < lost_peer_timeout

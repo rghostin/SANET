@@ -13,6 +13,7 @@
 #include <mutex>
 #include <map>
 #include <queue>
+#include <iostream>
 #include "loguru.hpp"
 #include "settings.hpp"
 #include "AbstractReliableBroadcast.hpp"
@@ -26,6 +27,7 @@ class ImagingServer : public AbstractReliableBroadcastNode<ImageChunkPacket> {
 private:
     // self information and settings
     uint32_t _image_reception_timeout=IMAGE_RECEPTION_TIMEOUT;
+    uint32_t _image_reception_check=IMAGE_RECEPTION_TIMEOUT;
 
     std::mutex _mutex_img_map;
     std::map<uint8_t, Image> _image_map;

@@ -8,6 +8,25 @@ ImageBuilder::ImageBuilder(ImageChunkPacket packet) :
 }
 
 
+//ImageBuilder &ImageBuilder::operator=(const ImageBuilder &&imageBuilderCopy) {
+//    if (this != &imageBuilderCopy) {
+//        _nodeID = imageBuilderCopy._nodeID;
+//        _timestamp = imageBuilderCopy._timestamp;
+//        _position = imageBuilderCopy._position;
+//        _sizeImage = imageBuilderCopy._sizeImage;
+//        {
+//            std::lock_guard<std::mutex> lock(imageBuilderCopy._mutex_is_complete);
+//            _is_complete = imageBuilderCopy._is_complete;
+//        }
+//        _mutex_is_complete;
+//        _image = imageBuilderCopy._image;
+//        _img_building_vec = imageBuilderCopy._img_building_vec;
+//        _fillstate_array = imageBuilderCopy._fillstate_array;
+//    }
+//    return *this;
+//}
+
+
 void ImageBuilder::add_chunk(ImageChunkPacket packet) {
     {
         std::lock_guard<std::mutex> lock(_mutex_is_complete);
@@ -48,6 +67,7 @@ bool ImageBuilder::is_complete() const {
     return _is_complete;
 }
 
+
 Image ImageBuilder::get_image() const {
     std::lock_guard<std::mutex> lock(_mutex_is_complete);
     if (! _is_complete) {
@@ -55,3 +75,9 @@ Image ImageBuilder::get_image() const {
     }
     return _image;
 }
+
+
+uint32_t ImageBuilder::get_timestamp() const {
+    return _timestamp;
+}
+

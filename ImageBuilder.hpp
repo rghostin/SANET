@@ -27,15 +27,16 @@ private :
 
 public :
     explicit ImageBuilder(ImageChunkPacket);
-    ImageBuilder(const ImageBuilder&) = delete;
-    ImageBuilder(ImageBuilder&&) = delete;
-    ImageBuilder& operator=(const ImageBuilder&) = delete;
-    ImageBuilder& operator=(const ImageBuilder&&) = delete;
+    ImageBuilder(const ImageBuilder&)=delete;
+    ImageBuilder(ImageBuilder&&)=delete;
+    ImageBuilder& operator=(const ImageBuilder&)=delete;
+    ImageBuilder& operator=(const ImageBuilder&&)=delete;
     ~ImageBuilder()=default;
 
     void add_chunk(ImageChunkPacket);
     bool is_complete() const;
     Image get_image() const;
+    uint32_t get_timestamp() const;
 };
 
 #endif
