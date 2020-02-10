@@ -2,6 +2,7 @@
 #define __PACKETS_HPP__
 
 #include <string>
+#include <array>
 #include "Position.hpp"
 #include "settings.hpp"
 
@@ -40,9 +41,9 @@ struct ImageChunkPacket  {  // Image identified by <nodeID, timestamp>
     
 
     ImageChunkPacket(uint8_t nodeID, uint32_t seqnum, uint32_t timestamp, uint32_t offset,  uint32_t sizeImage, std::array<char,IMG_CHUNK_SIZE> chunk_content) :
-        nodeID(nodeID), seqnum(seqnum), timestamp(timestamp), offset(offset), sizeImage(sizeImage), chunk_content(chunk_content) {}
+        nodeID(nodeID), seqnum(seqnum), timestamp(timestamp), position(), offset(offset), sizeImage(sizeImage), chunk_content(chunk_content) {}
     ImageChunkPacket() :
-        nodeID(0), seqnum(0), timestamp(0), offset(0), sizeImage(0), chunk_content() {}
+        nodeID(0), seqnum(0), timestamp(0), position(), offset(0), sizeImage(0), chunk_content() {}
 
     std::string repr() const {
         const size_t len=256;

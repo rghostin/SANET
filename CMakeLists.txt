@@ -10,10 +10,9 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}" )
 # Pour lancer les différents programmes
 add_executable(robin robin.cpp)
 add_executable(packetsender packetsender.cpp)
-add_library(MyLib AbstractBroadcastNode.hpp AbstractReliableBroadcast.hpp common.hpp loguru.hpp loguru.cpp packets.hpp Position.hpp Tracker.hpp Tracker.cpp TrackingServer.hpp TrackingServer.cpp utils.hpp robin.cpp ImagingServer.cpp ImagingServer.hpp ImageBuilder.hpp Image.hpp)
+add_executable(imagesender imagesender.cpp)
+add_library(MyLib AbstractBroadcastNode.hpp AbstractReliableBroadcast.hpp common.hpp loguru.hpp loguru.cpp packets.hpp Position.hpp Tracker.hpp Tracker.cpp TrackingServer.hpp TrackingServer.cpp utils.hpp robin.cpp ImagingServer.cpp ImagingServer.hpp ImageBuilder.hpp Image.hpp ImageBuilder.cpp)
 
 target_link_libraries(robin MyLib)
 target_link_libraries(packetsender MyLib)
-
-
-# ATTENTION : Pour faire tourner robin, il faut placer le nodeid.cfg dans cmake-build-debug !
+target_link_libraries(imagesender MyLib)

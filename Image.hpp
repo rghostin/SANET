@@ -14,7 +14,7 @@ struct Image {
     std::vector<char> content;
 
     Image(uint8_t nodeID, uint32_t timestamp, Position pos, std::vector<char> content) :
-            nodeID(nodeID), timestamp(timestamp), position(pos), content(content) {}
+            nodeID(nodeID), timestamp(timestamp), position(pos), content(std::move(content)) {}
     Image() :
             nodeID(0), timestamp(0), position(0,0), content() {}
 };
