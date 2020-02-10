@@ -17,6 +17,7 @@
 #include "settings.hpp"
 #include "AbstractReliableBroadcast.hpp"
 #include "common.hpp"
+#include "settings.hpp"
 #include "packets.hpp"
 #include "ImageBuilder.hpp"
 
@@ -24,22 +25,22 @@
 class ImagingServer : public AbstractReliableBroadcastNode<ImageChunkPacket> {
 private:
     // self information and settings
-    std::queue<ImageChunkPacket> _chunkpacketqueue;
-    unsigned short _image_reception_timeout;
-    std::map<uint8_t, Image*> _image_map;
-    std::map<uint8_t, Image*> _construction_image_map;
+    uint32_t _image_reception_timeout=IMAGE_RECEPTION_TIMEOUT;
 
-    // delegations
-    std::thread _thread_check_img_in_construct;
-    std::mutex _mutex_check_img_in_construct;
     std::mutex _mutex_img_map;
+    std::map<uint8_t, Image> _image_map;
+    std::mutex _mutex_check_img_in_construct;
+    std::map<uint8_t, ImageBuilder> _building_image_map;
+
+    // threads
+    std::thread _thread_check_completed_imgs;
+    void _tr_check_completed_imgs();
 
     ImageChunkPacket _produce_packet() override;
     void _process_packet(const ImageChunkPacket&) override;
-    void _tr_check_img_in_construct_map();
 
 public:
-    ImagingServer(unsigned short port, uint8_t nodeID, unsigned short image_reception_timeout);
+    ImagingServer(unsigned short port, uint8_t nodeID);
     ImagingServer(const ImagingServer&) = delete;
     ImagingServer(ImagingServer&&) = delete;
     ImagingServer& operator=(const ImagingServer&) = delete;

@@ -15,7 +15,7 @@
 
 // Imaging settings
 #define IMAGING_SERVER_PORT 5821
-#define CHUNK_SIZE 250
+#define IMG_CHUNK_SIZE 250
 #define IMAGE_RECEPTION_TIMEOUT 60
 
 // Reliable Broadcast settings
