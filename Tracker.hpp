@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include "loguru.hpp"
 #include "common.hpp"
+#include "settings.hpp"
 #include "packets.hpp"
 #include "Position.hpp"
 #include "utils_log.hpp"
@@ -17,8 +18,8 @@ private :
     std::queue<TrackPacket> _packetqueue;
     std::map<uint8_t, std::pair<Position, uint32_t>> _status_node_map;
     bool _ALERT_PEER_LOST=false;
-    unsigned short _peer_lost_timeout;
-    unsigned short _period_mapcheck;
+    const unsigned short _peer_lost_timeout = TRACKING_PEER_LOSS_TIMEOUT;
+    const unsigned short _period_mapcheck = TRACKING_PERIOD_CHECK_NODEMAP;
 
     // threads && mutex
     std::thread _thread_check_node_map;
@@ -32,7 +33,7 @@ private :
     void _tr_check_node_map();
 
 public :
-    Tracker(unsigned short, unsigned short);
+    Tracker();
     Tracker(const Tracker&) = delete;
     Tracker(Tracker&&) = delete;
     Tracker& operator=(const Tracker&) = delete;

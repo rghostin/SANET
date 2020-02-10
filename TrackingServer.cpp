@@ -1,13 +1,12 @@
 #include "TrackingServer.hpp"
 #include "Tracker.hpp"
 
-TrackingServer::TrackingServer(unsigned short port, uint8_t nodeID, Tracker &tracker, unsigned short heart_period) : 
-    AbstractReliableBroadcastNode<TrackPacket>(nodeID, port, "TrackSrv", RELBC_PACKET_MAX_AGE),
-    _heart_period(heart_period), _tracker(tracker), _thread_heartbeat()
+TrackingServer::TrackingServer(unsigned short port, uint8_t nodeID) : 
+    AbstractReliableBroadcastNode<TrackPacket>(nodeID, port, "TrackSrv"), _tracker(), _thread_heartbeat()
     {
     }
 
-
+ 
 TrackingServer::~TrackingServer() {
     if (_thread_heartbeat.joinable()) {
         _thread_heartbeat.join();

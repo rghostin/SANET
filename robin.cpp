@@ -6,7 +6,7 @@
 #include "settings.hpp"
 #include "common.hpp"
 #include "TrackingServer.hpp"
-#include "Tracker.hpp"
+#include "CCServer.hpp"
 
 
 // Stopping mechanism 
@@ -26,13 +26,14 @@ int main(int argc, char** argv) {
     char *checkLong;
     long int verbose_value;
 
-#ifdef __aarch64__
-    auto user_running(getuid());
-    if (user_running != 0) {
-        perror("Robin must be run as root");
-        throw;
-    }
-#endif
+    // force running as root on ARM
+    #ifdef __aarch64__
+        auto user_running = getuid();
+        if (user_running != 0) {
+            perror("Robin must be run as root");
+            throw;
+        }
+    #endif
 
     if (argc < 3) {
         perror("Not enough arguments");
@@ -74,25 +75,26 @@ int main(int argc, char** argv) {
                 break;
         }
     }
-
     if (nodeID == 255) {
         perror("NodeID not fixed !");
         throw;
     }
 
-
-    Tracker tracker(TRACKING_PEER_LOSS_TIMEOUT, TRACKING_PERIOD_CHECK_NODEMAP);
-    TrackingServer trackingserver(TRACKING_SERVER_PORT, nodeID, tracker, TRACKING_HEARTBEAT_PERIOD);
-
     // setup signals
     signal(SIGINT, exit_handler);
 
+    // Tracking server
+    // TrackingServer trackingserver(TRACKING_SERVER_PORT, nodeID, tracker, TRACKING_HEARTBEAT_PERIOD);
+    // trackingserver.start();
 
-    // start server on current thread
-    trackingserver.start();
+    // Command&Control server
+    CCServer ccserver(CC_SERVER_PORT, nodeID);
+    ccserver.start();
+
 
     // join all services
-    trackingserver.join();
+    ccserver.join();
+    // trackingserver.join();
 
     LOG_F(WARNING, "Robin exiting");
     return 0;

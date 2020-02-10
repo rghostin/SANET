@@ -80,7 +80,10 @@ AbstractBroadcastNode<P>::~AbstractBroadcastNode() {
     if (_thread_receiver.joinable()) {
         _thread_receiver.join();
     }
-    close(sockfd);
+    
+    if (close(sockfd) < 0) {
+        perror("Cannot close socket");
+    }
 }
 
 
@@ -136,19 +139,19 @@ void AbstractBroadcastNode<P>::_tr_receiver() {
     FD_SET(sockfd, &masterfds);
 
     while (! process_stop) {
-        sockaddr cli_addr;
+        sockaddr cliaddr;
         socklen_t len_cli_addr;
-        timeval rcv_to = {1,0};
+        timeval rcv_timeout = {1,0};     // TODO higher scope ?
 
         memcpy(&readfds, &masterfds, sizeof(fd_set));
 
-        if (select(sockfd+1, &readfds, nullptr, nullptr, &rcv_to) < 0) {
+        if (select(sockfd+1, &readfds, nullptr, nullptr, &rcv_timeout) < 0) {
             perror("Cannot select");
             throw;
         }
 
         if ( FD_ISSET(sockfd, &readfds)) {
-            if ( (recvfrom(sockfd, &packet, sizeof(P), 0, &cli_addr, &len_cli_addr) < 0) ) { 
+            if ( (recvfrom(sockfd, &packet, sizeof(P), 0, &cliaddr, &len_cli_addr) < 0) ) { 
                 close(sockfd);
                 perror("Cannot recvfrom");
                 throw;

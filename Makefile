@@ -4,18 +4,19 @@ CXXFLAGS := -std=c++17 -Weffc++  -Wctor-dtor-privacy -Wpedantic -Wall -Wextra -W
 # ggdb3 long128
 LDFLAGS:=-lpthread -ldl
 
-all: robin packetsender
+all: robin commandsender packetsender
 
 rebuild : clean all
 
-robin: robin.cpp loguru.o TrackingServer.o Tracker.o
+robin: robin.cpp loguru.o TrackingServer.o Tracker.o CCServer.o
 	$(CXX) $(CFLAGS) $^ -o $@ $(LDFLAGS)
 
+commandsender: commandsender.cpp
+	$(CXX) $(CFLAGS) $^ -o $@ $(LDFLAGS)
 
-packetsender: packetsender.cpp
+tpacket_broadcaster: tpacket_broadcaster.cpp
 	$(CXX) $(CFLAGS) $^ -o $@ $(LDFLAGS)
 
 .PHONY: clean
 clean:
-	#clear; rm -rf *.o *.log; rm -rf robin packetsender
-	find . \( -type f -name "*.o" -and ! -name "loguru.o" -or -name "*.log" \) -delete; rm -rf robin packetsender
+	find . \( -type f -name "*.o" -and ! -name "loguru.o" -or -name "*.log" \) -delete; rm -rf robin commandsender tpacket_broadcaster
