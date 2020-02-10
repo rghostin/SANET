@@ -36,9 +36,9 @@ struct ImageChunkPacket  {  // Image identified by <nodeID, timestamp>
     unsigned int offset;
     unsigned int sizeImage;
     char chunk_content[CHUNK_SIZE];
+    
 
-
-    ImageChunkPacket(uint8_t nodeID, uint32_t seqnum, char chunk_content_p[CHUNK_SIZE], unsigned int offset, uint32_t timestamp, unsigned int sizeImage) :
+    ImageChunkPacket(uint8_t nodeID, uint32_t seqnum, const char chunk_content_p[CHUNK_SIZE], unsigned int offset, uint32_t timestamp, unsigned int sizeImage) :
         nodeID(nodeID), seqnum(seqnum), timestamp(timestamp), offset(offset), sizeImage(sizeImage), chunk_content() {
         for (int i = 0; i < CHUNK_SIZE; ++i) {
             chunk_content[i] = chunk_content_p[i];
