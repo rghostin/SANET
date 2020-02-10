@@ -4,11 +4,11 @@ CXXFLAGS := -std=c++17 -Weffc++  -Wctor-dtor-privacy -Wpedantic -Wall -Wextra -W
 # ggdb3 long128
 LDFLAGS:=-lpthread -ldl
 
-all: robin commandsender packetsender
+all: robin commandsender tpacket_broadcaster
 
 rebuild : clean all
 
-robin: robin.cpp loguru.o TrackingServer.o Tracker.o CCServer.o
+robin: robin.cpp loguru.o TrackingServer.o CCServer.o
 	$(CXX) $(CFLAGS) $^ -o $@ $(LDFLAGS)
 
 commandsender: commandsender.cpp
