@@ -11,10 +11,41 @@
 #include <ctime>
 #include <limits>
 #include "packets.hpp"
+#include <fstream>
 
 #define EXIT_PROG_CODE 99
 #define SRVPORT 5821
 #define LIMITUINT8 256  // 2**8
+#define IMG_CHUNK_SIZE 250
+#define SIZE_PATH 50
+
+uint32_t get_size(char* path) {
+    uint32_t res;
+
+    std::ifstream in_file(path, std::ios::binary);
+    in_file.seekg(0, std::ios::end);
+    res = static_cast<uint32_t>(in_file.tellg());
+    in_file.close();
+
+    return res;
+}
+
+
+char* input_filename() {
+    char *buffer = new char[SIZE_PATH];
+    memset(buffer, '\0', SIZE_PATH);
+
+    std::cout << "File-Path : ";
+    if (std::cin.peek() != '\n') {
+        std::cin >> buffer;
+    }
+    else {
+        strcpy(buffer, "/home/heikko/CLionProjects/mnetR/img/test");
+    }
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+    return buffer;
+}
 
 
 uint8_t input_uint8() {
@@ -36,14 +67,13 @@ uint8_t input_uint8() {
 }
 
 
-TrackPacket input_packet() {
-    TrackPacket packet;
+ImageChunkPacket input_packet() {
+    ImageChunkPacket packet;
 
     packet.nodeID = 200;
     packet.seqnum = 454;
     packet.timestamp = static_cast<uint32_t>(std::time(nullptr));
     packet.position = Position(0,0);
-    packet.led_status = false;
 
     std::cout << "nodeID : ";
     if (std::cin.peek() != '\n') {
@@ -66,11 +96,6 @@ TrackPacket input_packet() {
     }
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
-    std::cout << "led_status : ";
-    if (std::cin.peek() != '\n') {
-        std::cin >> packet.led_status;
-    }
-
     return packet;
 }
 
@@ -81,9 +106,9 @@ int main(int argc, char** argv) {
     sockaddr_in srvaddr;
     socklen_t len_srvaddr = sizeof(sockaddr);
     bool stop=false;
+    std::ifstream image;
+    char *path;
 
-    char input_buffer[1024];
-    uint8_t packet_type;
 
     // networking - start
     // create socket
@@ -119,17 +144,30 @@ int main(int argc, char** argv) {
     srvaddr.sin_port = htons(SRVPORT);
     // networking - end
 
-
     while (! stop) {
-        TrackPacket packet = input_packet();
-        if ( sendto(sockfd, &packet, sizeof(TrackPacket), 0, reinterpret_cast<const sockaddr*>(&srvaddr), len_srvaddr)  < 0 ) {
-            close(sockfd);
-            perror("Cannot sendto");
-            throw;
+        ImageChunkPacket packet = input_packet();
+        memset(&packet.chunk_content, '\0', IMG_CHUNK_SIZE);
+        path = input_filename();
+        image.open(path, std::ios::binary);
+        packet.sizeImage = get_size(path);
+
+        while(image.read(&packet.chunk_content[0], IMG_CHUNK_SIZE)) {
+            if ( sendto(sockfd, &packet, sizeof(ImageChunkPacket), 0, reinterpret_cast<const sockaddr*>(&srvaddr), len_srvaddr)  < 0 ) {
+                close(sockfd);
+                perror("Cannot sendto chunk");
+                throw;
+            }
+            packet.seqnum += 1;
+            packet.offset += IMG_CHUNK_SIZE;
+
+            memset(&packet.chunk_content, '\0', IMG_CHUNK_SIZE);
+            printf("ImageChunkPacket: %s\n", packet.repr().c_str());
         }
 
-        printf("TrackPacket: %s\n", packet.repr().c_str());
-        getchar();
+        image.close();
+        delete(path);
+        path = nullptr;
+//        getchar();
     }
 
     close(sockfd);
