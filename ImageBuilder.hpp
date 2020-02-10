@@ -14,12 +14,12 @@
 
 class ImageBuilder final {
 private :
+    uint8_t _nodeID;
+    uint32_t _timestamp;
     bool _is_complete=false;
     std::mutex _mutex_is_complete;
     Image _image;
     std::vector<bool> _fillstate_array;
-
-    void _set_is_complete_flag();
 
 public :
     explicit ImageBuilder(ImageChunkPacket);
@@ -30,8 +30,6 @@ public :
     ~ImageBuilder()=default;
 
     bool add_chunk(ImageChunkPacket);
-    uint8_t get_nodeID();
-    uint32_t get_timestamp();
 };
 
 
