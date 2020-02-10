@@ -11,6 +11,7 @@ ImageBuilder::ImageBuilder(ImageChunkPacket packet) :
     this->add_chunk(packet);
 }
 
+
 ImageBuilder::ImageBuilder(ImageBuilder&& other) : _nodeID(0), _timestamp(0), _position(), _sizeImage(0),
         _mutex_is_complete(), _image(), _img_building_vec(), _fillstate_vec() 
         {
@@ -27,32 +28,13 @@ ImageBuilder::ImageBuilder(ImageBuilder&& other) : _nodeID(0), _timestamp(0), _p
         }
 
 
-//ImageBuilder &ImageBuilder::operator=(const ImageBuilder &&imageBuilderCopy) {
-//    if (this != &imageBuilderCopy) {
-//        _nodeID = imageBuilderCopy._nodeID;
-//        _timestamp = imageBuilderCopy._timestamp;
-//        _position = imageBuilderCopy._position;
-//        _sizeImage = imageBuilderCopy._sizeImage;
-//        {
-//            std::lock_guard<std::mutex> lock(imageBuilderCopy._mutex_is_complete);
-//            _is_complete = imageBuilderCopy._is_complete;
-//        }
-//        _mutex_is_complete;
-//        _image = imageBuilderCopy._image;
-//        _img_building_vec = imageBuilderCopy._img_building_vec;
-//        _fillstate_array = imageBuilderCopy._fillstate_array;
-//    }
-//    return *this;
-//}
-
-
 void ImageBuilder::add_chunk(ImageChunkPacket packet) {
     {
         std::lock_guard<std::mutex> lock(_mutex_is_complete);
         if (_is_complete) return;
     }
 
-    uint32_t index(packet.offset/IMG_CHUNK_SIZE);
+    uint32_t index(packet.offset/IMG_CHUNK_SIZE);  // TODO fct plafond + init tab
 
     if (not _fillstate_vec[index]) {
         _img_building_vec[index] = packet.chunk_content;

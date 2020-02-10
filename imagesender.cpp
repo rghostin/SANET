@@ -108,6 +108,8 @@ int main(int argc, char** argv) {
     bool stop=false;
     std::ifstream image;
     char *path;
+    uint32_t size_file_remaining;
+    uint32_t bytes_to_treat(IMG_CHUNK_SIZE);
 
 
     // networking - start
@@ -148,20 +150,37 @@ int main(int argc, char** argv) {
         ImageChunkPacket packet = input_packet();
         memset(&packet.chunk_content, '\0', IMG_CHUNK_SIZE);
         path = input_filename();
-        image.open(path, std::ios::binary);
         packet.sizeImage = get_size(path);
+        size_file_remaining = packet.sizeImage;
+        image.open(path, std::ios::binary);
 
-        while(image.read(&packet.chunk_content[0], IMG_CHUNK_SIZE)) {
+        if (IMG_CHUNK_SIZE > size_file_remaining) {
+            bytes_to_treat = size_file_remaining;
+        }
+
+
+        while(size_file_remaining > 0 and image.read(&packet.chunk_content[0], bytes_to_treat)) {
+            size_file_remaining -= bytes_to_treat;
+
             if ( sendto(sockfd, &packet, sizeof(ImageChunkPacket), 0, reinterpret_cast<const sockaddr*>(&srvaddr), len_srvaddr)  < 0 ) {
                 close(sockfd);
                 perror("Cannot sendto chunk");
                 throw;
             }
             packet.seqnum += 1;
-            packet.offset += IMG_CHUNK_SIZE;
+            packet.offset += bytes_to_treat;
 
             memset(&packet.chunk_content, '\0', IMG_CHUNK_SIZE);
             printf("ImageChunkPacket: %s\n", packet.repr().c_str());
+
+            std::cout << &packet.chunk_content[0] << std::endl;
+
+            if (IMG_CHUNK_SIZE <= size_file_remaining) {
+                bytes_to_treat = IMG_CHUNK_SIZE;
+            }
+            else {
+                bytes_to_treat = size_file_remaining;
+            }
         }
 
         image.close();
