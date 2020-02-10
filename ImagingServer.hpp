@@ -18,7 +18,7 @@
 #include "AbstractReliableBroadcast.hpp"
 #include "common.hpp"
 #include "packets.hpp"
-#include "Image.hpp"
+#include "ImageBuilder.hpp"
 
 
 class ImagingServer : public AbstractReliableBroadcastNode<ImageChunkPacket> {
@@ -26,8 +26,8 @@ private:
     // self information and settings
     std::queue<ImageChunkPacket> _chunkpacketqueue;
     unsigned short _image_reception_timeout;
-    std::map<uint8_t, Image> _image_map;
-    std::map<uint8_t, Image> _construction_image_map;
+    std::map<uint8_t, Image*> _image_map;
+    std::map<uint8_t, Image*> _construction_image_map;
 
     // delegations
     std::thread _thread_check_img_in_construct;
@@ -48,7 +48,6 @@ public:
 
     void start() override;
     void join() override;
-
 };
 
 
