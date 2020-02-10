@@ -16,16 +16,20 @@
 #include "AbstractReliableBroadcast.hpp"
 #include "common.hpp"
 #include "packets.hpp"
-#include "Tracker.hpp"
-
 
 class TrackingServer final : public AbstractReliableBroadcastNode<TrackPacket> {
 private:
     // self information and settings
     const unsigned short _heart_period=TRACKING_HEARTBEAT_PERIOD;
+    const unsigned short _peer_lost_timeout = TRACKING_PEER_LOSS_TIMEOUT;
+    const unsigned short _period_mapcheck = TRACKING_PERIOD_CHECK_NODEMAP;
 
-    // delegations
-    Tracker _tracker;
+    std::mutex _mutex_status_node_map;
+    std::map<uint8_t, std::pair<Position, uint32_t>> _status_node_map;
+
+    // threads
+    std::thread _thread_check_node_map;
+    void _tr_check_node_map();
     std::thread _thread_heartbeat;
     void _tr_hearbeat();
 
