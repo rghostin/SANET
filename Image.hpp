@@ -17,7 +17,7 @@ template<typename T>
 class Image final {};
 
 
-template<typename T, std::size_t N>
+template<typename T, unsigned int N>
 class Image<T[N]> final {
 private :
     bool _is_complete=false;
@@ -30,7 +30,7 @@ private :
     void _set_is_complete_flag();
 
 public :
-    Image(uint8_t, uint32_t);
+    Image(ImageChunkPacket);
     Image(const Image&) = delete;
     Image(Image&&) = delete;
     Image& operator=(const Image&) = delete;
@@ -43,12 +43,14 @@ public :
 };
 
 
-template<typename T, std::size_t N>
-Image<T[N]>::Image(uint8_t nodeID, uint32_t timestamp) : _nodeID(nodeID), _timestamp(timestamp), _mutex_is_complete(), \
-        _content(), _fillstate_array() {}
+template<typename T, unsigned int N>
+Image<T[N]>::Image(ImageChunkPacket packet) : _nodeID(packet.nodeID), _timestamp(packet.timestamp), _mutex_is_complete(), \
+        _content(), _fillstate_array() {
+    this->add_chunk(packet);
+}
 
 
-template<typename T, std::size_t N>
+template<typename T, unsigned int N>
 bool Image<T[N]>::add_chunk(ImageChunkPacket packet) {
     unsigned int index(packet.offset/CHUNK_SIZE);
 
@@ -68,7 +70,7 @@ bool Image<T[N]>::add_chunk(ImageChunkPacket packet) {
 }
 
 
-template<typename T, std::size_t N>
+template<typename T, unsigned int N>
 void Image<T[N]>::_set_is_complete_flag() {
     {
         std::lock_guard<std::mutex> lock(_mutex_is_complete);
@@ -78,13 +80,13 @@ void Image<T[N]>::_set_is_complete_flag() {
 }
 
 
-template<typename T, std::size_t N>
+template<typename T, unsigned int N>
 uint8_t Image<T[N]>::get_nodeID() {
     return _nodeID;
 }
 
 
-template<typename T, std::size_t N>
+template<typename T, unsigned int N>
 uint32_t Image<T[N]>::get_timestamp() {
     return _timestamp;
 }

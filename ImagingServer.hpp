@@ -20,13 +20,14 @@
 #include "Image.hpp"
 
 
+template<unsigned int N>
 class ImagingServer : public AbstractReliableBroadcastNode<ImageChunkPacket> {
 private:
-// self information and settings
+    // self information and settings
     std::queue<ImageChunkPacket> _chunkpacketqueue;
     unsigned short _image_reception_timeout;
-    std::map<uint8_t, std::pair<Position, uint32_t>> _image_map;
-    std::map<uint8_t, std::pair<Position, uint32_t>> _construction_image_map;
+    std::map<uint8_t, Image<char[N]>> _image_map;
+    std::map<uint8_t, Image<char[N]>> _construction_image_map;
 
     // delegations
     std::thread _thread_check_img_in_construct;
@@ -34,6 +35,7 @@ private:
 
     ImageChunkPacket _produce_packet() override;
     void _process_packet(const ImageChunkPacket&) override;
+    void _tr_check_img_in_construct_map();
 
 public:
     ImagingServer(unsigned short port, uint8_t nodeID, unsigned short image_reception_timeout);
