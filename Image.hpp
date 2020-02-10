@@ -5,6 +5,7 @@
 #include <mutex>
 #include <queue>
 #include <map>
+#include <array>
 #include <unistd.h>
 #include "loguru.hpp"
 #include "common.hpp"
@@ -12,23 +13,29 @@
 #include "Position.hpp"
 #include "utils_log.hpp"
 
+template<typename T>
+class Image final {};
 
-class Image final {
+
+template<typename T, std::size_t N>
+class Image<T[N]> final {
 private :
-    bool is_complete=false;  // TODO : Redondant vu que bool add_chunk ?
-    const uint8_t nodeID;
-    const uint32_t timestamp;
-    unsigned int size_array;
-    char** content;
-    bool* fillstate_array;
+    bool _is_complete=false;
+    const uint8_t _nodeID;
+    const uint32_t _timestamp;
+    std::mutex _mutex_is_complete;
+    std::array<T, N> _content;
+    std::array<bool, N/CHUNK_SIZE> _fillstate_array;
+
+    void _set_is_complete_flag();
 
 public :
-    Image(uint8_t, uint32_t, unsigned int);
+    Image(uint8_t, uint32_t);
     Image(const Image&) = delete;
     Image(Image&&) = delete;
     Image& operator=(const Image&) = delete;
     Image& operator=(const Image&&) = delete;
-    ~Image();
+    ~Image()=default;
 
     bool add_chunk(ImageChunkPacket);
     uint8_t get_nodeID();
@@ -36,4 +43,51 @@ public :
 };
 
 
-#endif //TRACKER_IMAGE_HPP
+template<typename T, std::size_t N>
+Image<T[N]>::Image(uint8_t nodeID, uint32_t timestamp) : _nodeID(nodeID), _timestamp(timestamp), _mutex_is_complete(), \
+        _content(), _fillstate_array() {}
+
+
+template<typename T, std::size_t N>
+bool Image<T[N]>::add_chunk(ImageChunkPacket packet) {
+    unsigned int index(packet.offset/CHUNK_SIZE);
+
+    if (index > N) {
+        LOG_F(WARNING, "Packet offset exceeded size_array : %s", packet.repr().c_str());
+    }
+    else {
+        if (not _fillstate_array[index]) {
+            _content[index] = packet.chunk_content;
+            _fillstate_array[index] = true;
+            LOG_F(3, "Added chunk to image content : %s", packet.repr().c_str());
+        }
+        else {
+            LOG_F(3, "Ignored chunk to image content : %s", packet.repr().c_str());
+        }
+    }
+}
+
+
+template<typename T, std::size_t N>
+void Image<T[N]>::_set_is_complete_flag() {
+    {
+        std::lock_guard<std::mutex> lock(_mutex_is_complete);
+        _is_complete = true;
+    }
+    LOG_F(3, "ALERT_IS_COMPLETE_FLAG set");
+}
+
+
+template<typename T, std::size_t N>
+uint8_t Image<T[N]>::get_nodeID() {
+    return _nodeID;
+}
+
+
+template<typename T, std::size_t N>
+uint32_t Image<T[N]>::get_timestamp() {
+    return _timestamp;
+}
+
+
+#endif
