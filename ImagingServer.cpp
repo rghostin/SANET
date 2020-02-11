@@ -63,9 +63,15 @@ void ImagingServer::_process_packet(const ImageChunkPacket& packet) {
     else {
         _building_image_map[packet.nodeID].add_chunk(packet);
         if (_building_image_map[packet.nodeID].is_complete()) {
-            std::lock_guard<std::mutex> lock(_mutex_img_map);
-            _image_map[packet.nodeID] = _building_image_map[packet.nodeID].get_image();
-            // TODO 2 mutex transfert de donnée de construction à map img
+            {
+                std::lock_guard<std::mutex> lock(_mutex_img_map);
+                _image_map[packet.nodeID] = _building_image_map[packet.nodeID].get_image();
+            }
+            LOG_F(3, "Image moved to _image_map: %s", packet.repr().c_str());
+
+            _building_image_map.erase(packet.nodeID);  // image completed -> delete ImageBuilder
+
+            LOG_F(3, "Image deleted from _building_image_map : %s", packet.repr().c_str());
         }
     }
 }

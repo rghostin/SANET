@@ -85,7 +85,7 @@ int main(int argc, char** argv) {
     Tracker tracker(TRACKING_PEER_LOSS_TIMEOUT, TRACKING_PERIOD_CHECK_NODEMAP);
     TrackingServer trackingserver(TRACKING_SERVER_PORT, nodeID, tracker, TRACKING_HEARTBEAT_PERIOD);
 
-    ImagingServer(IMAGING_SERVER_PORT,nodeID);
+    ImagingServer imagingServer(IMAGING_SERVER_PORT,nodeID);
 
     // setup signals
     signal(SIGINT, exit_handler);
@@ -93,9 +93,11 @@ int main(int argc, char** argv) {
 
     // start server on current thread
     trackingserver.start();
+    imagingServer.start();
 
     // join all services
     trackingserver.join();
+    imagingServer.join();
 
     LOG_F(WARNING, "Robin exiting");
     return 0;

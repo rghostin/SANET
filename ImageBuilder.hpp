@@ -5,6 +5,7 @@
 #include <vector>
 #include <unistd.h>
 #include <algorithm>
+#include <cmath>
 #include "loguru.hpp"
 #include "common.hpp"
 #include "packets.hpp"
@@ -19,6 +20,7 @@ private :
     uint32_t _timestamp;
     Position _position;
     uint32_t _sizeImage;
+    uint32_t _sizeVec;
     bool _is_complete=false;
     mutable std::mutex _mutex_is_complete;
     Image _image;
@@ -29,7 +31,7 @@ public :
     ImageBuilder();
     explicit ImageBuilder(ImageChunkPacket);
     ImageBuilder(const ImageBuilder&)=delete;
-    ImageBuilder(ImageBuilder&&);
+    ImageBuilder(ImageBuilder&&) noexcept;
     ImageBuilder& operator=(const ImageBuilder&)=delete;
     ImageBuilder& operator=(const ImageBuilder&&)=delete;
     ~ImageBuilder()=default;
