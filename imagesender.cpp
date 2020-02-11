@@ -12,6 +12,9 @@
 #include <limits>
 #include "packets.hpp"
 #include <fstream>
+#include <thread>
+#include <chrono>
+#include <openssl/md5.h>
 
 #define EXIT_PROG_CODE 99
 #define SRVPORT 5821
@@ -25,7 +28,27 @@ uint32_t get_size(char* path) {
     std::ifstream in_file(path, std::ios::binary);
     in_file.seekg(0, std::ios::end);
     res = static_cast<uint32_t>(in_file.tellg());
+    in_file.clear();
+    in_file.seekg(0, std::ios::beg);
+
+
+    unsigned char* md = new unsigned char[MD5_DIGEST_LENGTH];
+    char buffer[res];
+    memset(buffer, '\0', res);
+    in_file.readsome(buffer, res);
+
+    MD5((unsigned char*)&buffer[0], res, md);
+
+    int i;
+    printf("Checksum MD5 : ");
+    for(i=0; i <MD5_DIGEST_LENGTH; i++) {
+        printf("%02x",md[i]);
+    }
+    printf("\n");
+
     in_file.close();
+    delete[](md);
+
 
     return res;
 }
@@ -173,14 +196,15 @@ int main(int argc, char** argv) {
             memset(&packet.chunk_content, '\0', IMG_CHUNK_SIZE);
             printf("ImageChunkPacket: %s\n", packet.repr().c_str());
 
-            std::cout << &packet.chunk_content[0] << std::endl;
-
             if (IMG_CHUNK_SIZE <= size_file_remaining) {
                 bytes_to_treat = IMG_CHUNK_SIZE;
             }
             else {
                 bytes_to_treat = size_file_remaining;
             }
+
+//            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            sleep(1);
         }
 
         image.close();

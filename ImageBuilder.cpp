@@ -1,5 +1,15 @@
 #include "ImageBuilder.hpp"
 
+void print_md5_sum(unsigned char* md) {
+    char checksum_res[32];
+
+    for(int i=0; i < MD5_DIGEST_LENGTH; i++) {
+        std::snprintf(checksum_res + (i * 2), MD5_DIGEST_LENGTH, "%02x", md[i]);
+    }
+    LOG_F(3, "MD5 - Checksum : %s", checksum_res);
+}
+
+
 ImageBuilder::ImageBuilder() :_nodeID(0), _timestamp(0), _position(), _sizeImage(0), _sizeVec(0),
         _mutex_is_complete(), _image(), _img_building_vec(), _fillstate_vec() {}
 
@@ -44,20 +54,37 @@ void ImageBuilder::add_chunk(ImageChunkPacket packet) {
         LOG_F(3, "Added chunk to img_building_vec : %s", packet.repr().c_str());
 
         if ( std::all_of(_fillstate_vec.begin(), _fillstate_vec.end(), [](bool b){return b;}) ){
+            std::array<char, IMG_CHUNK_SIZE>::iterator it;
+            uint32_t size_remaining(_sizeImage);
+            int chunk_treated(0);
+
             std::lock_guard<std::mutex> lock(_mutex_is_complete);
             _is_complete = true;
-            LOG_F(3, "Image is complete from : %s", packet.repr().c_str());
 
             _image.nodeID = _nodeID;
             _image.timestamp = _timestamp;
             _image.position = _position;
 
-            int chunk_treated(0);
 
             for (auto & i : _img_building_vec) {
-                (_image.content).insert(_image.content.begin() + (chunk_treated * IMG_CHUNK_SIZE), std::begin(i), std::end(i));
+                if (size_remaining >= IMG_CHUNK_SIZE) {
+                    size_remaining -= IMG_CHUNK_SIZE;
+                    it = std::end(i);
+                }
+                else {
+                    it = std::begin(i) + size_remaining;
+
+                }
+                (_image.content).insert(_image.content.begin() + (chunk_treated * IMG_CHUNK_SIZE), std::begin(i), it);
                 chunk_treated += 1;
             }
+
+            auto *md5_checksum = new unsigned char[MD5_DIGEST_LENGTH];
+            MD5((unsigned char*)&_image.content[0], _image.content.size(), md5_checksum);
+            print_md5_sum(md5_checksum);
+
+            LOG_F(3, "Image is complete from : %s", packet.repr().c_str());
+            delete[](md5_checksum);
         }
     }
     else {

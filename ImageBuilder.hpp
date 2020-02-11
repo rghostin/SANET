@@ -12,6 +12,7 @@
 #include "Position.hpp"
 #include "utils_log.hpp"
 #include "Image.hpp"
+#include <openssl/md5.h>
 
 
 class ImageBuilder final {
