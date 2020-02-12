@@ -4,7 +4,7 @@ CXXFLAGS := -std=c++17 -Weffc++  -Wctor-dtor-privacy -Wpedantic -Wall -Wextra -W
 # ggdb3 long128
 LDFLAGS:=-lpthread -ldl -lssl -lcrypto
 
-all: robin packetsender
+all: robin packetsender imagesender
 
 rebuild : clean all
 
@@ -13,6 +13,9 @@ robin: robin.cpp loguru.o TrackingServer.o Tracker.o ImagingServer.o ImageBuilde
 
 
 packetsender: packetsender.cpp
+	$(CXX) $(CFLAGS) $^ -o $@ $(LDFLAGS)
+
+imagesender: imagesender.cpp
 	$(CXX) $(CFLAGS) $^ -o $@ $(LDFLAGS)
 
 .PHONY: clean
