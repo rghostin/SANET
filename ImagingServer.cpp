@@ -76,7 +76,7 @@ void ImagingServer::_process_packet(const ImageChunkPacket& packet) {
 }
 
 
-void ImagingServer::_send_image() {  // TODO Faire constructeur image(path) -> obtenir var de char et envoyer ça + mutex pour maj du fichier
+void ImagingServer::_send_image() {
     ImageChunkPacket packet = _produce_packet();
     FILE* image_file;
     uint32_t size_file_remaining;
@@ -134,4 +134,11 @@ void ImagingServer::join() {
     AbstractReliableBroadcastNode<ImageChunkPacket>::join();
     _thread_check_completed_imgs.join();
     LOG_F(WARNING, "ImgServer: joined all threads");
+}
+
+
+inline bool ImagingServer::_to_be_ignored(const ImageChunkPacket& packet) const {
+    return AbstractBroadcastNode<ImageChunkPacket>::_to_be_ignored(packet) ||
+        (_building_image_map.find(packet.nodeID) != _building_image_map.end() && (_building_image_map.at(packet.nodeID)).chunk_already_received(packet.offset))
+        || (_image_map.find(packet.nodeID) != _image_map.end() and packet.timestamp == _image_map.at(packet.nodeID).timestamp);
 }

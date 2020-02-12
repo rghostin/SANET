@@ -26,13 +26,17 @@ inline uint32_t get_size(const char* file_name) {
 }
 
 
-inline void print_md5_sum(unsigned char* md) {
-    char checksum_res[32];
+inline void print_md5_sum(char* array, unsigned long size_array) {
+    auto *md5_checksum = new unsigned char[MD5_DIGEST_LENGTH];
+    {
+        MD5(reinterpret_cast<unsigned char *>(&array[0]), size_array, md5_checksum);
+        char checksum_res[32];
 
-    for(int i=0; i < MD5_DIGEST_LENGTH; i++) {
-        std::snprintf(checksum_res + (i * 2), MD5_DIGEST_LENGTH, "%02x", md[i]);
+        for(int i=0; i < MD5_DIGEST_LENGTH; i++) {
+            std::snprintf(checksum_res + (i * 2), MD5_DIGEST_LENGTH, "%02x", md5_checksum[i]);
+        }
+        LOG_F(3, "MD5 - Checksum : %s", checksum_res);
     }
-    LOG_F(3, "MD5 - Checksum : %s", checksum_res);
 }
 
 

@@ -44,6 +44,7 @@ private:
     ImageChunkPacket _produce_packet() override;
     void _process_packet(const ImageChunkPacket&) override;
     void _send_image();
+    bool _to_be_ignored(const ImageChunkPacket&) const override;
 
 public:
     ImagingServer(unsigned short port, uint8_t nodeID);

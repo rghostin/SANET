@@ -69,12 +69,9 @@ void ImageBuilder::add_chunk(ImageChunkPacket packet) {
                 chunk_treated += 1;
             }
 
-            auto *md5_checksum = new unsigned char[MD5_DIGEST_LENGTH];  // TODO VOIR MD5_DIGEST_LENGTH vu que plus d'import
-            MD5(reinterpret_cast<unsigned char *>(&_image.content[0]), _image.content.size(), md5_checksum);
-            print_md5_sum(md5_checksum);
+            print_md5_sum(&_image.content[0], _image.content.size());
 
             LOG_F(3, "Image is complete from : %s", packet.repr().c_str());
-            delete[](md5_checksum);
         }
     }
     else {
@@ -116,4 +113,11 @@ uint32_t ImageBuilder::loss_percent() const {
     LOG_F(WARNING, "RESULT FLOAT : %.6f", res);
 
     return static_cast<uint32_t>(res);
+}
+
+
+bool ImageBuilder::chunk_already_received(uint32_t offset_packet) const {
+    auto index(static_cast<uint32_t>(ceil(static_cast<double>(offset_packet) / static_cast<double>(IMG_CHUNK_SIZE))));
+
+    return _fillstate_vec[index];
 }

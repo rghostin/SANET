@@ -43,6 +43,7 @@ public :
     Image get_image() const;
     uint32_t get_timestamp() const;
     uint32_t loss_percent() const;
+    bool chunk_already_received(uint32_t) const;
 };
 
 #endif

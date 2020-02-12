@@ -18,7 +18,7 @@
 #define IMG_CHUNK_SIZE 1024
 #define IMAGE_RECEPTION_TIMEOUT 60
 #define IMAGE_RECEPTION_CHECK 30
-#define THREAD_SLEEP_SEND 3
+#define THREAD_SLEEP_SEND 1
 #define PATH_IMG "img/"
 #define TYPE_IMG ".png"
 
