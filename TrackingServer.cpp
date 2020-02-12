@@ -2,7 +2,7 @@
 
 // JSON UTILS ===================================
 
-std::string _get_encoded_json(const nodemap_t& map) {
+std::string get_encoded_json(const nodemap_t& map) {
     std::string res = "{";
     for (auto it=map.cbegin(); it!=map.cend(); ++it) {
         uint32_t nodeid = it->first;
@@ -85,7 +85,7 @@ void TrackingServer::_tr_hearbeat() {
 void TrackingServer::_setup_usocket(){
     if ( (_usockfd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
         perror("socket error");
-        exit(-1);
+        throw;
     }
 
     memset(&_flight_server_addr, 0, sizeof(_flight_server_addr));
@@ -101,9 +101,9 @@ void TrackingServer::_setup_usocket(){
 void TrackingServer::_send_status_node_map(){
     if (connect(_usockfd, (struct sockaddr*)&_flight_server_addr, sizeof(_flight_server_addr)) == -1) {
         perror("connect error with flight server");
-        exit(-1);
+        throw;
     }
-    std::string json_nodemap = _get_encoded_json(_status_node_map);
+    std::string json_nodemap = get_encoded_json(_status_node_map);
     if (send(_usockfd, json_nodemap.c_str(), json_nodemap.length(), 0) < 0) {
         perror("Cannot send the node map");
     }
