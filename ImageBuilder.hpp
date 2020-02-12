@@ -12,6 +12,7 @@
 #include "Position.hpp"
 #include "utils_log.hpp"
 #include "Image.hpp"
+#include "utils.hpp"
 #include <openssl/md5.h>
 
 
@@ -41,6 +42,7 @@ public :
     bool is_complete() const;
     Image get_image() const;
     uint32_t get_timestamp() const;
+    uint32_t loss_percent() const;
 };
 
 #endif

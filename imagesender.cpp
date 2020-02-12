@@ -15,11 +15,11 @@
 #include <thread>
 #include <chrono>
 #include <openssl/md5.h>
+#include "settings.hpp"
 
 #define EXIT_PROG_CODE 99
 #define SRVPORT 5821
 #define LIMITUINT8 256  // 2**8
-#define IMG_CHUNK_SIZE 250
 #define SIZE_PATH 50
 
 uint32_t get_size(char* path) {
@@ -33,11 +33,11 @@ uint32_t get_size(char* path) {
 
 
     unsigned char* md = new unsigned char[MD5_DIGEST_LENGTH];
-    char buffer[res];
+    char *buffer = new char[res];
     memset(buffer, '\0', res);
     in_file.readsome(buffer, res);
 
-    MD5((unsigned char*)&buffer[0], res, md);
+    MD5((unsigned char*)buffer, res, md);
 
     int i;
     printf("Checksum MD5 : ");
@@ -48,7 +48,7 @@ uint32_t get_size(char* path) {
 
     in_file.close();
     delete[](md);
-
+    delete[](buffer);
 
     return res;
 }
@@ -63,7 +63,7 @@ char* input_filename() {
         std::cin >> buffer;
     }
     else {
-        strcpy(buffer, "/home/heikko/CLionProjects/mnetR/img/test");
+        strcpy(buffer, "/home/heikko/CLionProjects/mnetR/img/17.jpg");
     }
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
@@ -129,7 +129,7 @@ int main(int argc, char** argv) {
     sockaddr_in srvaddr;
     socklen_t len_srvaddr = sizeof(sockaddr);
     bool stop=false;
-    std::ifstream image;
+    FILE* image_file;
     char *path;
     uint32_t size_file_remaining;
     uint32_t bytes_to_treat(IMG_CHUNK_SIZE);
@@ -175,14 +175,18 @@ int main(int argc, char** argv) {
         path = input_filename();
         packet.sizeImage = get_size(path);
         size_file_remaining = packet.sizeImage;
-        image.open(path, std::ios::binary);
+        image_file = fopen(path, "rb");
+
 
         if (IMG_CHUNK_SIZE > size_file_remaining) {
             bytes_to_treat = size_file_remaining;
         }
+        else {
+            bytes_to_treat = IMG_CHUNK_SIZE;
+        }
 
-
-        while(size_file_remaining > 0 and image.read(&packet.chunk_content[0], bytes_to_treat)) {
+        while(size_file_remaining > 0 and !feof(image_file)) {
+            fread(&packet.chunk_content[0], sizeof(char), bytes_to_treat, image_file);
             size_file_remaining -= bytes_to_treat;
 
             if ( sendto(sockfd, &packet, sizeof(ImageChunkPacket), 0, reinterpret_cast<const sockaddr*>(&srvaddr), len_srvaddr)  < 0 ) {
@@ -190,11 +194,12 @@ int main(int argc, char** argv) {
                 perror("Cannot sendto chunk");
                 throw;
             }
+            printf("ImageChunkPacket: %s\n", packet.repr().c_str());
+
             packet.seqnum += 1;
             packet.offset += bytes_to_treat;
 
             memset(&packet.chunk_content, '\0', IMG_CHUNK_SIZE);
-            printf("ImageChunkPacket: %s\n", packet.repr().c_str());
 
             if (IMG_CHUNK_SIZE <= size_file_remaining) {
                 bytes_to_treat = IMG_CHUNK_SIZE;
@@ -203,11 +208,12 @@ int main(int argc, char** argv) {
                 bytes_to_treat = size_file_remaining;
             }
 
-//            std::this_thread::sleep_for(std::chrono::milliseconds(1));
-            sleep(1);
+            std::this_thread::sleep_for(std::chrono::milliseconds(3));
         }
+        printf("ImageChunkPacket: %s\n", packet.repr().c_str());
 
-        image.close();
+        fclose(image_file);
+
         delete(path);
         path = nullptr;
 //        getchar();

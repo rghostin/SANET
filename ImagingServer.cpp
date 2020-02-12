@@ -29,7 +29,7 @@ void ImagingServer::_tr_check_completed_imgs() {
 
                 if ((actualTimestamp - ((it->second).get_timestamp())) > _image_reception_timeout) {
                     // No response
-                    LOG_F(WARNING, "Image lost from NodeID=%d", it->first);
+                    LOG_F(WARNING, "Image lost from NodeID=%d, Lost rate : %d%%", it->first, (it->second).loss_percent());
                     _building_image_map.erase(it++);
                 }
                 else {

@@ -1,15 +1,5 @@
 #include "ImageBuilder.hpp"
 
-void print_md5_sum(unsigned char* md) {
-    char checksum_res[32];
-
-    for(int i=0; i < MD5_DIGEST_LENGTH; i++) {
-        std::snprintf(checksum_res + (i * 2), MD5_DIGEST_LENGTH, "%02x", md[i]);
-    }
-    LOG_F(3, "MD5 - Checksum : %s", checksum_res);
-}
-
-
 ImageBuilder::ImageBuilder() :_nodeID(0), _timestamp(0), _position(), _sizeImage(0), _sizeVec(0),
         _mutex_is_complete(), _image(), _img_building_vec(), _fillstate_vec() {}
 
@@ -79,7 +69,7 @@ void ImageBuilder::add_chunk(ImageChunkPacket packet) {
                 chunk_treated += 1;
             }
 
-            auto *md5_checksum = new unsigned char[MD5_DIGEST_LENGTH];
+            auto *md5_checksum = new unsigned char[MD5_DIGEST_LENGTH];  // TODO VOIR MD5_DIGEST_LENGTH vu que plus d'import
             MD5((unsigned char*)&_image.content[0], _image.content.size(), md5_checksum);
             print_md5_sum(md5_checksum);
 
@@ -112,3 +102,18 @@ uint32_t ImageBuilder::get_timestamp() const {
     return _timestamp;
 }
 
+
+uint32_t ImageBuilder::loss_percent() const {
+    uint32_t counterFalse(0);
+
+    for (auto && i : _fillstate_vec) {
+        if (not i) {
+            counterFalse += 1;
+        }
+    }
+
+    float res((static_cast<float>(counterFalse) / static_cast<float>(_sizeVec)) * 100);
+    LOG_F(WARNING, "RESULT FLOAT : %.6f", res);
+
+    return static_cast<uint32_t>(res);
+}
