@@ -2,20 +2,23 @@
 
 // JSON UTILS ===================================
 
-std::string get_encoded_json(const nodemap_t& map) {
+std::string TrackingServer::get_json_nodemap(const nodemap_t& map) {
+    char buffer[4096]="";
     std::string res = "{";
+    
+    Position _mypos =  _get_current_position();
+
     for (auto it=map.cbegin(); it!=map.cend(); ++it) {
         uint32_t nodeid = it->first;
         Position pos = std::get<0>(it->second);
 
-        char buffer[4096]="";
         snprintf(buffer, sizeof(buffer), "\"%u\": [%f, %f]", nodeid, pos.longitude, pos.latitude);
         res += buffer;
-        if (std::next(it)!=map.cend()) {
-            res += ",";
-        }
+        res += ",";
         memset(buffer, 0, sizeof(buffer));
     }
+    snprintf(buffer, sizeof(buffer), "\"%u\": [%f, %f]", _nodeID, _mypos.longitude, _mypos.latitude);
+    res += buffer;
     res += "}";
     return res;
 }
@@ -35,6 +38,7 @@ TrackingServer::~TrackingServer() {
     if (_thread_check_node_map.joinable()) {
         _thread_check_node_map.join();
     }
+    close(_usockfd);
 }
 
 
@@ -54,13 +58,19 @@ Position TrackingServer::_get_current_position() const {
 }
 
 
-
 void TrackingServer::_process_packet(const TrackPacket& packet) {
     AbstractReliableBroadcastNode<TrackPacket>::_process_packet(packet);    
+    bool new_node=false;
     { // TODO - need for queue to make asynchrone ?
         std::lock_guard<std::mutex> lock(_mutex_status_node_map);
+        new_node = (_status_node_map.find(packet.nodeID) == _status_node_map.end());
         _status_node_map[packet.nodeID] = {packet.position, packet.timestamp};
     }
+    if (new_node) {
+        LOG_F(WARNING, "New NodeID=%d", packet.nodeID);
+        _send_status_node_map();
+    }
+    
     LOG_F(INFO, "Updated NodeID : %s", packet.repr().c_str());
     LOG_F(7, "status_node_map:\n%s", print_log_map(_status_node_map).c_str());
 }
@@ -96,19 +106,23 @@ void TrackingServer::_setup_usocket(){
     } else {
         strncpy(_flight_server_addr.sun_path, _usocket_path, sizeof(_flight_server_addr.sun_path)-1);
     }
-}
-
-void TrackingServer::_send_status_node_map(){
     if (connect(_usockfd, reinterpret_cast<sockaddr*>(&_flight_server_addr), sizeof(_flight_server_addr)) == -1) {
         perror("connect error with flight server");
         throw;
     }
-    std::string json_nodemap = get_encoded_json(_status_node_map);
+    LOG_F(INFO, "Usocket setup");
+}
+
+void TrackingServer::_send_status_node_map(){
+    std::string json_nodemap;
+    {
+        std::lock_guard<std::mutex> lock(_mutex_status_node_map);
+        json_nodemap = get_json_nodemap(_status_node_map);
+    }
     if (send(_usockfd, json_nodemap.c_str(), json_nodemap.length(), 0) < 0) {
         perror("Cannot send the node map");
     }
-    std::cout << "Node map sent" << std::endl;
-    close(_usockfd);
+    LOG_F(WARNING, "Node map sent: %s", json_nodemap.c_str());
 }
 // ===========================================================
 
@@ -124,6 +138,8 @@ void TrackingServer::_tr_check_node_map(){
 
     while (! process_stop) {
         { 
+            std::lock_guard<std::mutex> lock(_mutex_status_node_map);
+
             for (it = _status_node_map.cbegin(); it != _status_node_map.cend(); /*no increment*/ ) {
                 curr_timestamp = static_cast<uint32_t>(std::time(nullptr));
 
@@ -136,11 +152,11 @@ void TrackingServer::_tr_check_node_map(){
                     ++it;
                 }
             }
+        }
 
-            if (need_fp_recompute) {
-                need_fp_recompute = false;  // reset for next iter
-                _send_status_node_map();    // Send to python flight server through unix socket
-            }
+        if (need_fp_recompute) {
+            need_fp_recompute = false;  // reset for next iter
+            _send_status_node_map();    // Send to python flight server through unix socket
         }
         std::this_thread::sleep_for(std::chrono::seconds(_period_mapcheck));
     }

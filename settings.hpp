@@ -14,7 +14,7 @@
 
 // Tracking settings
 #define TRACKING_SERVER_PORT 5820
-#define TRACKING_HEARTBEAT_PERIOD 30
+#define TRACKING_HEARTBEAT_PERIOD 10
 #define TRACKING_PEER_LOSS_TIMEOUT 4 * TRACKING_HEARTBEAT_PERIOD
 #define TRACKING_PERIOD_CHECK_NODEMAP TRACKING_HEARTBEAT_PERIOD
 
@@ -22,6 +22,6 @@
 #define RELBC_PACKET_MAX_AGE 2 * TRACKING_HEARTBEAT_PERIOD // heartbeat < max_packet_age < lost_peer_timeout
 
 // Flight planning settings
-#define FP_USOCKET_PATH "./usocket"
+#define FP_USOCKET_PATH "/home/mdiamant/geoserver-feature_flightserver/testc/usocket"
 
 #endif

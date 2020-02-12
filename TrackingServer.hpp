@@ -34,6 +34,8 @@ private:
     int _usockfd;
     void _setup_usocket();
     void _send_status_node_map();
+    std::string get_json_nodemap(const nodemap_t& map);
+
 
     std::mutex _mutex_status_node_map;
     nodemap_t _status_node_map;
