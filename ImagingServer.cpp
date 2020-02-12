@@ -1,7 +1,7 @@
 #include "ImagingServer.hpp"
 
 ImagingServer::ImagingServer(unsigned short port, uint8_t nodeID) :
-        AbstractReliableBroadcastNode<ImageChunkPacket>(nodeID, port, "ImgSrv", RELBC_PACKET_MAX_AGE),
+        AbstractBroadcastNode<ImageChunkPacket>(nodeID, port, "ImgSrv"),
         _mutex_img_map(), _image_map(), _mutex_check_img_in_construct(), _building_image_map(), _thread_check_completed_imgs() {}
 
 
@@ -44,7 +44,7 @@ void ImagingServer::_tr_check_completed_imgs() {
 
 
 ImageChunkPacket ImagingServer::_produce_packet() {
-    ImageChunkPacket packet = AbstractReliableBroadcastNode<ImageChunkPacket>::_produce_packet();
+    ImageChunkPacket packet = AbstractBroadcastNode<ImageChunkPacket>::_produce_packet();
     packet.timestamp = static_cast<uint32_t>(std::time(nullptr));
     LOG_F(3, "Generated packet: %s", packet.repr().c_str());  // TODO remove vu qu'offset pas fixé ici mais spam (3 -> 7) ?
     return packet;
@@ -52,8 +52,6 @@ ImageChunkPacket ImagingServer::_produce_packet() {
 
 
 void ImagingServer::_process_packet(const ImageChunkPacket& packet) {
-    AbstractReliableBroadcastNode<ImageChunkPacket>::_process_packet(packet);
-
     std::lock_guard<std::mutex> lock_building(_mutex_check_img_in_construct);
 
     if (_building_image_map.find(packet.nodeID) == _building_image_map.end()) {  // New Image
@@ -125,13 +123,13 @@ void ImagingServer::_send_image() {
 
 void ImagingServer::start() {
     LOG_F(WARNING, "Starting Imaging server");
-    AbstractReliableBroadcastNode<ImageChunkPacket>::start();
+    AbstractBroadcastNode<ImageChunkPacket>::start();
     _thread_check_completed_imgs = std::thread(&ImagingServer::_tr_check_completed_imgs, this);
 }
 
 
 void ImagingServer::join() {
-    AbstractReliableBroadcastNode<ImageChunkPacket>::join();
+    AbstractBroadcastNode<ImageChunkPacket>::join();
     _thread_check_completed_imgs.join();
     LOG_F(WARNING, "ImgServer: joined all threads");
 }

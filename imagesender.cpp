@@ -94,19 +94,12 @@ ImageChunkPacket input_packet() {
     ImageChunkPacket packet;
 
     packet.nodeID = 200;
-    packet.seqnum = 454;
     packet.timestamp = static_cast<uint32_t>(std::time(nullptr));
     packet.position = Position(0,0);
 
     std::cout << "nodeID : ";
     if (std::cin.peek() != '\n') {
         packet.nodeID = input_uint8();
-    }
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-
-    std::cout << "seqnum : ";
-    if (std::cin.peek() != '\n') {
-        std::cin >> packet.seqnum;
     }
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
@@ -196,7 +189,6 @@ int main(int argc, char** argv) {
             }
             printf("ImageChunkPacket: %s\n", packet.repr().c_str());
 
-            packet.seqnum += 1;
             packet.offset += bytes_to_treat;
 
             memset(&packet.chunk_content, '\0', IMG_CHUNK_SIZE);

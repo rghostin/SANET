@@ -16,7 +16,7 @@
 #include <iostream>
 #include "loguru.hpp"
 #include "settings.hpp"
-#include "AbstractReliableBroadcast.hpp"
+#include "AbstractBroadcastNode.hpp"
 #include "common.hpp"
 #include "settings.hpp"
 #include "packets.hpp"
@@ -26,7 +26,7 @@
 #define INPUT_FILE(x) PATH_IMG #x TYPE_IMG
 
 
-class ImagingServer : public AbstractReliableBroadcastNode<ImageChunkPacket> {
+class ImagingServer : public AbstractBroadcastNode<ImageChunkPacket> {
 private:
     // self information and settings
     uint32_t _image_reception_timeout=IMAGE_RECEPTION_TIMEOUT;
