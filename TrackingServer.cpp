@@ -1,5 +1,27 @@
 #include "TrackingServer.hpp"
 
+// JSON UTILS ===================================
+
+std::string _get_encoded_json(const nodemap_t& map) {
+    std::string res = "{";
+    for (auto it=map.cbegin(); it!=map.cend(); ++it) {
+        uint32_t nodeid = it->first;
+        Position pos = std::get<0>(it->second);
+
+        char buffer[4096]="";
+        snprintf(buffer, sizeof(buffer), "\"%u\": [%f, %f]", nodeid, pos.longitude, pos.latitude);
+        res += buffer;
+        if (std::next(it)!=map.cend()) {
+            res += ",";
+        }
+        memset(buffer, 0, sizeof(buffer));
+    }
+    res += "}";
+    return res;
+}
+//=================================================
+
+
 TrackingServer::TrackingServer(unsigned short port, uint8_t nodeID) : 
     AbstractReliableBroadcastNode<TrackPacket>(nodeID, port, "TrackSrv"),
      _mutex_status_node_map(),_status_node_map(), _thread_check_node_map(),_thread_heartbeat() {}
@@ -58,6 +80,37 @@ void TrackingServer::_tr_hearbeat() {
     LOG_F(INFO, "TrServer heartbeat process_stop=true; exiting");
 }
 
+// Node Map Sender ===========================================
+
+void TrackingServer::_setup_usocket(){
+    if ( (_usockfd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
+        perror("socket error");
+        exit(-1);
+    }
+
+    memset(&_flight_server_addr, 0, sizeof(_flight_server_addr));
+    _flight_server_addr.sun_family = AF_UNIX;
+    if (*_usocket_path == '\0') {
+        *_flight_server_addr.sun_path = '\0';
+        strncpy(_flight_server_addr.sun_path+1, _usocket_path+1, sizeof(_flight_server_addr.sun_path)-2);
+    } else {
+        strncpy(_flight_server_addr.sun_path, _usocket_path, sizeof(_flight_server_addr.sun_path)-1);
+    }
+}
+
+void TrackingServer::_send_status_node_map(){
+    if (connect(_usockfd, (struct sockaddr*)&_flight_server_addr, sizeof(_flight_server_addr)) == -1) {
+        perror("connect error with flight server");
+        exit(-1);
+    }
+    std::string json_nodemap = _get_encoded_json(_status_node_map);
+    if (send(_usockfd, json_nodemap.c_str(), json_nodemap.length(), 0) < 0) {
+        perror("Cannot send the node map");
+    }
+    std::cout << "Node map sent" << std::endl;
+    close(_usockfd);
+}
+// ===========================================================
 
 
 void TrackingServer::_tr_check_node_map(){
@@ -67,7 +120,7 @@ void TrackingServer::_tr_check_node_map(){
     loguru::set_thread_name(this->threadname(":chkNodeMap").c_str()); // TODO
     LOG_F(INFO, "Starting _check_node_map");
 
-    std::map<uint8_t, std::pair<Position, uint32_t>>::const_iterator it;
+    nodemap_t::const_iterator it;
 
     while (! process_stop) {
         { 
@@ -86,7 +139,7 @@ void TrackingServer::_tr_check_node_map(){
 
             if (need_fp_recompute) {
                 need_fp_recompute = false;  // reset for next iter
-                // TODO delegation to flight planner
+                _send_status_node_map();    // Send to python flight server through unix socket
             }
         }
         std::this_thread::sleep_for(std::chrono::seconds(_period_mapcheck));
@@ -99,6 +152,7 @@ void TrackingServer::_tr_check_node_map(){
 void TrackingServer::start() {
     LOG_F(WARNING, "Starting Tracking server");
     AbstractReliableBroadcastNode<TrackPacket>::start();
+    _setup_usocket();
     _thread_check_node_map = std::thread(&TrackingServer::_tr_check_node_map, this);
     _thread_heartbeat = std::thread(&TrackingServer::_tr_hearbeat, this);
 }

@@ -11,11 +11,15 @@
 #include <ctime>
 #include <thread>
 #include <mutex>
+#include <sys/un.h>
 #include "loguru.hpp"
 #include "settings.hpp"
 #include "AbstractReliableBroadcast.hpp"
 #include "common.hpp"
 #include "packets.hpp"
+
+typedef std::map<uint8_t, std::pair<Position, uint32_t>> nodemap_t;
+
 
 class TrackingServer final : public AbstractReliableBroadcastNode<TrackPacket> {
 private:
@@ -24,8 +28,15 @@ private:
     const unsigned short _peer_lost_timeout = TRACKING_PEER_LOSS_TIMEOUT;
     const unsigned short _period_mapcheck = TRACKING_PERIOD_CHECK_NODEMAP;
 
+    // Unix Socket Sender
+    char* _usocket_path = "./usocket";
+    struct sockaddr_un _flight_server_addr;
+    int _usockfd;
+    void _setup_usocket();
+    void _send_status_node_map();
+
     std::mutex _mutex_status_node_map;
-    std::map<uint8_t, std::pair<Position, uint32_t>> _status_node_map;
+    nodemap_t _status_node_map;
 
     // threads
     std::thread _thread_check_node_map;
