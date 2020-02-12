@@ -29,7 +29,7 @@ private:
     const unsigned short _period_mapcheck = TRACKING_PERIOD_CHECK_NODEMAP;
 
     // Unix Socket Sender
-    char* _usocket_path = FP_USOCKET_PATH;
+    const char* _usocket_path = FP_USOCKET_PATH;
     struct sockaddr_un _flight_server_addr;
     int _usockfd;
     void _setup_usocket();

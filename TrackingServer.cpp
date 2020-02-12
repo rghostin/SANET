@@ -24,7 +24,7 @@ std::string get_encoded_json(const nodemap_t& map) {
 
 TrackingServer::TrackingServer(unsigned short port, uint8_t nodeID) : 
     AbstractReliableBroadcastNode<TrackPacket>(nodeID, port, "TrackSrv"),
-     _mutex_status_node_map(),_status_node_map(), _thread_check_node_map(),_thread_heartbeat() {}
+     _flight_server_addr(), _usockfd(), _mutex_status_node_map(),_status_node_map(), _thread_check_node_map(),_thread_heartbeat() {}
 
  
 TrackingServer::~TrackingServer() {
@@ -99,7 +99,7 @@ void TrackingServer::_setup_usocket(){
 }
 
 void TrackingServer::_send_status_node_map(){
-    if (connect(_usockfd, (struct sockaddr*)&_flight_server_addr, sizeof(_flight_server_addr)) == -1) {
+    if (connect(_usockfd, reinterpret_cast<sockaddr*>(&_flight_server_addr), sizeof(_flight_server_addr)) == -1) {
         perror("connect error with flight server");
         throw;
     }
