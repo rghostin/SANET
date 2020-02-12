@@ -195,6 +195,8 @@ template<typename P>
 inline P AbstractBroadcastNode<P>::_produce_packet() {
     P packet;
     packet.nodeID = _nodeID;
+    packet.position.longitude = _nodeID;  // TODO pos by default
+    packet.position.latitude = _nodeID;
     return packet;
 }
 

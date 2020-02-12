@@ -33,9 +33,9 @@ private:
     uint32_t _image_reception_check=IMAGE_RECEPTION_CHECK;
 
     std::mutex _mutex_img_map;
-    std::map<uint8_t, Image> _image_map;
+    std::map<Position, Image> _image_map;
     std::mutex _mutex_check_img_in_construct;
-    std::map<uint8_t, ImageBuilder> _building_image_map;
+    std::map<Position, ImageBuilder> _building_image_map;
 
     // threads
     std::thread _thread_check_completed_imgs;

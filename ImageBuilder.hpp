@@ -42,6 +42,7 @@ public :
     bool is_complete() const;
     Image get_image() const;
     uint32_t get_timestamp() const;
+    uint8_t get_nodeid() const;
     uint32_t loss_percent() const;
     bool chunk_already_received(uint32_t) const;
 };

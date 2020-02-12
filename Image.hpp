@@ -18,7 +18,7 @@ struct Image {
     Image() :
             nodeID(0), timestamp(0), position(0,0), content() {}
 
-    std::pair<uint8_t, uint32_t> get_infos() {
+    std::pair<uint8_t, uint32_t> get_imageID() {
         return std::make_pair(nodeID, timestamp);
     }
 };

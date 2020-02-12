@@ -100,6 +100,11 @@ uint32_t ImageBuilder::get_timestamp() const {
 }
 
 
+uint8_t ImageBuilder::get_nodeid() const {
+    return _nodeID;
+}
+
+
 uint32_t ImageBuilder::loss_percent() const {
     uint32_t counterFalse(0);
 

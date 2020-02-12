@@ -24,7 +24,7 @@ struct TrackPacket  {
     std::string repr() const {
         const size_t len=256;
         char buffer[len];
-        snprintf(buffer, len, "{nodeID=%d|seqnum=%d|timestamp=%d|Pos=(%f,%f), led_status=%d}", nodeID, seqnum, timestamp, position.longitude, position.latitude, led_status);
+        snprintf(buffer, len, "{nodeID=%d|seqnum=%d|timestamp=%d|Pos=(%f,%f)|led_status=%d}", nodeID, seqnum, timestamp, position.longitude, position.latitude, led_status);
         return buffer;
     }    
 };
@@ -47,7 +47,7 @@ struct ImageChunkPacket  {  // Image identified by <nodeID, timestamp>
     std::string repr() const {
         const size_t len=256;
         char buffer[len];
-        snprintf(buffer, len, "{nodeID=%d|offset=%d|timestamp=%d|sizeImage=%d}", nodeID, offset, timestamp, sizeImage);
+        snprintf(buffer, len, "{nodeID=%d|offset=%d|timestamp=%d|Pos=(%f,%f)|sizeImage=%d}", nodeID, offset, timestamp, position.longitude, position.latitude, sizeImage);
         return buffer;
     }
 };

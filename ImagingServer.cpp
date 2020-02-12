@@ -18,7 +18,7 @@ void ImagingServer::_tr_check_completed_imgs() {
     loguru::set_thread_name("ImagingSrv");
     LOG_F(INFO, "Starting ImagingSrv _check_completed_imgs");
 
-    std::map<uint8_t, ImageBuilder>::const_iterator it;
+    std::map<Position, ImageBuilder>::const_iterator it;
 
     while (! process_stop) {
         {  // Scope spécifique sinon lock_guard va dans le sleep
@@ -29,7 +29,7 @@ void ImagingServer::_tr_check_completed_imgs() {
 
                 if ((actualTimestamp - ((it->second).get_timestamp())) > _image_reception_timeout) {
                     // No response
-                    LOG_F(WARNING, "Image lost from NodeID=%d, Lost rate : %d%%", it->first, (it->second).loss_percent());
+                    LOG_F(WARNING, "Image lost from NodeID=%d, Lost rate : %d%%", (it->second).get_nodeid(), (it->second).loss_percent());
                     _building_image_map.erase(it++);
                 }
                 else {
@@ -54,19 +54,19 @@ ImageChunkPacket ImagingServer::_produce_packet() {
 void ImagingServer::_process_packet(const ImageChunkPacket& packet) {
     std::lock_guard<std::mutex> lock_building(_mutex_check_img_in_construct);
 
-    if (_building_image_map.find(packet.nodeID) == _building_image_map.end()) {  // New Image
-        _building_image_map.emplace(packet.nodeID, ImageBuilder(packet));
+    if (_building_image_map.find(packet.position) == _building_image_map.end()) {  // New Image
+        _building_image_map.emplace(packet.position, ImageBuilder(packet));
     }
     else {
-        _building_image_map[packet.nodeID].add_chunk(packet);
-        if (_building_image_map[packet.nodeID].is_complete()) {
+        _building_image_map[packet.position].add_chunk(packet);
+        if (_building_image_map[packet.position].is_complete()) {
             {
                 std::lock_guard<std::mutex> lock(_mutex_img_map);
-                _image_map[packet.nodeID] = _building_image_map[packet.nodeID].get_image();
+                _image_map[packet.position] = _building_image_map[packet.position].get_image();
             }
             LOG_F(3, "Image moved to _image_map: %s", packet.repr().c_str());
 
-            _building_image_map.erase(packet.nodeID);  // image completed -> delete ImageBuilder
+            _building_image_map.erase(packet.position);  // image completed -> delete ImageBuilder
 
             LOG_F(3, "Image deleted from _building_image_map : %s", packet.repr().c_str());
         }
@@ -137,6 +137,6 @@ void ImagingServer::join() {
 
 inline bool ImagingServer::_to_be_ignored(const ImageChunkPacket& packet) const {
     return AbstractBroadcastNode<ImageChunkPacket>::_to_be_ignored(packet) ||
-        (_building_image_map.find(packet.nodeID) != _building_image_map.end() && (_building_image_map.at(packet.nodeID)).chunk_already_received(packet.offset))
-        || (_image_map.find(packet.nodeID) != _image_map.end() and packet.timestamp == _image_map.at(packet.nodeID).timestamp);
+        (_building_image_map.find(packet.position) != _building_image_map.end() && (_building_image_map.at(packet.position)).chunk_already_received(packet.offset))
+        || (_image_map.find(packet.position) != _image_map.end() and packet.timestamp == _image_map.at(packet.position).timestamp);
 }
