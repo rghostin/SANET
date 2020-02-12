@@ -6,7 +6,7 @@ ImageBuilder::ImageBuilder() :_nodeID(0), _timestamp(0), _position(), _sizeImage
 
 ImageBuilder::ImageBuilder(ImageChunkPacket packet) :
         _nodeID(packet.nodeID), _timestamp(packet.timestamp), _position(packet.position), _sizeImage(packet.sizeImage),
-        _sizeVec(static_cast<uint32_t>(ceil(static_cast<float>(packet.sizeImage) / static_cast<float>(IMG_CHUNK_SIZE)))),
+        _sizeVec(static_cast<uint32_t>(ceil(static_cast<double>(packet.sizeImage) / static_cast<double>(IMG_CHUNK_SIZE)))),
         _mutex_is_complete(), _image(), _img_building_vec(_sizeVec),
         _fillstate_vec(_sizeVec) {
     this->add_chunk(packet);
@@ -36,7 +36,7 @@ void ImageBuilder::add_chunk(ImageChunkPacket packet) {
         if (_is_complete) return;
     }
 
-    auto index(static_cast<uint32_t>(ceil(static_cast<float>(packet.offset) / static_cast<float>(IMG_CHUNK_SIZE))));
+    auto index(static_cast<uint32_t>(ceil(static_cast<double>(packet.offset) / static_cast<double>(IMG_CHUNK_SIZE))));
 
     if (not _fillstate_vec[index]) {
         _img_building_vec[index] = packet.chunk_content;
@@ -70,7 +70,7 @@ void ImageBuilder::add_chunk(ImageChunkPacket packet) {
             }
 
             auto *md5_checksum = new unsigned char[MD5_DIGEST_LENGTH];  // TODO VOIR MD5_DIGEST_LENGTH vu que plus d'import
-            MD5((unsigned char*)&_image.content[0], _image.content.size(), md5_checksum);
+            MD5(reinterpret_cast<unsigned char *>(&_image.content[0]), _image.content.size(), md5_checksum);
             print_md5_sum(md5_checksum);
 
             LOG_F(3, "Image is complete from : %s", packet.repr().c_str());

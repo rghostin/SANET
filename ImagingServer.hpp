@@ -21,13 +21,16 @@
 #include "settings.hpp"
 #include "packets.hpp"
 #include "ImageBuilder.hpp"
+#include <cstdio>
+
+#define INPUT_FILE(x) PATH_IMG #x TYPE_IMG
 
 
 class ImagingServer : public AbstractReliableBroadcastNode<ImageChunkPacket> {
 private:
     // self information and settings
     uint32_t _image_reception_timeout=IMAGE_RECEPTION_TIMEOUT;
-    uint32_t _image_reception_check=IMAGE_RECEPTION_TIMEOUT;
+    uint32_t _image_reception_check=IMAGE_RECEPTION_CHECK;
 
     std::mutex _mutex_img_map;
     std::map<uint8_t, Image> _image_map;
@@ -40,6 +43,7 @@ private:
 
     ImageChunkPacket _produce_packet() override;
     void _process_packet(const ImageChunkPacket&) override;
+    void _send_image();
 
 public:
     ImagingServer(unsigned short port, uint8_t nodeID);

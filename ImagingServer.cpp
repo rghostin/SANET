@@ -46,8 +46,7 @@ void ImagingServer::_tr_check_completed_imgs() {
 ImageChunkPacket ImagingServer::_produce_packet() {
     ImageChunkPacket packet = AbstractReliableBroadcastNode<ImageChunkPacket>::_produce_packet();
     packet.timestamp = static_cast<uint32_t>(std::time(nullptr));
-    // TODO fournir donnée d'image -> char[250] + sizeImage + offset
-    LOG_F(3, "Generated packet: %s", packet.repr().c_str());
+    LOG_F(3, "Generated packet: %s", packet.repr().c_str());  // TODO remove vu qu'offset pas fixé ici mais spam (3 -> 7) ?
     return packet;
 }
 
@@ -74,6 +73,53 @@ void ImagingServer::_process_packet(const ImageChunkPacket& packet) {
             LOG_F(3, "Image deleted from _building_image_map : %s", packet.repr().c_str());
         }
     }
+}
+
+
+void ImagingServer::_send_image() {  // TODO Faire constructeur image(path) -> obtenir var de char et envoyer ça + mutex pour maj du fichier
+    ImageChunkPacket packet = _produce_packet();
+    FILE* image_file;
+    uint32_t size_file_remaining;
+    uint32_t bytes_to_treat(IMG_CHUNK_SIZE);
+
+    char path_img[](INPUT_FILE(_nodeID));
+
+    memset(&packet.chunk_content, '\0', IMG_CHUNK_SIZE);
+    packet.sizeImage = get_size(path_img);
+    size_file_remaining = packet.sizeImage;
+    image_file = fopen(path_img, "rb");
+
+
+    if (IMG_CHUNK_SIZE > size_file_remaining) {
+        bytes_to_treat = size_file_remaining;
+    }
+    else {
+        bytes_to_treat = IMG_CHUNK_SIZE;
+    }
+
+    while(size_file_remaining > 0 and !feof(image_file)) {
+        fread(&packet.chunk_content[0], sizeof(char), bytes_to_treat, image_file);
+        size_file_remaining -= bytes_to_treat;
+
+        this->broadcast(packet);
+
+        LOG_F(7, "ImageChunkPacket: %s", packet.repr().c_str());
+
+        packet.offset += bytes_to_treat;
+
+        memset(&packet.chunk_content, '\0', IMG_CHUNK_SIZE);
+
+        if (IMG_CHUNK_SIZE <= size_file_remaining) {
+            bytes_to_treat = IMG_CHUNK_SIZE;
+        }
+        else {
+            bytes_to_treat = size_file_remaining;
+        }
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(THREAD_SLEEP_SEND));
+    }
+
+    fclose(image_file);
 }
 
 

@@ -37,7 +37,7 @@ uint32_t get_size(char* path) {
     memset(buffer, '\0', res);
     in_file.readsome(buffer, res);
 
-    MD5((unsigned char*)buffer, res, md);
+    MD5(reinterpret_cast<unsigned char *>(buffer), res, md);
 
     int i;
     printf("Checksum MD5 : ");
@@ -63,7 +63,7 @@ char* input_filename() {
         std::cin >> buffer;
     }
     else {
-        strcpy(buffer, "/home/heikko/CLionProjects/mnetR/img/17.jpg");
+        strcpy(buffer, "img/17.jpg");
     }
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
@@ -208,7 +208,7 @@ int main(int argc, char** argv) {
                 bytes_to_treat = size_file_remaining;
             }
 
-            std::this_thread::sleep_for(std::chrono::milliseconds(3));
+            std::this_thread::sleep_for(std::chrono::milliseconds(THREAD_SLEEP_SEND));
         }
         printf("ImageChunkPacket: %s\n", packet.repr().c_str());
 

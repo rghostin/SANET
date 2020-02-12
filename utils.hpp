@@ -14,6 +14,18 @@ inline int read_int_from_file(const char* file_name){
 }
 
 
+inline uint32_t get_size(const char* file_name) {
+    uint32_t res;
+
+    FILE* file(fopen(file_name, "r"));
+    fseek(file, 0L, SEEK_END);
+    res = static_cast<uint32_t>(ftell(file));
+    fclose(file);
+
+    return res;
+}
+
+
 inline void print_md5_sum(unsigned char* md) {
     char checksum_res[32];
 

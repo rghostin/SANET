@@ -10,7 +10,7 @@
 // Tracking settings
 #define TRACKING_SERVER_PORT 5820
 #define TRACKING_HEARTBEAT_PERIOD 30
-#define TRACKING_PEER_LOSS_TIMEOUT 4 * TRACKING_HEARTBEAT_PERIOD
+#define TRACKING_PEER_LOSS_TIMEOUT (4 * TRACKING_HEARTBEAT_PERIOD)
 #define TRACKING_PERIOD_CHECK_NODEMAP TRACKING_HEARTBEAT_PERIOD
 
 // Imaging settings
@@ -18,9 +18,12 @@
 #define IMG_CHUNK_SIZE 1024
 #define IMAGE_RECEPTION_TIMEOUT 60
 #define IMAGE_RECEPTION_CHECK 30
+#define THREAD_SLEEP_SEND 3
+#define PATH_IMG "img/"
+#define TYPE_IMG ".png"
 
 // Reliable Broadcast settings
-#define RELBC_PACKET_MAX_AGE 2 * TRACKING_HEARTBEAT_PERIOD // heartbeat < max_packet_age < lost_peer_timeout
+#define RELBC_PACKET_MAX_AGE (2 * TRACKING_HEARTBEAT_PERIOD) // heartbeat < max_packet_age < lost_peer_timeout
 
 
 #endif
