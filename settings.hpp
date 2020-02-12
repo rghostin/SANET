@@ -22,6 +22,6 @@
 #define RELBC_PACKET_MAX_AGE 2 * TRACKING_HEARTBEAT_PERIOD // heartbeat < max_packet_age < lost_peer_timeout
 
 // Flight planning settings
-#define FP_USOCKET_PATH "/home/mdiamant/geoserver-feature_flightserver/testc/usocket"
+#define FP_USOCKET_PATH "./usocket"
 
 #endif

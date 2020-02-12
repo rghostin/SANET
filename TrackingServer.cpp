@@ -2,7 +2,7 @@
 
 // JSON UTILS ===================================
 
-std::string TrackingServer::get_json_nodemap(const nodemap_t& map) {
+std::string TrackingServer::_get_json_nodemap(const nodemap_t& map) {
     char buffer[4096]="";
     std::string res = "{";
     
@@ -117,7 +117,7 @@ void TrackingServer::_send_status_node_map(){
     std::string json_nodemap;
     {
         std::lock_guard<std::mutex> lock(_mutex_status_node_map);
-        json_nodemap = get_json_nodemap(_status_node_map);
+        json_nodemap = _get_json_nodemap(_status_node_map);
     }
     if (send(_usockfd, json_nodemap.c_str(), json_nodemap.length(), 0) < 0) {
         perror("Cannot send the node map");

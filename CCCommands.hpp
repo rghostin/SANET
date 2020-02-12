@@ -6,5 +6,4 @@
 #define FETCH_NODES_POS 2
 
 
-
 #endif
