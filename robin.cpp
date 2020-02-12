@@ -94,7 +94,7 @@ int main(int argc, char** argv) {
 
     // join all services
     // ccserver.join();
-    // trackingserver.join();
+    trackingserver.join();
 
     LOG_F(WARNING, "Robin exiting");
     return 0;
