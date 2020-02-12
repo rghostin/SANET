@@ -154,9 +154,9 @@ if __name__ == "__main__":
     # square = [(1, 1), (6, 1), (6, 6), (1, 6)]
     # concave = [(2,1), (9,1), (10, 3), (6,5), (5,3), (4,5), (1,3)]
 
-    poly = Polygon(*[(244, 159), (0, 1736), (939, 1671), (1118, 0)])
+    poly = Polygon(*[(202, 84), (0, 1660), (1084, 1706), (1227, 0)])
 
-    for i in range(5, 6):
+    for i in range(3, 6):
         t = getFairPartitioning(poly, i, True)
         print(t)
         print([abs(p.area) for p in t])
