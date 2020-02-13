@@ -40,7 +40,7 @@ class Autopilot:
         finally:
             self.__mutex_position.release()
         
-        to_write = "%s\n%s" % newpos
+        to_write = "%s, %s" % newpos
         with open(POS_CFG_FILE, 'r') as f:
             f.write(to_write)
 
