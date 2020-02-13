@@ -69,7 +69,7 @@ class Autopilot:
 
     def __tr_update_position(self):
         while True:
-            it = cycle(self.__flightplan)
+            it = cycle(self.__flightplan.route)
 
             # seek start_waypoint
             while not it==self.__flightplan.start_waypoint:
