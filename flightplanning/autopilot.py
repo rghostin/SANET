@@ -2,6 +2,7 @@ from threading import Thread, Lock
 from itertools import cycle
 from utils import euclidian_distance
 from time import sleep
+import os
 
 
 POS_CFG_FILE = "current.position"
@@ -39,10 +40,24 @@ class Autopilot:
             self.__position = newpos
         finally:
             self.__mutex_position.release()
-        
-        to_write = "%s, %s" % newpos
-        with open(POS_CFG_FILE, 'r') as f:
-            f.write(to_write)
+
+        to_write = "%f\n%f" % newpos
+
+        # Checking if file is locked (if FILENAME.LOCK exists)
+        fp_curr_pos_lock_path = POS_CFG_FILE+".lock"
+        while os.access(fp_curr_pos_lock_path, os.R_OK | os.X_OK):
+            print("Cannot access")
+
+        # Locking the file
+        with open(fp_curr_pos_lock_path, 'w'):
+            print('creating lock')
+
+        # Writing pos on file
+        with open(POS_CFG_FILE, 'w') as pos_file:
+            pos_file.write(to_write)
+
+        # Unlocking the file
+        os.remove(fp_curr_pos_lock_path)
 
     def __is_new_fp_flag(self):
         flag_val = None
