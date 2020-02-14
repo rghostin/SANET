@@ -62,7 +62,7 @@ apt upgrade -y
 apt autoremove -y
 
 echo '[*] Installing  requirements'
-apt install wireless-tools iw batctl alfred make g++ python3-setuptools -y
+apt install wireless-tools iw batctl alfred make g++ python3-setuptools libssl-dev -y
 
 echo '[*] Setting keyboard layout to FR'
 changeKeyboard "$KBLAYOUT"
