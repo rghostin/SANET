@@ -7,3 +7,5 @@ commandsender
 .vscode/
 nodeid.cfg
 
+/flightplanning/*.pyc
+
