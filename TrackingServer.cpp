@@ -25,13 +25,6 @@ TrackPacket TrackingServer::_produce_packet() {
 }
 
 
-Position TrackingServer::_get_current_position() const {
-    Position position(0,0);  // TODO construire pos actuelle
-    return position;
-}
-
-
-
 void TrackingServer::_process_packet(const TrackPacket& packet) {
     AbstractReliableBroadcastNode<TrackPacket>::_process_packet(packet);
     _tracker.notify(packet);

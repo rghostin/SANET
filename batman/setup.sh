@@ -16,7 +16,13 @@ function changeKeyboard {
 }
 
 
-function usage() {}
+function usage() {
+	echo "This script must be run with super-user privileges.
+	Usage: $0 [arguments]
+	  - i:NodeID (0 <= i <= 254)
+    - h:Hostname
+    - a:Antenna (0 : to enable | 1 : to disable)"
+}
 
 cd "$ROOT"
 
@@ -33,7 +39,7 @@ if [[ $# != 2 ]]; then
 fi
 
 # getting params
-while getopts ":h:i:" o; do
+while getopts ":h:i:a:" o; do
     case "${o}" in
         i)
             i=${OPTARG}
@@ -42,6 +48,9 @@ while getopts ":h:i:" o; do
         h)
             h=${OPTARG}
             ;;
+        a)
+            a=${OPTARG}
+            ;;
         *)
             usage
             ;;
@@ -49,9 +58,11 @@ while getopts ":h:i:" o; do
 done
 shift $((OPTIND-1))
 
-
 echo "changing hostname to $h"
 hostnamectl set-hostname "$h"
+
+echo '[*] Writing NodeID configuration'
+echo -n "$i" > "$NODEID_CONF"
 
 echo '[*] Connecting to wifi'
 "$CONNECTWIFI_SCRIPT"
@@ -62,9 +73,10 @@ apt upgrade -y
 apt autoremove -y
 
 echo '[*] Installing  requirements'
-apt install wireless-tools iw batctl alfred make g++ python3-setuptools libssl-dev -y
+apt install wireless-tools iw batctl alfred make g++ python3-setuptools libssl-dev hostapd isc-dhcp-server -y
 
-echo '[*] Setting keyboard layout to FR'
+echo "[*] Setting keyboard layout to $KBLAYOUT"
+loadkeys "$KBLAYOUT"
 changeKeyboard "$KBLAYOUT"
 
 echo '[*] Copying screen config'
@@ -72,13 +84,31 @@ echo '[*] Copying screen config'
 cp "$RSRC_DIR"/config_std.txt /boot/firmware/
 cp "$RSRC_DIR"/config_waveshare.txt /boot/firmware/
 
-echo '[*] Writing hostid configuration'
-echo -n "$i" > "$NODEID_CONF"
-
 echo "[*] Compiling robin"
 make rebuild
 
 echo '[*] Enabling batman and robin on reboot'
 echo "@reboot   root    ${RUN_SCRIPT}" >> /etc/crontab
+
+if [[ $a -eq 0 ]] ; then  # Enabling Antenna
+    echo "- setting static IP address=$P_IP_ADDR/24"
+    ip addr add dev "$P_IFACE" "$P_IP_ADDR"/24
+
+    echo '[*] Writing dhcpd configuration'
+    #dhcpd_file="/etc/dhcp/dhcpd.conf"  # Todo cp file
+
+    # Todo cp file -> /etc/default/isc-dhcp-server
+
+    echo '[*] Restarting DHCP server'
+    service isc-dhcp-server restart
+
+    # Todo cp file -> /etc/hostapd/hostapd.conf + /etc/default/hostapd
+
+    echo '[*] Activation of forwarding'
+    sh -c "echo 1 > /proc/sys/net/ipv4/ip_forward"
+else
+    systemctl mask isc-dhcp-server
+    systemctl mask hostapd
+fi
 
 echo '[*] Done'

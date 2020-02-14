@@ -31,7 +31,6 @@ private:
 
     TrackPacket _produce_packet() override;
     void _process_packet(const TrackPacket&) override;
-    Position _get_current_position() const;
 
 public:
     TrackingServer(unsigned short port, uint8_t nodeID, Tracker &tracker, unsigned short heart_period=TRACKING_HEARTBEAT_PERIOD);

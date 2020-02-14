@@ -14,6 +14,7 @@
 #include <mutex>
 #include "loguru.hpp"
 #include "common.hpp"
+#include "Position.hpp"
 
 
 template <typename P>
@@ -41,6 +42,7 @@ protected:
     virtual bool _to_be_ignored(const P&) const;
     virtual void _process_packet(const P&) = 0;
     virtual P _produce_packet();
+    Position _get_current_position() const;
 
 public:
     AbstractBroadcastNode(uint8_t nodeID, unsigned short port, const char* name);
@@ -199,6 +201,14 @@ inline P AbstractBroadcastNode<P>::_produce_packet() {
     packet.position.latitude = _nodeID;
     return packet;
 }
+
+
+template<typename P>
+Position AbstractBroadcastNode<P>::_get_current_position() const {
+    Position position(0,0);  // TODO construire pos actuelle
+    return position;
+}
+
 
 template<typename P>
 void AbstractBroadcastNode<P>::start() {

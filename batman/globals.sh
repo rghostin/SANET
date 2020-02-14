@@ -14,8 +14,7 @@ CONN_PASSWORD="Ahngaen9"
 # Public network settings
 P_WIRELS_SSID="AMD_PI"
 P_WIRELS_PSWD="raspberryNOPC"
-P_IP_ADDR="192.168.0"
-P_IPTABLES_PATH="/etc/iptables.ipv4.nat"
+P_IP_ADDR="192.168.42.1"
 
 # general settings
 KBLAYOUT="be"
