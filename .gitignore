@@ -4,6 +4,7 @@ robin
 tpacket_broadcaster
 commandsender
 /cmake-build-debug/
+/.idea/
 .vscode/
 nodeid.cfg
 /flightplanning/*.pyc
