@@ -10,7 +10,7 @@
 #include <time.h>
 #include <ctime>
 #include <limits>
-#include "packets.hpp"
+#include "ImageChunkPacket.hpp"
 #include <fstream>
 #include <thread>
 #include <chrono>
@@ -200,7 +200,7 @@ int main(int argc, char** argv) {
                 bytes_to_treat = size_file_remaining;
             }
 
-            std::this_thread::sleep_for(std::chrono::milliseconds(THREAD_SLEEP_SEND));
+            std::this_thread::sleep_for(std::chrono::milliseconds(IMAGE_SEND_SLEEP_SEPARATOR));
         }
         printf("ImageChunkPacket: %s\n", packet.repr().c_str());
 

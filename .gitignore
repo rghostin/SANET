@@ -2,12 +2,10 @@
 *.o
 robin
 packetsender
+imagesender
 /cmake-build-debug/
 .vscode/
 nodeid.cfg
-
-/img/1.png
-/img/17.jpg
-/img/41.jpg
-/img/test
-/img/test.jpg
+/img/*.png
+/img/*.jpg
+/img/*.jpeg

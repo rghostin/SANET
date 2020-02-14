@@ -12,38 +12,34 @@
 #include <thread>
 #include <mutex>
 #include <map>
-#include <queue>
-#include <iostream>
 #include "loguru.hpp"
 #include "settings.hpp"
 #include "AbstractBroadcastNode.hpp"
 #include "common.hpp"
-#include "settings.hpp"
-#include "packets.hpp"
+#include "ImageChunkPacket.hpp"
 #include "ImageBuilder.hpp"
-#include <cstdio>
 
-#define INPUT_FILE(x) PATH_IMG #x TYPE_IMG
+#define INPUT_FILE(x) PATH_IMG #x TYPE_IMG  // TODO rm
 
 
 class ImagingServer : public AbstractBroadcastNode<ImageChunkPacket> {
 private:
     // self information and settings
-    uint32_t _image_reception_timeout=IMAGE_RECEPTION_TIMEOUT;
-    uint32_t _image_reception_check=IMAGE_RECEPTION_CHECK;
+    const uint32_t _image_reception_timeout=IMAGE_RECEPTION_TIMEOUT;
+    const uint32_t _image_reception_check=IMAGE_TIMEOUT_CHECK_PERIOD;
 
-    std::mutex _mutex_img_map;
+    mutable std::mutex _mutex_image_map;
     std::map<Position, Image> _image_map;
-    std::mutex _mutex_check_img_in_construct;
+    mutable std::mutex _mutex_building_image_map;
     std::map<Position, ImageBuilder> _building_image_map;
 
     // threads
-    std::thread _thread_check_completed_imgs;
-    void _tr_check_completed_imgs();
+    std::thread _thread_check_timeout_imgs;
+    void _tr_check_timeout_imgs();
 
     ImageChunkPacket _produce_packet() override;
     void _process_packet(const ImageChunkPacket&) override;
-    void _send_image();
+    void _send_image() ; // TODO ? const
     bool _to_be_ignored(const ImageChunkPacket&) const override;
 
 public:
@@ -52,7 +48,7 @@ public:
     ImagingServer(ImagingServer&&) = delete;
     ImagingServer& operator=(const ImagingServer&) = delete;
     ImagingServer& operator=(const ImagingServer&&) = delete;
-    ~ImagingServer() override;
+    ~ImagingServer();
 
     void start() override;
     void join() override;

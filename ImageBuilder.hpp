@@ -8,21 +8,20 @@
 #include <cmath>
 #include "loguru.hpp"
 #include "common.hpp"
-#include "packets.hpp"
+#include "ImageChunkPacket.hpp"
 #include "Position.hpp"
 #include "utils_log.hpp"
 #include "Image.hpp"
 #include "utils.hpp"
-#include <openssl/md5.h>
 
 
 class ImageBuilder final {
 private :
-    uint8_t _nodeID;
-    uint32_t _timestamp;
-    Position _position;
-    uint32_t _sizeImage;
-    uint32_t _sizeVec;
+    const uint8_t _nodeID;
+    const uint32_t _timestamp;
+    const Position _position;
+    const uint32_t _sizeImage;
+    const uint32_t _sizeVec;
     bool _is_complete=false;
     mutable std::mutex _mutex_is_complete;
     Image _image;
@@ -43,8 +42,8 @@ public :
     Image get_image() const;
     uint32_t get_timestamp() const;
     uint8_t get_nodeid() const;
-    uint32_t loss_percent() const;
-    bool chunk_already_received(uint32_t) const;
+    uint32_t get_loss_percent() const;
+    bool is_chunk_already_received(const ImageChunkPacket&) const;
 };
 
 #endif

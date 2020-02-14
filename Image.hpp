@@ -3,7 +3,6 @@
 
 #include <cstdint>
 #include <vector>
-#include "settings.hpp"
 #include "Position.hpp"
 
 
