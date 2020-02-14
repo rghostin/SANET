@@ -6,7 +6,7 @@
 #include "settings.hpp"
 #include "common.hpp"
 #include "TrackingServer.hpp"
-#include "CCServer.hpp"
+#include "ImagingServer.hpp"
 
 
 // Stopping mechanism 

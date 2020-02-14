@@ -16,7 +16,7 @@
 #include "settings.hpp"
 #include "AbstractReliableBroadcast.hpp"
 #include "common.hpp"
-#include "packets.hpp"
+#include "TrackPacket.hpp"
 
 typedef std::map<uint8_t, std::pair<Position, uint32_t>> nodemap_t;
 

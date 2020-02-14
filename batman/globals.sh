@@ -3,12 +3,18 @@ ROOT='/home/ubuntu/sanet'
 # network settings
 W_IFACE="wlan0"
 B_IFACE="bat0"
+P_IFACE="wlan1"
 MESH_W_ESSID="meshnetw"
 MESH_W_CHANNEL="3"	# TODO research
 MESH_W_FREQ="2432"
 MESH_W_MTU="1500"
-CONN_IDENTITY="hlloreda@ulb.ac.be"
-CONN_PASSWORD="^nNxNx6k"
+CONN_IDENTITY="gahz7w@guestroam.be"
+CONN_PASSWORD="Ahngaen9"
+
+# Public network settings
+P_WIRELS_SSID="AMD_PI"
+P_WIRELS_PSWD="raspberryNOPC"
+P_IP_ADDR="192.168.42.1"
 
 # general settings
 KBLAYOUT="be"
