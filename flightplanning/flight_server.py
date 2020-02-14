@@ -3,7 +3,7 @@ import json
 import os
 from flight_planner import FlightPlanner
 from utils import plotAllFlightPlans
-
+from autopilot import Autopilot
 
 class FlightServer:
     def __init__(self, polygon_path, scope, server_address, display=False):
@@ -37,14 +37,12 @@ class FlightServer:
             print("Ignoring packet")
             return
         n = len(status_node_map)
-        print(n, status_node_map)
 
         self.__fplanner_.recompute(status_node_map)
         if self.__display_:
             plotAllFlightPlans(self.__fplanner_.flight_plans)
         for fplan in self.__fplanner_.flight_plans:
             print("Sending flight-plan to autopilot")
-            print(fplan.encoded_json)
 
     def receiveData(self, connection, client_address):
         # Receive the data in small chunks and retransmit it
@@ -60,14 +58,15 @@ class FlightServer:
         self.setup_usocket()
         print('Waiting for a connection')  # Wait for a connection
         self.__connection_, client_address = self.__usockfd_.accept()
+        print('Connection open', client_address)
+
         while True:
-            print('Connection open', client_address)
             json_status_nodemap = self.receiveData(self.__connection_, client_address)
+            print("Received", json_status_nodemap)
             if not json_status_nodemap:
                 self.__connection_.close()  # Clean up the connection
                 break
             self.processReceived(json_status_nodemap)
-            print("processed first")
     
     def stop(self):
         self.__connection_.close()  # Clean up the connection

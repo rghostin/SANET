@@ -1,7 +1,7 @@
-#ifndef __PACKETS_HPP__
-#define __PACKETS_HPP__
+#ifndef __TRACKPACKET_HPP__
+#define __TRACKPACKET_HPP__
 
-#include <string>
+#include <cstdint>
 #include "Position.hpp"
 
 struct TrackPacket  {
@@ -21,10 +21,9 @@ struct TrackPacket  {
     std::string repr() const {
         const size_t len=256;
         char buffer[len];
-        snprintf(buffer, len, "{nodeID=%d|seqnum=%d|timestamp=%d|Pos=(%f,%f), led_status=%d}", nodeID, seqnum, timestamp, position.longitude, position.latitude, led_status);
+        snprintf(buffer, len, "{nodeID=%d|seqnum=%d|timestamp=%d|Pos=(%f,%f)|led_status=%d}", nodeID, seqnum, timestamp, position.longitude, position.latitude, led_status);
         return buffer;
     }    
 };
-
 
 #endif

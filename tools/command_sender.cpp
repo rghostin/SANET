@@ -3,8 +3,8 @@
 #include <arpa/inet.h> 
 #include <unistd.h> 
 #include <cstring> 
-#include "loguru.hpp"
-#include "settings.hpp"
+#include "../loguru.hpp"
+#include "../settings.hpp"
 
 
 #define SRV_IP "127.0.0.1"

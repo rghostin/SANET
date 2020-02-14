@@ -16,7 +16,7 @@
 #include "settings.hpp"
 #include "AbstractReliableBroadcast.hpp"
 #include "common.hpp"
-#include "packets.hpp"
+#include "TrackPacket.hpp"
 
 typedef std::map<uint8_t, std::pair<Position, uint32_t>> nodemap_t;
 
@@ -48,7 +48,6 @@ private:
 
     TrackPacket _produce_packet() override;
     virtual void _process_packet(const TrackPacket&) override;  
-    Position _get_current_position() const;
 
 public:
     TrackingServer(unsigned short port, uint8_t nodeID);

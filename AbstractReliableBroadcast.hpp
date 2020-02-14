@@ -29,15 +29,15 @@ private:
     bool _to_be_ignored(const P&) const override;
 
 protected:
-    virtual void _process_packet(const P&) override;
-    virtual P _produce_packet() override;
+    void _process_packet(const P&) override;
+    P _produce_packet() override;
 
 public:
     AbstractReliableBroadcastNode(uint8_t nodeID, unsigned short port, const char* name);
     virtual ~AbstractReliableBroadcastNode() = 0;   // forcing abstract
 
-    virtual void start() override;
-    virtual void join() override;
+    void start() override;
+    void join() override;
 };
 
 
