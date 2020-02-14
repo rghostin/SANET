@@ -6,6 +6,6 @@ commandsender
 /cmake-build-debug/
 .vscode/
 nodeid.cfg
-
 /flightplanning/*.pyc
+/flightplanning/__pycache__/
 
