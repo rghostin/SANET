@@ -1,15 +1,21 @@
-*.log
-*.o
+# directories
+/.idea/
+/cmake-build-debug/
+/.vscode/
+**/__pycache__
+
+#  extensions
+**/*.pyc
+**/*.log
+**/*.o
+**/*.png
+**/*.jpg
+**/*.jpeg
+
+
+# binaries
 robin
 tpacket_broadcaster
-commandsender
-/cmake-build-debug/
-/.idea/
-.vscode/
-nodeid.cfg
-/flightplanning/*.pyc
-/flightplanning/__pycache__/
-/img/*.png
-/img/*.jpg
-/img/*.jpeg
+command_sender
+nodemap_sender
 

@@ -18,4 +18,4 @@ nodemap_sender: nodemap_sender.cpp
 
 .PHONY: clean
 clean:
-	find . \( -type f -name "*.o" -and ! -name "loguru.o" -or -name "*.log" \) -delete; rm -rf robin
+	find . \( -type f -name "*.o" -and ! -name "loguru.o" -or -name "*.log" \) -delete; rm -rf command_sender tpacket_broadcaster nodemap_sender
