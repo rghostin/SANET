@@ -6,7 +6,7 @@
 #include "settings.hpp"
 #include "common.hpp"
 #include "TrackingServer.hpp"
-#include "Tracker.hpp"
+#include "CCServer.hpp"
 #include "ImagingServer.hpp"
 
 
@@ -27,13 +27,14 @@ int main(int argc, char** argv) {
     char *checkLong;
     long int verbose_value;
 
-#ifdef __aarch64__
-    auto user_running(getuid());
-    if (user_running != 0) {
-        perror("Robin must be run as root");
-        throw;
-    }
-#endif
+    // force running as root on ARM
+    #ifdef __aarch64__
+        auto user_running = getuid();
+        if (user_running != 0) {
+            perror("Robin must be run as root");
+            throw;
+        }
+    #endif
 
     if (argc < 3) {
         perror("Not enough arguments");
@@ -85,14 +86,15 @@ int main(int argc, char** argv) {
     Tracker tracker(TRACKING_PEER_LOSS_TIMEOUT, TRACKING_PERIOD_CHECK_NODEMAP);
     TrackingServer trackingserver(TRACKING_SERVER_PORT, nodeID, tracker, TRACKING_HEARTBEAT_PERIOD);
 
-    ImagingServer imagingServer(IMAGING_SERVER_PORT,nodeID);
-
     // setup signals
     signal(SIGINT, exit_handler);
 
-
-    // start server on current thread
+    // Tracking server
+    TrackingServer trackingserver(TRACKING_SERVER_PORT, nodeID);
     trackingserver.start();
+
+    // Imaging server
+    ImagingServer imagingServer(IMAGING_SERVER_PORT,nodeID);
     imagingServer.start();
 
     // join all services

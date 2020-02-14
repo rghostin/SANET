@@ -13,7 +13,7 @@
 template<typename P>
 class AbstractReliableBroadcastNode : public AbstractBroadcastNode<P> {
 private:
-    time_t _max_packet_age;
+    const time_t _max_packet_age=RELBC_PACKET_MAX_AGE;
     mutable std::mutex _mutex_last_seq_map;
     std::map<uint8_t, std::pair<uint32_t, unsigned int>> _last_seq_map;
 
@@ -33,7 +33,7 @@ protected:
     P _produce_packet() override;
 
 public:
-    AbstractReliableBroadcastNode(uint8_t nodeID, unsigned short port, const char* name, time_t max_packet_age);
+    AbstractReliableBroadcastNode(uint8_t nodeID, unsigned short port, const char* name);
     virtual ~AbstractReliableBroadcastNode() = 0;   // forcing abstract
 
     void start() override;
@@ -44,9 +44,9 @@ public:
 // implementation
 
 template<typename P>
-AbstractReliableBroadcastNode<P>::AbstractReliableBroadcastNode(uint8_t nodeID, unsigned short port, const char* name, time_t max_packet_age)  :
+AbstractReliableBroadcastNode<P>::AbstractReliableBroadcastNode(uint8_t nodeID, unsigned short port, const char* name)  :
     AbstractBroadcastNode<P>(nodeID, port, name),
-    _max_packet_age(max_packet_age), _mutex_last_seq_map(), _last_seq_map(), _thread_update_last_seq_map(), _mutex_next_seqnum()  {}
+    _mutex_last_seq_map(), _last_seq_map(), _thread_update_last_seq_map(), _mutex_next_seqnum()  {}
 
 
 template<typename P>

@@ -12,9 +12,11 @@
 #include <ctime>
 #include <thread>
 #include <mutex>
+#include <fstream>
 #include "loguru.hpp"
 #include "common.hpp"
 #include "Position.hpp"
+#include "settings.hpp"
 
 
 template <typename P>
@@ -82,7 +84,10 @@ AbstractBroadcastNode<P>::~AbstractBroadcastNode() {
     if (_thread_receiver.joinable()) {
         _thread_receiver.join();
     }
-    close(sockfd);
+    
+    if (close(sockfd) < 0) {
+        perror("Cannot close socket");
+    }
 }
 
 
@@ -138,19 +143,19 @@ void AbstractBroadcastNode<P>::_tr_receiver() {
     FD_SET(sockfd, &masterfds);
 
     while (! process_stop) {
-        sockaddr cli_addr;
+        sockaddr cliaddr;
         socklen_t len_cli_addr;
-        timeval rcv_to = {1,0};
+        timeval rcv_timeout = {1,0};     // TODO higher scope ?
 
         memcpy(&readfds, &masterfds, sizeof(fd_set));
 
-        if (select(sockfd+1, &readfds, nullptr, nullptr, &rcv_to) < 0) {
+        if (select(sockfd+1, &readfds, nullptr, nullptr, &rcv_timeout) < 0) {
             perror("Cannot select");
             throw;
         }
 
         if ( FD_ISSET(sockfd, &readfds)) {
-            if ( (recvfrom(sockfd, &packet, sizeof(P), 0, &cli_addr, &len_cli_addr) < 0) ) { 
+            if ( (recvfrom(sockfd, &packet, sizeof(P), 0, &cliaddr, &len_cli_addr) < 0) ) { 
                 close(sockfd);
                 perror("Cannot recvfrom");
                 throw;
@@ -197,18 +202,38 @@ template<typename P>
 inline P AbstractBroadcastNode<P>::_produce_packet() {
     P packet;
     packet.nodeID = _nodeID;
-    packet.position.longitude = _nodeID;  // TODO pos by default
-    packet.position.latitude = _nodeID;
     return packet;
 }
 
-
-template<typename P>
+template <typename P>
 Position AbstractBroadcastNode<P>::_get_current_position() const {
-    Position position(0,0);  // TODO construire pos actuelle
+    std::ifstream ifs;             // creates stream ifs
+    Position position;             // vector to store the numerical values in
+
+    while (access(FP_CURR_POS_LOCK_PATH, F_OK) != -1) {
+        // lock exists - active waiting
+    }
+
+    try {
+        // create our lock
+        std::ofstream lockfile(FP_CURR_POS_LOCK_PATH);
+
+        ifs.open(FP_CURR_POS_FILE_PATH);  //opens file
+        if (ifs.fail()) {
+            LOG_F(ERROR, "Cannot open file");
+            throw;
+        }
+        ifs >> position.longitude;
+        ifs >> position.latitude;
+    } catch (int e){
+        ; // ignore - just ignore and delete lock
+    }
+
+    if (remove(FP_CURR_POS_LOCK_PATH) != 0) {
+        LOG_F(ERROR, "Cannot remove lockfile");
+    }
     return position;
 }
-
 
 template<typename P>
 void AbstractBroadcastNode<P>::start() {

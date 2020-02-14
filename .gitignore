@@ -1,11 +1,21 @@
-*.log
-*.o
-robin
-packetsender
-imagesender
+# directories
+/.idea/
 /cmake-build-debug/
-.vscode/
-nodeid.cfg
-/img/*.png
-/img/*.jpg
-/img/*.jpeg
+/.vscode/
+**/__pycache__
+
+#  extensions
+**/*.pyc
+**/*.log
+**/*.o
+**/*.png
+**/*.jpg
+**/*.jpeg
+
+
+# binaries
+robin
+tpacket_broadcaster
+command_sender
+nodemap_sender
+
