@@ -5,7 +5,8 @@ from time import sleep
 import os
 
 
-POS_CFG_FILE = "current.position"
+FP_CURR_POS_FILE_PATH = "current.position"
+FP_CURR_POS_LOCK_PATH = "current.position.lock"
 
 class Autopilot:
     def __init__(self, flightplan, speed):
@@ -44,20 +45,19 @@ class Autopilot:
         to_write = "%f\n%f" % newpos
 
         # Checking if file is locked (if FILENAME.LOCK exists)
-        fp_curr_pos_lock_path = POS_CFG_FILE+".lock"
-        while os.access(fp_curr_pos_lock_path, os.R_OK | os.X_OK):
+        while os.access(FP_CURR_POS_LOCK_PATH, os.R_OK | os.X_OK):
             print("Cannot access")
 
         # Locking the file
-        with open(fp_curr_pos_lock_path, 'w'):
+        with open(FP_CURR_POS_LOCK_PATH, 'w'):
             print('creating lock')
 
         # Writing pos on file
-        with open(POS_CFG_FILE, 'w') as pos_file:
+        with open(FP_CURR_POS_FILE_PATH, 'w') as pos_file:
             pos_file.write(to_write)
 
         # Unlocking the file
-        os.remove(fp_curr_pos_lock_path)
+        os.remove(FP_CURR_POS_LOCK_PATH)
 
     def __is_new_fp_flag(self):
         flag_val = None
