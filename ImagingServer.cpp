@@ -45,8 +45,7 @@ void ImagingServer::_tr_check_timeout_imgs() {
 
 ImageChunkPacket ImagingServer::_produce_packet() {
     ImageChunkPacket packet = AbstractBroadcastNode<ImageChunkPacket>::_produce_packet();
-    packet.timestamp = static_cast<uint32_t>(std::time(nullptr));  // TODO
-    LOG_F(3, "Generated packet: %s", packet.repr().c_str());  // TODO remove vu qu'offset pas fixé ici mais spam (3 -> 7) ?
+    LOG_F(3, "Generated packet: %s", packet.repr().c_str());
     return packet;
 }
 

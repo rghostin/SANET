@@ -145,7 +145,7 @@ void AbstractBroadcastNode<P>::_tr_receiver() {
     while (! process_stop) {
         sockaddr cliaddr;
         socklen_t len_cli_addr;
-        timeval rcv_timeout = {1,0};     // TODO higher scope ?
+        timeval rcv_timeout = {1,0};
 
         memcpy(&readfds, &masterfds, sizeof(fd_set));
 
@@ -202,6 +202,7 @@ template<typename P>
 inline P AbstractBroadcastNode<P>::_produce_packet() {
     P packet;
     packet.nodeID = _nodeID;
+    packet.timestamp = static_cast<uint32_t>(std::time(nullptr)); 
     return packet;
 }
 

@@ -45,7 +45,6 @@ TrackingServer::~TrackingServer() {
 TrackPacket TrackingServer::_produce_packet() {
     TrackPacket packet = AbstractReliableBroadcastNode<TrackPacket>::_produce_packet();
     packet.led_status = false;
-    packet.timestamp = static_cast<uint32_t>(std::time(nullptr)); 
     packet.position = _get_current_position();
     LOG_F(3, "Generated packet: %s", packet.repr().c_str());
     return packet;    
@@ -56,7 +55,7 @@ TrackPacket TrackingServer::_produce_packet() {
 void TrackingServer::_process_packet(const TrackPacket& packet) {
     AbstractReliableBroadcastNode<TrackPacket>::_process_packet(packet);    
     bool new_node=false;
-    { // TODO - need for queue to make asynchrone ?
+    {
         std::lock_guard<std::mutex> lock(_mutex_status_node_map);
         new_node = (_status_node_map.find(packet.nodeID) == _status_node_map.end());
         _status_node_map[packet.nodeID] = {packet.position, packet.timestamp};
@@ -126,7 +125,7 @@ void TrackingServer::_tr_check_node_map(){
     bool need_fp_recompute=false;
     uint32_t curr_timestamp;
 
-    loguru::set_thread_name(this->threadname(":chkNodeMap").c_str()); // TODO
+    loguru::set_thread_name(this->threadname(":chkNodeMap").c_str());
     LOG_F(INFO, "Starting _check_node_map");
 
     nodemap_t::const_iterator it;
