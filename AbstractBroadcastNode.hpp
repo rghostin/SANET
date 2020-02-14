@@ -1,9 +1,10 @@
-#ifndef __ABSTRACTBROADCASTNODE_HPP_
+#ifndef _ABSTRACTBROADCASTNODE_HPP_
 #define _ABSTRACTBROADCASTNODE_HPP_
 
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
+#include <net/if.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include <cstring>
@@ -11,8 +12,11 @@
 #include <ctime>
 #include <thread>
 #include <mutex>
+#include <fstream>
 #include "loguru.hpp"
 #include "common.hpp"
+#include "Position.hpp"
+#include "settings.hpp"
 
 
 template <typename P>
@@ -23,6 +27,8 @@ private:
     int sockfd;
     sockaddr_in _srvaddr;
     sockaddr_in _bc_sockaddr;
+    ifreq b_iface;
+    const char* b_iface_name=BATMAN_IFACE;
 
     // threads
     std::thread _thread_receiver;
@@ -38,6 +44,7 @@ protected:
     virtual bool _to_be_ignored(const P&) const;
     virtual void _process_packet(const P&) = 0;
     virtual P _produce_packet();
+    Position _get_current_position() const;
 
 public:
     AbstractBroadcastNode(uint8_t nodeID, unsigned short port, const char* name);
@@ -56,7 +63,7 @@ public:
 
 template<typename P>
 AbstractBroadcastNode<P>::AbstractBroadcastNode(uint8_t nodeID, unsigned short port, const char* name):
-    _port(port), _nodeID(nodeID), _name(name)
+    _port(port), sockfd(), _srvaddr(), _bc_sockaddr(), b_iface(), _thread_receiver(), _nodeID(nodeID), _name(name)
 {
     // setup reception sockaddr
     memset(&_srvaddr, 0, sizeof(_srvaddr));
@@ -77,7 +84,10 @@ AbstractBroadcastNode<P>::~AbstractBroadcastNode() {
     if (_thread_receiver.joinable()) {
         _thread_receiver.join();
     }
-    close(sockfd);
+    
+    if (close(sockfd) < 0) {
+        perror("Cannot close socket");
+    }
 }
 
 
@@ -97,8 +107,18 @@ void AbstractBroadcastNode<P>::_setup_socket_bind() {
         throw;
     }
 
-    // TODO setting interface for bat0
-    // 
+    #ifdef __aarch64__
+        LOG_F(WARNING, "ARM architecture detected");
+        memset(&b_iface, 0, sizeof(b_iface));
+        snprintf(b_iface.ifr_name, sizeof(b_iface.ifr_name), b_iface_name);
+        if (setsockopt(sockfd, SOL_SOCKET, SO_BINDTODEVICE, (void*)&b_iface, sizeof(b_iface)) < 0) {
+            close(sockfd);
+            perror("setsockopt (SO_BINDTODEVICE)");
+            throw;
+        }
+    #else
+     LOG_F(WARNING, "Standard architecture detected");
+    #endif
 
     // binding to port
     if ( bind(sockfd, reinterpret_cast<const struct sockaddr*>(&_srvaddr), sizeof(_srvaddr)) < 0 ) {
@@ -123,19 +143,19 @@ void AbstractBroadcastNode<P>::_tr_receiver() {
     FD_SET(sockfd, &masterfds);
 
     while (! process_stop) {
-        sockaddr cli_addr;
+        sockaddr cliaddr;
         socklen_t len_cli_addr;
-        timeval rcv_to = {1,0};
+        timeval rcv_timeout = {1,0};     // TODO higher scope ?
 
         memcpy(&readfds, &masterfds, sizeof(fd_set));
 
-        if (select(sockfd+1, &readfds, nullptr, nullptr, &rcv_to) < 0) {
+        if (select(sockfd+1, &readfds, nullptr, nullptr, &rcv_timeout) < 0) {
             perror("Cannot select");
             throw;
         }
 
         if ( FD_ISSET(sockfd, &readfds)) {
-            if ( (recvfrom(sockfd, &packet, sizeof(P), 0, &cli_addr, &len_cli_addr) < 0) ) { 
+            if ( (recvfrom(sockfd, &packet, sizeof(P), 0, &cliaddr, &len_cli_addr) < 0) ) { 
                 close(sockfd);
                 perror("Cannot recvfrom");
                 throw;
@@ -183,6 +203,36 @@ inline P AbstractBroadcastNode<P>::_produce_packet() {
     P packet;
     packet.nodeID = _nodeID;
     return packet;
+}
+
+template <typename P>
+Position AbstractBroadcastNode<P>::_get_current_position() const {
+    std::ifstream ifs;             // creates stream ifs
+    Position position;             // vector to store the numerical values in
+
+    while (access(FP_CURR_POS_LOCK_PATH, F_OK) != -1) {
+        // lock exists - active waiting
+    }
+
+    try {
+        // create our lock
+        std::ofstream lockfile(FP_CURR_POS_LOCK_PATH);
+
+        ifs.open(FP_CURR_POS_FILE_PATH);  //opens file
+        if (ifs.fail()) {
+            LOG_F(ERROR, "Cannot open file");
+            throw;
+        }
+        ifs >> position.longitude;
+        ifs >> position.latitude;
+    } catch (int e){
+        ; // ignore - just ignore and delete lock
+    }
+
+    if (remove(FP_CURR_POS_LOCK_PATH) != 0) {
+        LOG_F(ERROR, "Cannot remove lockfile");
+    }
+    return position;
 }
 
 template<typename P>

@@ -10,6 +10,26 @@ struct Position {
 
     Position() : longitude(0), latitude(0) {}
     Position(double longitude, double latitude) : longitude(longitude), latitude(latitude) {}
+    bool operator < (const Position &otherPos) const {
+        if (longitude != otherPos.longitude) {
+            if (longitude < otherPos.longitude) {
+                return true;
+            }
+            else if (longitude > otherPos.longitude) {
+                return false;
+            }
+        }
+        else if (latitude != otherPos.latitude) {
+            if (latitude < otherPos.latitude) {
+                return true;
+            }
+            else if (latitude > otherPos.latitude) {
+                return false;
+            }
+        }
+
+        return false;
+    }
 };
 
 #endif
