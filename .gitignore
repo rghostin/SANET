@@ -12,11 +12,11 @@
 **/*.jpg
 **/*.jpeg
 **/*.orig
-
+**/*.lock
 
 # binaries
 robin
-tpacket_broadcaster
-command_sender
-nodemap_sender
-
+tools/tpacket_broadcaster
+tools/command_sender
+tools/nodemap_sender
+tools/image_sneder

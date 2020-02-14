@@ -4,6 +4,8 @@ import os
 from flight_planner import FlightPlanner
 from utils import plotAllFlightPlans
 from autopilot import Autopilot
+import global_settings as gs
+
 
 class FlightServer:
     def __init__(self, polygon_path, scope, server_address, display=False):
@@ -72,13 +74,9 @@ class FlightServer:
         self.__connection_.close()  # Clean up the connection
 
 if __name__ == "__main__":
-    CURR_DIR = os.path.dirname(__file__)
+    SCOPE = 20 # TODO camera
 
-    SCOPE = 20
-    GLOBAL_AREA_POLYGON_PATH = os.path.join(CURR_DIR, "global_area.polygon")
-    USOCKET_PATH = os.path.join(CURR_DIR, "../usocket")
-
-    fp = FlightServer(GLOBAL_AREA_POLYGON_PATH, SCOPE, USOCKET_PATH, display=False)
+    fp = FlightServer(gs.GLOBAL_AREA_POLYGON_PATH, SCOPE, gs.USOCKET_PATH, display=False)
     try:
         fp.start()
     except KeyboardInterrupt:

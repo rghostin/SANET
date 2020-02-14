@@ -5,9 +5,6 @@ from time import sleep
 import os
 
 
-FP_CURR_POS_FILE_PATH = "current.position"
-FP_CURR_POS_LOCK_PATH = "current.position.lock"
-
 class Autopilot:
     def __init__(self, flightplan, speed):
         self.__speed = speed
