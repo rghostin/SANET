@@ -3,7 +3,7 @@ CXXFLAGS := -std=c++17 -Weffc++  -Wctor-dtor-privacy -Wpedantic -Wall -Wextra -W
 
 LDFLAGS:=-lpthread -ldl
 
-all: command_sender tpacket_broadcaster nodemap_sender
+all: command_sender tpacket_broadcaster nodemap_sender image_sender
 
 rebuild : clean all
 
@@ -16,6 +16,9 @@ tpacket_broadcaster: tpacket_broadcaster.cpp
 nodemap_sender: nodemap_sender.cpp
 	$(CXX) $(CFLAGS) $^ -o $@ $(LDFLAGS)
 
+image_sender: image_sender.cpp
+	$(CXX) $(CFLAGS) $^ -o $@ $(LDFLAGS)
+
 .PHONY: clean
 clean:
-	find . \( -type f -name "*.o" -and ! -name "loguru.o" -or -name "*.log" \) -delete; rm -rf command_sender tpacket_broadcaster nodemap_sender
+	find . \( -type f -name "*.o" -and ! -name "loguru.o" -or -name "*.log" \) -delete; rm -rf command_sender tpacket_broadcaster nodemap_sender image_sender

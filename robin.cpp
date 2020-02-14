@@ -6,7 +6,6 @@
 #include "settings.hpp"
 #include "common.hpp"
 #include "TrackingServer.hpp"
-#include "CCServer.hpp"
 #include "ImagingServer.hpp"
 
 
@@ -76,15 +75,10 @@ int main(int argc, char** argv) {
                 break;
         }
     }
-
     if (nodeID == 255) {
         perror("NodeID not fixed !");
         throw;
     }
-
-
-    Tracker tracker(TRACKING_PEER_LOSS_TIMEOUT, TRACKING_PERIOD_CHECK_NODEMAP);
-    TrackingServer trackingserver(TRACKING_SERVER_PORT, nodeID, tracker, TRACKING_HEARTBEAT_PERIOD);
 
     // setup signals
     signal(SIGINT, exit_handler);
@@ -93,13 +87,8 @@ int main(int argc, char** argv) {
     TrackingServer trackingserver(TRACKING_SERVER_PORT, nodeID);
     trackingserver.start();
 
-    // Imaging server
-    ImagingServer imagingServer(IMAGING_SERVER_PORT,nodeID);
-    imagingServer.start();
-
     // join all services
     trackingserver.join();
-    imagingServer.join();
 
     LOG_F(WARNING, "Robin exiting");
     return 0;
