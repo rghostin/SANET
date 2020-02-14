@@ -141,7 +141,7 @@ void ImageBuilder::add_chunk(ImageChunkPacket packet) {
                     chunk_treated += 1;
                 }
             }
-            LOG_F(3, "Image (%d,%d) is complete- MD5: %s", _nodeID, _timestamp, ""); //get_md5_string(&_image.content[0], _image.content.size()).c_str());
+            LOG_F(WARNING, "Image (%d,%d) is complete- MD5: %s", _nodeID, _timestamp, get_md5_string(&_image.content[0], _image.content.size()).c_str());
             std::cout << "OK" << std::endl;
         }
     }

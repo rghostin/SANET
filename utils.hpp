@@ -26,7 +26,7 @@ inline uint32_t get_size(const char* file_name) {
 
 
 inline std::string get_md5_string(char* array, unsigned long size_array) {
-    /*unsigned char md5_checksum[MD5_DIGEST_LENGTH];
+    unsigned char md5_checksum[MD5_DIGEST_LENGTH];
     MD5(reinterpret_cast<unsigned char *>(&array[0]), size_array, md5_checksum);
 
     char checksum_res[32];
@@ -36,8 +36,7 @@ inline std::string get_md5_string(char* array, unsigned long size_array) {
         std::snprintf(checksum_res + (i * 2), MD5_DIGEST_LENGTH, "%02x", md5_checksum[i]);
     }
 
-    return checksum_res;*/
-    return "md5xyz";
+    return checksum_res;
 }
 
 

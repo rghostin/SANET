@@ -18,7 +18,7 @@
 #define IMG_CHUNK_SIZE 1024
 #define IMAGE_RECEPTION_TIMEOUT 60
 #define IMAGE_TIMEOUT_CHECK_PERIOD IMAGE_RECEPTION_TIMEOUT/2
-#define IMAGE_SEND_SLEEP_SEPARATOR 1        // msec
+#define IMAGE_SEND_SLEEP_SEPARATOR 10        // msec
 #define PATH_IMG "img/"         // TODO rm
 #define TYPE_IMG ".png"         // TODO rm
 
