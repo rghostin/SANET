@@ -23,5 +23,7 @@
 
 // Flight planning settings
 #define FP_USOCKET_PATH "./usocket"
+#define FP_CURR_POS_FILE_PATH "current.position"
+#define FP_CURR_POS_LOCK_PATH "current.position.lock"
 
 #endif

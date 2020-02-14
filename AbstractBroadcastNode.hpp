@@ -12,8 +12,11 @@
 #include <ctime>
 #include <thread>
 #include <mutex>
+#include <fstream>
 #include "loguru.hpp"
 #include "common.hpp"
+#include "Position.hpp"
+#include "settings.hpp"
 
 
 template <typename P>
@@ -41,6 +44,7 @@ protected:
     virtual bool _to_be_ignored(const P&) const;
     virtual void _process_packet(const P&) = 0;
     virtual P _produce_packet();
+    Position _get_current_position() const;
 
 public:
     AbstractBroadcastNode(uint8_t nodeID, unsigned short port, const char* name);
@@ -199,6 +203,36 @@ inline P AbstractBroadcastNode<P>::_produce_packet() {
     P packet;
     packet.nodeID = _nodeID;
     return packet;
+}
+
+template <typename P>
+Position AbstractBroadcastNode<P>::_get_current_position() const {
+    std::ifstream ifs;             // creates stream ifs
+    Position position;             // vector to store the numerical values in
+
+    while (access(FP_CURR_POS_LOCK_PATH, F_OK) != -1) {
+        // lock exists - active waiting
+    }
+
+    try {
+        // create our lock
+        std::ofstream lockfile(FP_CURR_POS_LOCK_PATH);
+
+        ifs.open(FP_CURR_POS_FILE_PATH);  //opens file
+        if (ifs.fail()) {
+            LOG_F(ERROR, "Cannot open file");
+            throw;
+        }
+        ifs >> position.longitude;
+        ifs >> position.latitude;
+    } catch (int e){
+        ; // ignore - just ignore and delete lock
+    }
+
+    if (remove(FP_CURR_POS_LOCK_PATH) != 0) {
+        LOG_F(ERROR, "Cannot remove lockfile");
+    }
+    return position;
 }
 
 template<typename P>

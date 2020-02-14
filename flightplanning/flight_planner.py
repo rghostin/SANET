@@ -94,7 +94,11 @@ class FlightPlanner:
         return distance_matrix, checkpoints
 
     def __computeBestAssignments_(self, drones):
-        drone_positions = list(drones.values())
+        for i , droneid in enumerate(drones.keys()):
+            self.__individual_flight_plans_[i].nodeid = droneid
+            self.__individual_flight_plans_[i].start_waypoint = self.__individual_flight_plans_[i].route[0]
+
+        """drone_positions = list(drones.values())
         rev = {tuple(v): k for k, v in drones.items()}
         distance_matrix, checkpoints = self.__computeDistanceMatrix_(drone_positions)
         min_sum = (sys.maxsize, None)
@@ -108,6 +112,7 @@ class FlightPlanner:
             drone_pos_index = min_sum[1][i]
             self.__individual_flight_plans_[i].nodeid = rev[tuple(drone_positions[drone_pos_index])]
             self.__individual_flight_plans_[i].start_waypoint = checkpoints[i][drone_pos_index]
+        """
 
     def recompute(self, status_nodemap):
         n = len(status_nodemap)

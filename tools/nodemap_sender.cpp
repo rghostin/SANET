@@ -7,22 +7,32 @@
 #include <map>
 #include <iostream>
 #include <string>
-#include "Position.hpp"
+#include "../Position.hpp"
 
-char* socket_path = "./usocket";
+char* socket_path = "../usocket";
 
-std::string get_encoded_json(const std::map<uint8_t, std::pair<Position, uint32_t>>& map) {
+typedef std::map<uint8_t, std::pair<Position, uint32_t>> nodemap_t;
+
+
+std::string get_json_nodemap(const nodemap_t& map) {
+    char buffer[4096]="";
     std::string res = "{";
+    
+    Position _mypos =  {1,2};
+    uint32_t _nodeID = 42;
+
     for (auto it=map.cbegin(); it!=map.cend(); ++it) {
         uint32_t nodeid = it->first;
         Position pos = std::get<0>(it->second);
 
-        res += std::to_string(nodeid) + ":{"+ std::to_string(pos.longitude)+","+ std::to_string(pos.latitude)+"}";
-        if (std::next(it)!=map.cend()) {
-            res += ",";
-        }
+        snprintf(buffer, sizeof(buffer), "\"%u\": [%f, %f]", nodeid, pos.longitude, pos.latitude);
+        res += buffer;
+        res += ",";
+        memset(buffer, 0, sizeof(buffer));
     }
-    res += "}"; 
+    snprintf(buffer, sizeof(buffer), "\"%u\": [%f, %f]", _nodeID, _mypos.longitude, _mypos.latitude);
+    res += buffer;
+    res += "}";
     return res;
 }
 
@@ -57,7 +67,7 @@ int main() {
     nodemap[5] = {Position(5,6), 65435435};
     nodemap[12] = { Position(5.24564, 4565.5757), 56535436 } ;
 
-    std::string json_nodemap = get_encoded_json(nodemap);
+    std::string json_nodemap = get_json_nodemap(nodemap);
     std::cout << json_nodemap << std::endl;
 
     if (send(usockfd, json_nodemap.c_str(), json_nodemap.length()+1, 0) < 0) {
