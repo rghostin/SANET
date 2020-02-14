@@ -87,13 +87,7 @@ int main(int argc, char** argv) {
     TrackingServer trackingserver(TRACKING_SERVER_PORT, nodeID);
     trackingserver.start();
 
-    // Command&Control server
-    // CCServer ccserver(CC_SERVER_PORT, nodeID);
-    // ccserver.start();
-
-
     // join all services
-    // ccserver.join();
     trackingserver.join();
 
     LOG_F(WARNING, "Robin exiting");
