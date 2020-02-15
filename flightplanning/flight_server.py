@@ -76,7 +76,7 @@ class FlightServer:
 if __name__ == "__main__":
     SCOPE = 20 # TODO camera
 
-    fp = FlightServer(gs.GLOBAL_AREA_POLYGON_PATH, SCOPE, gs.USOCKET_PATH, display=False)
+    fp = FlightServer(gs.GLOBAL_AREA_POLYGON_PATH, SCOPE, gs.USOCKET_PATH, display=True)
     try:
         fp.start()
     except KeyboardInterrupt:
