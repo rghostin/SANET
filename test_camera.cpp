@@ -6,7 +6,7 @@
 
 int main(int argc, char** argv) {
     int alpha = 30;
-    Camera drone("/home/pahoran/test.png", alpha);
+    Camera drone("test.png", alpha);
     Position pos(50,50);
     drone.take_photo(pos, "photo.png");
     return 0;
