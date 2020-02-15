@@ -124,7 +124,7 @@ if [[ "$a" -eq "0" ]] ; then  # Enabling Antenna
     echo '[*] Overwriting hostapd default configuration'
     mv "$RSRC_DIR/hostapd" "/etc/default/hostapd"
 
-    systemctl mask hostapd
+    systemctl unmask hostapd
     service hostapd restart
 
     echo '[*] Overwriting sysctl configuration'
