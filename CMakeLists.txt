@@ -14,7 +14,7 @@ add_executable(imagesender tools/imagesender.cpp)
 add_executable(command_sender tools/command_sender.cpp)
 add_executable(nodemap_sender tools/nodemap_sender.cpp)
 
-add_library(MyLib AbstractBroadcastNode.hpp AbstractReliableBroadcast.hpp common.hpp loguru.hpp loguru.cpp TrackPacket.hpp ImageChunkPacket.hpp Position.hpp TrackPacket.hpp ImageChunkPacket.hpp TrackingServer.hpp TrackingServer.cpp utils.hpp robin.cpp ImagingServer.cpp ImagingServer.hpp ImageBuilder.hpp Image.hpp ImageBuilder.cpp)
+add_library(MyLib AbstractBroadcastNode.hpp AbstractReliableBroadcast.hpp common.hpp loguru.hpp loguru.cpp TrackPacket.hpp ImageChunkPacket.hpp Position.hpp TrackPacket.hpp ImageChunkPacket.hpp TrackingServer.hpp TrackingServer.cpp utils.hpp robin.cpp ImagingServer.cpp ImagingServer.hpp ImageBuilder.hpp Image.hpp ImageBuilder.cpp CCCommands.hpp CCServer.hpp CCServer.cpp)
 add_library(LittleLib TrackPacket.hpp ImageChunkPacket.hpp settings.hpp Position.hpp robin.cpp common.hpp loguru.hpp utils.hpp loguru.cpp)
 
 target_link_libraries(robin MyLib)
