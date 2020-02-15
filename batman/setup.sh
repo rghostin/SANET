@@ -136,3 +136,7 @@ else
 fi
 
 echo '[*] Done'
+
+echo '[*] Reboot to apply changes'
+sleep 1
+reboot
