@@ -2,7 +2,7 @@ import socket
 import json
 import os
 from flight_planner import FlightPlanner
-from utils import plotAllFlightPlans, parseNodeId, cmp_dic
+from utils import plotAllFlightPlans, parseNodeId
 from autopilot import Autopilot
 import global_settings as gs
 
@@ -43,7 +43,6 @@ class FlightServer:
             print("Ignoring packet")
             return
         n = len(status_node_map)
-        print(status_node_map, self.__last_status_node_map_, status_node_map== self.__last_status_node_map_, cmp_dic(status_node_map, self.__last_status_node_map_))
         if not(status_node_map== self.__last_status_node_map_):
             self.__last_status_node_map_ = status_node_map
             self.__fplanner_.recompute(status_node_map)

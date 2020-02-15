@@ -92,7 +92,7 @@ class Autopilot:
     def __tr_update_position(self):
         print_red("starting thread")
         # todo: current version drone teleported to new pos -- to fix
-        while True:
+        while not self.halt():
             self.__mutex_fp.acquire()
             try:
                 if (self.__flightplan):
