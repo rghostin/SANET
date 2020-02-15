@@ -87,7 +87,7 @@ echo '[*] Installing requirements'
 apt install wireless-tools iw batctl alfred make g++ python3-setuptools python3-pip libssl-dev libgeos++-dev hostapd isc-dhcp-server -y
 
 echo '[*] Installing Python3 - requirements'
-pip3 install --user -r "$RSRC_DIR/requirements.txt" || exit 1
+pip3 install --user -r "$RSRC_DIR/requirements_rasp.txt" || exit 1
 
 echo "[*] Setting keyboard layout to $KBLAYOUT"
 loadkeys "$KBLAYOUT"
