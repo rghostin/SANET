@@ -14,9 +14,13 @@
 **/*.orig
 **/*.lock
 
-# binaries
+# binaries 
 robin
 tools/tpacket_broadcaster
 tools/command_sender
 tools/nodemap_sender
 tools/image_sneder
+
+# specifics
+/conf/nodeid.conf
+/conf/usocket
