@@ -173,12 +173,12 @@ void TrackingServer::start() {
     _thread_heartbeat = std::thread(&TrackingServer::_tr_heartbeat, this);
 
     // send at least one status-nodemap anyway
-    std::async(std::launch::async,
+    /*std::async(std::launch::async,
             [this] {
                 std::this_thread::sleep_for(std::chrono::seconds(TRACKING_INITIAL_FP_SLEEP));
                 _send_status_node_map();
                 }
-        );
+        );*/
 }
 
 void TrackingServer::join() {

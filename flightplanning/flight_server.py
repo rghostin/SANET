@@ -43,7 +43,7 @@ class FlightServer:
             print("Ignoring packet")
             return
         n = len(status_node_map)
-        if not(status_node_map== self.__last_status_node_map_):
+        if True: #not(status_node_map== self.__last_status_node_map_):
             self.__last_status_node_map_ = status_node_map
             self.__fplanner_.recompute(status_node_map)
 
@@ -77,7 +77,7 @@ class FlightServer:
 
         while True:
             json_status_nodemap = self.receiveData(self.__connection_, client_address)
-            print("Received", json_status_nodemap)
+            print("Received #", json_status_nodemap, "#")
             if not json_status_nodemap:
                 self.__connection_.close()  # Clean up the connection
                 break
