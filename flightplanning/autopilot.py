@@ -1,111 +1,106 @@
 from threading import Thread, Lock
 from itertools import cycle
-from utils import euclidian_distance
+from utils import euclidian_distance, print_red
 from time import sleep
 import os
-
-
-FP_CURR_POS_FILE_PATH = "current.position"
-FP_CURR_POS_LOCK_PATH = "current.position.lock"
+import global_settings as gs
 
 class Autopilot:
-    def __init__(self, flightplan, speed):
+    def __init__(self, speed):
         self.__speed = speed
 
-        self.__mutex_position = Lock()
         self.__position = (None, None)
 
-        self.__mutex_new_fp_flag = Lock()
+        self.__mutex_fp = Lock()
         self.__new_fp_flag = False
-        self.__flightplan = flightplan
+        self.__flightplan = None
+        self.it = None
+        self.next_wp = None
 
-        self.__delta_dist_wp = euclidian_distance(self.__flightplan.route[0], self.__flightplan.route[1])
-        self.__delta_time_wp = self.__delta_dist_wp / self.__speed
+
+        self.__delta_dist_wp = None
+        self.__delta_time_wp = 2        # initial sleep before we get a real flightplan
 
         self.__thread_update_position = None
+        self.__mutex_halt = Lock()
+        self.__halt = False
+
  
+
     @property
-    def position(self):
-        pos = None
-        self.__mutex_position.acquire()
+    def halt(self):
+        val = None
+        self.__mutex_halt.acquire()
         try:
-            pos = self.__position
+            val = self.__halt
         finally:
-            self.__mutex_position.release()
-        return pos
+            self.__mutex_halt.release()
+        return val
 
-    @position.setter
-    def position(self, newpos):
-        self.__mutex_position.acquire()
+    def set_halt(self):
+        self.__mutex_halt.acquire()
         try:
-            self.__position = newpos
+            self.__halt = True
         finally:
-            self.__mutex_position.release()
+            self.__mutex_halt.release()
 
+    def set_position(self, newpos):
         to_write = "%f\n%f" % newpos
 
         # Checking if file is locked (if FILENAME.LOCK exists)
-        while os.access(FP_CURR_POS_LOCK_PATH, os.R_OK | os.X_OK):
-            print("Cannot access")
+        while os.access(gs.FP_CURR_POS_FILE_PATH, os.R_OK | os.X_OK):
+            # file locked - wait
+            pass
 
-        # Locking the file
-        with open(FP_CURR_POS_LOCK_PATH, 'w'):
-            print('creating lock')
-
-        # Writing pos on file
-        with open(FP_CURR_POS_FILE_PATH, 'w') as pos_file:
-            pos_file.write(to_write)
-
-        # Unlocking the file
-        os.remove(FP_CURR_POS_LOCK_PATH)
-
-    def __is_new_fp_flag(self):
-        flag_val = None
-        self.__mutex_new_fp_flag.acquire()
         try:
-            flag_val = self.__new_fp_flag
+            # Locking the file
+            with open(gs.FP_CURR_POS_LOCK_PATH, 'w'):
+                print('creating lock')
+
+            # Writing pos on file
+            with open(gs.FP_CURR_POS_FILE_PATH, 'w') as pos_file:
+                pos_file.write(to_write)
         finally:
-            self.__mutex_new_fp_flag.release()
-        return flag_val
-
-    def __reset_new_fp_flag(self): 
-        self.__mutex_new_fp_flag.acquire()
-        try:
-            self.__new_fp_flag = False
-        finally:
-            self.__mutex_new_fp_flag.release()
-
-    def __set_new_fp_flag(self): 
-        self.__mutex_new_fp_flag.acquire()
-        try:
-            self.__new_fp_flag = True
-        finally:
-            self.__mutex_new_fp_flag.release()
-
-    def __tr_update_position(self):
-        while True:
-            it = cycle(self.__flightplan.route)
-
-            # seek start_waypoint
-            while not it==self.__flightplan.start_waypoint:
-                wp = next(it)    
-
-            # todo: current version drone teleported to new pos -- to fix
-            while True:
-                if self.__is_new_fp_flag():
-                    self.__reset_new_fp_flag()
-                    break
-                self.set_position = wp
-                sleep(self.__delta_time_wp)
-                wp = next(it)
-    
-    def notifyFligthPlan(self, flightplan):
-        self.__flightplan = flightplan
-        self.__set_new_fp_flag()
+            # Unlocking the file
+            os.remove(gs.FP_CURR_POS_LOCK_PATH)
+        print_red("Written %s to position" % str(newpos))
 
     def start(self):
+        print_red("Starting AP")
         self.__thread_update_position = Thread(target=self.__tr_update_position)
         self.__thread_update_position.start()
  
-    def join(self):
+    def stop(self):
+        self.set_halt()
         self.__thread_update_position.join()
+        print("Autopilot exiting")
+
+    def set_flightplan(self, newfp):
+        self.__mutex_fp.acquire()
+        try:
+            self.__flightplan = newfp
+            self.__new_fp_flag = True
+            self.__delta_dist_wp = euclidian_distance(self.__flightplan.route[0], self.__flightplan.route[1])
+            self.__delta_time_wp = self.__delta_dist_wp / self.__speed
+            self.it = cycle(self.__flightplan.route)
+            while not self.next_wp==self.__flightplan.start_waypoint:
+                self.next_wp = next(self.it) 
+        finally:
+            self.__mutex_fp.release()
+
+
+    def __tr_update_position(self):
+        print_red("starting thread")
+        # todo: current version drone teleported to new pos -- to fix
+        while not self.halt():
+            self.__mutex_fp.acquire()
+            try:
+                if (self.__flightplan):
+                    self.set_position(self.next_wp)
+                    self.next_wp = next(self.it)
+            finally:
+                self.__mutex_fp.release()
+            sleep(self.__delta_time_wp)
+            
+    
+

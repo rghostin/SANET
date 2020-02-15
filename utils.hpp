@@ -5,7 +5,11 @@
 #include <openssl/md5.h>
 
 inline int read_int_from_file(const char* file_name){
-  FILE* file = fopen (file_name, "r");
+  FILE* file;
+  if ( (file = fopen (file_name, "r")) == NULL) {
+      perror("Cannot open file");
+      throw;
+  }
   int i = 0;
   fscanf (file, "%d", &i);     
   fclose (file);        

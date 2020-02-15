@@ -3,6 +3,19 @@ from functools import reduce
 import operator
 import math
 from sympy import Polygon
+import global_settings
+
+# PARSING FUNCTIONS =============================================================
+
+def parseNodeId(nodeId_path):
+    with open(nodeId_path, "r") as nodeId_file:
+        node_id = int(nodeId_file.readline().strip())
+        if not(0 <= node_id <= 255):
+            raise
+        return node_id
+    
+
+
 
 # EXCEPTIONS =========================================================
 class InvalidPolygonFile(Exception):
@@ -39,6 +52,11 @@ def plotAllFlightPlans(flight_plans):
         route = fp.route
         plotFlightPlan(vertices, route)
     plt.show()
+
+
+def print_red(s):
+    print("\033[93m%s\033[0m" % s)
+
 
 # GEOMETRY FUNCTIONS ==============================================================
 

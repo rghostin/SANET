@@ -165,6 +165,14 @@ void TrackingServer::start() {
     _setup_usocket();
     _thread_check_node_map = std::thread(&TrackingServer::_tr_check_node_map, this);
     _thread_heartbeat = std::thread(&TrackingServer::_tr_hearbeat, this);
+
+    // send at least one status-nodemap anyway
+    std::async(std::launch::async,
+            [this] {
+                std::this_thread::sleep_for(std::chrono::seconds(TRACKING_INITIAL_FP_SLEEP));
+                _send_status_node_map();
+                }
+        );
 }
 
 void TrackingServer::join() {
