@@ -52,9 +52,9 @@ while getopts ":h:i:a:" o; do
         h)
             h=${OPTARG}
             ;;
-        #a)
-        #    a=${OPTARG} || usage
-        #    ;;
+        a)
+            a=${OPTARG}
+            ;;
         *)
             usage
             ;;
@@ -84,7 +84,7 @@ apt upgrade -y
 apt autoremove -y
 
 echo '[*] Installing requirements'
-apt install wireless-tools iw batctl alfred make g++ python3-setuptools python3-pip libssl-dev hostapd isc-dhcp-server -y
+apt install wireless-tools iw batctl alfred make g++ python3-setuptools python3-pip libssl-dev libgeos++-dev hostapd isc-dhcp-server -y
 
 echo '[*] Installing Python3 - requirements'
 pip3 install --user -r "$RSRC_DIR/requirements.txt" || exit 1
@@ -104,7 +104,7 @@ make rebuild
 echo '[*] Enabling batman and robin on reboot'
 echo "@reboot   root    ${RUN_SCRIPT}" >> /etc/crontab
 
-if [[ $a -eq 0 ]] ; then  # Enabling Antenna
+if [[ "$a" -eq "0" ]] ; then  # Enabling Antenna
     echo "- setting static IP address=$P_IP_ADDR/24"
     ip addr add dev "$P_IFACE" "$P_IP_ADDR"/24
 
@@ -115,6 +115,7 @@ if [[ $a -eq 0 ]] ; then  # Enabling Antenna
     mv "$RSRC_DIR/isc-dhcp-server" "/etc/default/isc-dhcp-server"
 
     echo '[*] Restarting DHCP server'
+    systemctl unmask isc-dhcp-server
     service isc-dhcp-server restart
 
     echo '[*] Overwriting hostapd configuration'
@@ -122,6 +123,9 @@ if [[ $a -eq 0 ]] ; then  # Enabling Antenna
 
     echo '[*] Overwriting hostapd default configuration'
     mv "$RSRC_DIR/hostapd" "/etc/default/hostapd"
+
+    systemctl mask hostapd
+    service hostapd restart
 
     echo '[*] Overwriting sysctl configuration'
     mv "$RSRC_DIR/sysctl.conf" "/etc/sysctl.conf"
