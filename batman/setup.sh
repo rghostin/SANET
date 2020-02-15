@@ -83,8 +83,11 @@ apt update
 apt upgrade -y
 apt autoremove -y
 
-echo '[*] Installing  requirements'
+echo '[*] Installing requirements'
 apt install wireless-tools iw batctl alfred make g++ python3-setuptools libssl-dev hostapd isc-dhcp-server -y
+
+echo '[*] Installing Python3 - requirements'
+pip3 install --user -r "$CONF_DIR/requirements.txt" || exit 1
 
 echo "[*] Setting keyboard layout to $KBLAYOUT"
 loadkeys "$KBLAYOUT"
