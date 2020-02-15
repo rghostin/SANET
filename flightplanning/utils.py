@@ -53,6 +53,11 @@ def plotAllFlightPlans(flight_plans):
         plotFlightPlan(vertices, route)
     plt.show()
 
+
+def print_red(s):
+    print("\033[93m%s\033[0m" % s)
+
+
 # GEOMETRY FUNCTIONS ==============================================================
 
 def orderCoords(coords):
@@ -91,3 +96,10 @@ def parsePolygonFile(file_path):
 def euclidian_distance(p1, p2):
     return math.sqrt( math.pow((p1[0] - p2[0]), 2) + math.pow((p1[1] - p2[1]), 2))
     
+
+def cmp_dic(d1, d2):
+    res = False
+    if len(d1) != len(d2):
+        shared_items = {k: d1[k] for k in d1 if k in d2 and d1[k]==d2[k]}
+        res = len(shared_items)==0
+    return res
