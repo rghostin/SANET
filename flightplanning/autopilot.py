@@ -7,7 +7,7 @@ import global_settings as gs
 
 class Autopilot:
     def __init__(self, speed):
-        self.__speed = speed
+        self.__speed = speed        # wp/sec
 
         self.__position = (None, None)
 
@@ -16,10 +16,6 @@ class Autopilot:
         self.__flightplan = None
         self.it = None
         self.next_wp = None
-
-
-        self.__delta_dist_wp = None
-        self.__delta_time_wp = 2        # initial sleep before we get a real flightplan
 
         self.__thread_update_position = None
         self.__mutex_halt = Lock()
@@ -80,8 +76,6 @@ class Autopilot:
         try:
             self.__flightplan = newfp
             self.__new_fp_flag = True
-            self.__delta_dist_wp = euclidian_distance(self.__flightplan.route[0], self.__flightplan.route[1])
-            self.__delta_time_wp = self.__delta_dist_wp / self.__speed
             self.it = cycle(self.__flightplan.route)
             while not self.next_wp==self.__flightplan.start_waypoint:
                 self.next_wp = next(self.it) 
@@ -92,7 +86,7 @@ class Autopilot:
     def __tr_update_position(self):
         print_red("starting thread")
         # todo: current version drone teleported to new pos -- to fix
-        while not self.halt():
+        while not self.halt:
             self.__mutex_fp.acquire()
             try:
                 if (self.__flightplan):
@@ -100,7 +94,7 @@ class Autopilot:
                     self.next_wp = next(self.it)
             finally:
                 self.__mutex_fp.release()
-            sleep(self.__delta_time_wp)
+            sleep(1 / self.__speed)
             
     
 

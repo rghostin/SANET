@@ -70,16 +70,22 @@ void TrackingServer::_process_packet(const TrackPacket& packet) {
 }
 
 
-void TrackingServer::_tr_hearbeat() {
+void TrackingServer::_tr_heartbeat() {
+    Position lastpos;
+
     loguru::set_thread_name( this->threadname("heartbeat").c_str()); 
-    LOG_F(INFO, "Starting %s heartbeat with period=%d", _name,_heart_period);
+    LOG_F(INFO, "Starting heartbeat");
 
     while (! process_stop) {
-        TrackPacket packet = _produce_packet();
-        this->broadcast(packet);
+        Position currpos = _get_current_position();
+        if (currpos != lastpos) { 
+            lastpos = currpos;
+            TrackPacket packet = _produce_packet();
+            this->broadcast(packet);
+            LOG_F(INFO, "Sent hearbeat packet: %s", packet.repr().c_str());
+        }
 
-        LOG_F(INFO, "Sent hearbeat packet: %s", packet.repr().c_str());
-        std::this_thread::sleep_for(std::chrono::seconds(_heart_period));
+        std::this_thread::sleep_for(std::chrono::seconds(1/FP_AUTOPILOT_SPEED));        
     }
     LOG_F(INFO, "TrServer heartbeat process_stop=true; exiting");
 }
@@ -152,7 +158,7 @@ void TrackingServer::_tr_check_node_map(){
             need_fp_recompute = false;  // reset for next iter
             _send_status_node_map();    // Send to python flight server through unix socket
         }
-        std::this_thread::sleep_for(std::chrono::seconds(_period_mapcheck));
+        std::this_thread::sleep_for(std::chrono::seconds(3));
     }
     LOG_F(INFO, "Tracker checkNodeMap - process_stop=true; exiting");
 }
@@ -164,7 +170,7 @@ void TrackingServer::start() {
     AbstractReliableBroadcastNode<TrackPacket>::start();
     _setup_usocket();
     _thread_check_node_map = std::thread(&TrackingServer::_tr_check_node_map, this);
-    _thread_heartbeat = std::thread(&TrackingServer::_tr_hearbeat, this);
+    _thread_heartbeat = std::thread(&TrackingServer::_tr_heartbeat, this);
 
     // send at least one status-nodemap anyway
     std::async(std::launch::async,
