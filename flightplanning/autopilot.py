@@ -45,7 +45,6 @@ class Autopilot:
             self.__mutex_halt.release()
 
     def set_position(self, newpos):
-        print_red("1")
         to_write = "%f\n%f" % newpos
 
         # Checking if file is locked (if FILENAME.LOCK exists)
@@ -53,7 +52,6 @@ class Autopilot:
             # file locked - wait
             pass
 
-        print_red("2")
         try:
             # Locking the file
             with open(gs.FP_CURR_POS_LOCK_PATH, 'w'):
@@ -62,7 +60,6 @@ class Autopilot:
             # Writing pos on file
             with open(gs.FP_CURR_POS_FILE_PATH, 'w') as pos_file:
                 pos_file.write(to_write)
-            print_red("3")
         finally:
             # Unlocking the file
             os.remove(gs.FP_CURR_POS_LOCK_PATH)
@@ -79,26 +76,18 @@ class Autopilot:
         print("Autopilot exiting")
 
     def set_flightplan(self, newfp):
-        print_red("89")
         self.__mutex_fp.acquire()
         try:
-            print_red("7887")
             self.__flightplan = newfp
             self.__new_fp_flag = True
-            print_red("71")
             self.__delta_dist_wp = euclidian_distance(self.__flightplan.route[0], self.__flightplan.route[1])
             self.__delta_time_wp = self.__delta_dist_wp / self.__speed
-            print_red("72")
             self.it = cycle(self.__flightplan.route)
-            print_red("70")
             while not self.next_wp==self.__flightplan.start_waypoint:
                 self.next_wp = next(self.it) 
-            print_red("7888")
-
         finally:
             self.__mutex_fp.release()
 
-        print_red("86")
 
     def __tr_update_position(self):
         print_red("starting thread")
@@ -111,8 +100,6 @@ class Autopilot:
                     self.next_wp = next(self.it)
             finally:
                 self.__mutex_fp.release()
-
-            print_red("sleeping for %s" % self.__delta_time_wp)
             sleep(self.__delta_time_wp)
             
     
