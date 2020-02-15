@@ -43,7 +43,7 @@ class FlightServer:
             print("Ignoring packet")
             return
         n = len(status_node_map)
-        if True: #not(status_node_map== self.__last_status_node_map_):
+        if not(status_node_map== self.__last_status_node_map_):
             self.__last_status_node_map_ = status_node_map
             self.__fplanner_.recompute(status_node_map)
 

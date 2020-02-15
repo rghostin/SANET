@@ -48,6 +48,8 @@ private:
     TrackPacket _produce_packet() override;
     virtual void _process_packet(const TrackPacket&) override;  
 
+    std::mutex _mutex_send_map;
+
 public:
     TrackingServer(unsigned short port, uint8_t nodeID);
     TrackingServer(const TrackingServer&) = delete;

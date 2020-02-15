@@ -229,7 +229,7 @@ Position AbstractBroadcastNode<P>::_get_current_position() const {
         ifs.close();
         lockfile.close();
     } catch (int e){
-        ; // ignore - just ignore and delete lock
+        ; // ignore - just ignore and delete lock 
     }
 
     if (remove(FP_CURR_POS_LOCK_PATH) != 0) {
