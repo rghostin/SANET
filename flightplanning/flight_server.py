@@ -44,11 +44,15 @@ class FlightServer:
         self.__fplanner_.recompute(status_node_map)
         if self.__display_:
             plotAllFlightPlans(self.__fplanner_.flight_plans)
+        
         for fplan in self.__fplanner_.flight_plans:
+            print(type(fplan.nodeid), type(self.__my_nodeId_))
             if fplan.nodeid == self.__my_nodeId_:
                 print("Sending flight-plan to autopilot")
                 print(fplan)
                 break
+            print("1")
+        print("2")
 
     def receiveData(self, connection, client_address):
         # Receive the data in small chunks and retransmit it
