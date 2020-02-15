@@ -8,8 +8,9 @@
 #include <iostream>
 #include <string>
 #include "../Position.hpp"
+#include <Python.h> 
 
-char* socket_path = "../usocket";
+char* socket_path = "../conf/usocket";
 
 typedef std::map<uint8_t, std::pair<Position, uint32_t>> nodemap_t;
 
@@ -69,6 +70,11 @@ int main() {
 
     std::string json_nodemap = get_json_nodemap(nodemap);
     std::cout << json_nodemap << std::endl;
+
+    //
+    PyObject* pystring = PyString_FromString(json_nodemap.c_str());
+    //
+
 
     if (send(usockfd, json_nodemap.c_str(), json_nodemap.length()+1, 0) < 0) {
         perror("cannot send");
