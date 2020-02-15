@@ -19,9 +19,9 @@ function changeKeyboard {
 function usage() {
 	echo "This script must be run with super-user privileges.
 	Usage: $0 [arguments]
-	- i:NodeID (0 <= i <= 254)
-    - h:Hostname
-    - a:Antenna (0 : to enable | 1 : to disable)"
+	-i NodeID (0 <= i <= 254)
+  -h Hostname
+  bool_Antenna (0 : to enable | 1 : to disable)"
     exit 1
 }
 
@@ -35,7 +35,7 @@ fi
 
 # check params
 if [[ $# -lt 2 ]]; then
-  echo "[!] Error usage: setup.sh hostid hostname"
+  usage
   exit 1
 fi
 
@@ -67,7 +67,7 @@ if [ -z "${i}" ] || [ -z "${a}" ]; then
 fi
 
 echo "i = ${i}"
-echo "v = ${a}"
+echo "a = ${a}"
 
 echo "changing hostname to $h"
 hostnamectl set-hostname "$h"
