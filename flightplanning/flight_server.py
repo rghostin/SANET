@@ -2,7 +2,7 @@ import socket
 import json
 import os
 from flight_planner import FlightPlanner
-from utils import plotAllFlightPlans
+from utils import plotAllFlightPlans, parseNodeId
 from autopilot import Autopilot
 import global_settings as gs
 
@@ -15,6 +15,7 @@ class FlightServer:
         self.__fplanner_ = FlightPlanner(polygon_path, scope)
         self.__display_ = display
         self.__connection_ = None
+        self.__my_node_id_ = parseNodeId()
 
     @staticmethod
     def assertServerAddressNotUsed(server_address):
@@ -44,7 +45,8 @@ class FlightServer:
         if self.__display_:
             plotAllFlightPlans(self.__fplanner_.flight_plans)
         for fplan in self.__fplanner_.flight_plans:
-            print("Sending flight-plan to autopilot")
+            if fplan.nodeid == self.__my_node_id_:
+                print("Sending flight-plan to autopilot")
 
     def receiveData(self, connection, client_address):
         # Receive the data in small chunks and retransmit it

@@ -3,6 +3,19 @@ from functools import reduce
 import operator
 import math
 from sympy import Polygon
+import global_settings
+
+# PARSING FUNCTIONS =============================================================
+
+def parseNodeId():
+    node_id = None
+    with open(global_settings.NODE_ID_PATH, "r") as node_id_file:
+        node_id = int(next(node_id_file).strip())
+        if not(0 <= node_id <= 255):
+            raise
+    return node_id
+
+
 
 # EXCEPTIONS =========================================================
 class InvalidPolygonFile(Exception):
