@@ -73,7 +73,7 @@ class FlightPlanner:
                 min_sum = (s, poss)
         for i in range(len(drone_positions)):
             drone_pos_index = min_sum[1][i]
-            self.__individual_flight_plans_[i].nodeid = rev[tuple(drone_positions[drone_pos_index])]
+            self.__individual_flight_plans_[i].nodeid = int(rev[tuple(drone_positions[drone_pos_index])])
             self.__individual_flight_plans_[i].start_waypoint = checkpoints[i][drone_pos_index]
         
 

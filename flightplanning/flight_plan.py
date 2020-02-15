@@ -10,8 +10,8 @@ class FlightPlan:
         self.nodeid = None
         self.start_waypoint = None
     
-    def __str__():
-        return "FP(id=%d, start=%s, scope=%f, subpoly=%s" % (self.nodeid, str(self.start_waypoint), self.__scope_, ','.join([str(e) for e in self.sub_polygon]))
+    def __str__(self):
+        return "FP(id=%d, start=%s, scope=%f, subpoly=%s" % (self.nodeid, str(self.start_waypoint), self.__scope_, str(self.sub_polygon.vertices))
 
     @property
     def route(self):
