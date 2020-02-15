@@ -84,7 +84,7 @@ apt upgrade -y
 apt autoremove -y
 
 echo '[*] Installing requirements'
-apt install wireless-tools iw batctl alfred make g++ python3-setuptools libssl-dev hostapd isc-dhcp-server -y
+apt install wireless-tools iw batctl alfred make g++ python3-setuptools python3-pip libssl-dev hostapd isc-dhcp-server -y
 
 echo '[*] Installing Python3 - requirements'
 pip3 install --user -r "$RSRC_DIR/requirements.txt" || exit 1
