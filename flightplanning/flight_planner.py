@@ -1,5 +1,4 @@
 from area_partitioner import getFairPartitioning
-from find_TSP_solution import getBestRoute
 import numpy as np
 from itertools import permutations
 import math

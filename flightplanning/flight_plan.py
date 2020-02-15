@@ -1,3 +1,5 @@
+from find_TSP_solution import getBestRoute
+
 class FlightPlan:
     def __init__(self, sub_polygon, scope):
         self.sub_polygon = sub_polygon
