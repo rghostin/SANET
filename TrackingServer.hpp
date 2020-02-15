@@ -12,6 +12,7 @@
 #include <thread>
 #include <mutex>
 #include <sys/un.h>
+#include <future>
 #include "loguru.hpp"
 #include "settings.hpp"
 #include "AbstractReliableBroadcast.hpp"
