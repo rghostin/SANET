@@ -7,39 +7,7 @@ from time import time
 from utils import parsePolygonFile, plotAllFlightPlans
 import json
 import sys
-
-class FlightPlan:
-    def __init__(self, sub_polygon, scope):
-        self.sub_polygon = sub_polygon
-        self.polygon_vertices = [tuple(e) for e in self.sub_polygon.vertices]
-        self.__route_ = None # List of tuples of int
-        self.__encoded_json_ = None # Struct serializing the obj to send on network
-        self.__scope_ = scope
-        self.nodeid = None
-        self.start_waypoint = None
-
-    @property
-    def route(self):
-        if self.__route_ is None:
-            self.__route_ = getBestRoute(self.polygon_vertices, self.__scope_)
-        return self.__route_
-
-    @property
-    def encoded_json(self):
-        if self.__encoded_json_ is None:
-            assert self.polygon_vertices is not None and self.__route_ is not None
-
-            subregion_vertices = []
-            for vert in self.polygon_vertices:
-                subregion_vertices.append([float(coord) for coord in vert])
-
-            to_send = {"polygon_vertices": subregion_vertices,
-                       "route": self.__route_,
-                       "drone_id": self.nodeid,
-                       "start_pos": list(self.start_waypoint)}
-
-            self.__encoded_json_ = json.dumps(to_send)
-        return self.__encoded_json_
+from flight_plan import FlightPlan
 
 
 class FlightPlanner:
@@ -94,11 +62,7 @@ class FlightPlanner:
         return distance_matrix, checkpoints
 
     def __computeBestAssignments_(self, drones):
-        for i , droneid in enumerate(drones.keys()):
-            self.__individual_flight_plans_[i].nodeid = droneid
-            self.__individual_flight_plans_[i].start_waypoint = self.__individual_flight_plans_[i].route[0]
-
-        """drone_positions = list(drones.values())
+        drone_positions = list(drones.values())
         rev = {tuple(v): k for k, v in drones.items()}
         distance_matrix, checkpoints = self.__computeDistanceMatrix_(drone_positions)
         min_sum = (sys.maxsize, None)
@@ -112,7 +76,7 @@ class FlightPlanner:
             drone_pos_index = min_sum[1][i]
             self.__individual_flight_plans_[i].nodeid = rev[tuple(drone_positions[drone_pos_index])]
             self.__individual_flight_plans_[i].start_waypoint = checkpoints[i][drone_pos_index]
-        """
+        
 
     def recompute(self, status_nodemap):
         n = len(status_nodemap)

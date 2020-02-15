@@ -15,7 +15,7 @@ class FlightServer:
         self.__fplanner_ = FlightPlanner(polygon_path, scope)
         self.__display_ = display
         self.__connection_ = None
-        self.__my_node_id_ = parseNodeId()
+        self.__my_nodeId_ = parseNodeId(gs.NODE_ID_PATH)
 
     @staticmethod
     def assertServerAddressNotUsed(server_address):
@@ -45,8 +45,10 @@ class FlightServer:
         if self.__display_:
             plotAllFlightPlans(self.__fplanner_.flight_plans)
         for fplan in self.__fplanner_.flight_plans:
-            if fplan.nodeid == self.__my_node_id_:
+            if fplan.nodeid == self.__my_nodeId_:
                 print("Sending flight-plan to autopilot")
+                print(fplan)
+                break
 
     def receiveData(self, connection, client_address):
         # Receive the data in small chunks and retransmit it

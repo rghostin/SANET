@@ -7,13 +7,13 @@ import global_settings
 
 # PARSING FUNCTIONS =============================================================
 
-def parseNodeId():
-    node_id = None
-    with open(global_settings.NODE_ID_PATH, "r") as node_id_file:
-        node_id = int(next(node_id_file).strip())
+def parseNodeId(nodeId_path):
+    with open(nodeId_path, "r") as nodeId_file:
+        node_id = int(nodeId_file.readline().strip())
         if not(0 <= node_id <= 255):
             raise
-    return node_id
+        return node_id
+    
 
 
 
