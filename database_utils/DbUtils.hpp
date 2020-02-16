@@ -30,8 +30,13 @@ inline sqlite3 *dbOpen(const char *filename) {
 inline void dbExecute(sqlite3 *db, const char *pSQL, int (*callback)(void *, int, char **, char **), void *data) {
     LOG_SCOPE_FUNCTION(INFO);
     char *szErrMsg = nullptr;
-    if ((sqlite3_exec(db, pSQL, callback, data, &szErrMsg)) != SQLITE_OK) {
-        LOG_F(ERROR, "SQL error: %s\n", szErrMsg);
+    int sts;
+    do {
+        sts = sqlite3_exec(db, pSQL, callback, data, &szErrMsg);
+    } while (sts == SQLITE_BUSY);
+    
+    if (sts != SQLITE_OK) {
+        LOG_F(ERROR, "SQL error: %s\n-%d", szErrMsg, sts);
         sqlite3_free(szErrMsg);
     }
 }
