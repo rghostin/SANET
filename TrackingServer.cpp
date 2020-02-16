@@ -77,7 +77,7 @@ void TrackingServer::_tr_heartbeat() {
 
     while (! process_stop) {
         Position currpos = _get_current_position();
-        if (currpos != lastpos) { 
+        if (true){ //(currpos != lastpos) { 
             lastpos = currpos;
             TrackPacket packet = _produce_packet();
             this->broadcast(packet);
@@ -114,7 +114,7 @@ void TrackingServer::_setup_usocket(){
 
 void TrackingServer::_send_status_node_map(){
     _setup_usocket();
-    std::lock_guard<std::mutex> locksend(_mutex_send_map);
+//    std::lock_guard<std::mutex> locksend(_mutex_send_map);
     std::string json_nodemap;
     {
         std::lock_guard<std::mutex> lock(_mutex_status_node_map);

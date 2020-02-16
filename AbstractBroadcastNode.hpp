@@ -237,6 +237,7 @@ Position AbstractBroadcastNode<P>::_get_current_position() const {
         LOG_F(ERROR, "Cannot remove lockfile");
     }
     return position;
+    //return Position(28,28);
 }
 
 template<typename P>
