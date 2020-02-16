@@ -182,8 +182,7 @@ inline void dbInsertOrUpdateNode(sqlite3 *db, uint8_t nodeId, const Position &ne
     std::string logitude_str = std::to_string(new_pos.longitude);
     std::string timestamp_str = std::to_string(new_timestamp);
     std::string SQL_insertion_in_users =
-            "UPDATE node_status_map (nodeID,latitude,longitude,timestamp) VALUES ('" + node_id_str + "', '" +
-            latitude_str + "', '" + logitude_str + "', '" + timestamp_str + "') WHERE nodeID='" + node_id_str + "'";
+            "UPDATE node_status_map SET nodeID='"+node_id_str+"', latitude='" + latitude_str + "', longitude='"+logitude_str +"', timestamp='"+timestamp_str+"' WHERE nodeID='" + node_id_str + "';";
     pSQL = SQL_insertion_in_users.c_str();
     LOG_F(INFO, "Asking for the following SQL query: '%s'", pSQL);
     data_display mydata;
