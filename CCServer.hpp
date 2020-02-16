@@ -14,10 +14,15 @@
 #include "loguru.hpp"
 #include "common.hpp"
 #include "settings.hpp"
+#include "database_utils/DbUtils.hpp"
 
 
 class CCServer final {
 private:
+    // Db
+    const char* _path_db = DB_PATH;
+    sqlite3 * _db;
+
     const unsigned short _port;
     const uint8_t _nodeID;
 

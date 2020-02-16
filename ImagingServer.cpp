@@ -2,13 +2,17 @@
 
 ImagingServer::ImagingServer(unsigned short port, uint8_t nodeID) :
         AbstractBroadcastNode<ImageChunkPacket>(nodeID, port, "ImgSrv"),
-        _mutex_image_map(), _image_map(), _mutex_building_image_map(), _building_image_map(), _thread_check_timeout_imgs() {}
+        _db(), _mutex_image_map(), _image_map(), _mutex_building_image_map(), _building_image_map(),
+        _thread_check_timeout_imgs() {
+    _db = dbOpen(_path_db);
+}
 
 
 ImagingServer::~ImagingServer() {
     if (_thread_check_timeout_imgs.joinable()) {
         _thread_check_timeout_imgs.join();
     }
+    dbClose(_db);
 }
 
 

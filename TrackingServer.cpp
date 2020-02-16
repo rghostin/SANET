@@ -27,7 +27,11 @@ std::string TrackingServer::_get_json_nodemap(const nodemap_t& map) {
 
 TrackingServer::TrackingServer(unsigned short port, uint8_t nodeID) : 
     AbstractReliableBroadcastNode<TrackPacket>(nodeID, port, "TrackSrv"),
-     _flight_server_addr(), _usockfd(), _mutex_status_node_map(),_status_node_map(), _thread_check_node_map(),_thread_heartbeat() {}
+     _db(), _flight_server_addr(), _usockfd(), _mutex_status_node_map(),_status_node_map(),
+     _thread_check_node_map(),_thread_heartbeat()
+     {
+    _db = dbOpen(_path_db);
+    }
 
  
 TrackingServer::~TrackingServer() {
@@ -38,12 +42,15 @@ TrackingServer::~TrackingServer() {
     if (_thread_check_node_map.joinable()) {
         _thread_check_node_map.join();
     }
+
+    dbClose(_db);
 }
 
 
 TrackPacket TrackingServer::_produce_packet() {
     TrackPacket packet = AbstractReliableBroadcastNode<TrackPacket>::_produce_packet();
     packet.led_status = false;
+    packet.timestamp = static_cast<uint32_t>(std::time(nullptr)); 
     packet.position = _get_current_position();
     LOG_F(3, "Generated packet: %s", packet.repr().c_str());
     return packet;    
@@ -54,7 +61,7 @@ TrackPacket TrackingServer::_produce_packet() {
 void TrackingServer::_process_packet(const TrackPacket& packet) {
     AbstractReliableBroadcastNode<TrackPacket>::_process_packet(packet);    
     bool new_node=false;
-    {
+    { // TODO - need for queue to make asynchrone ?
         std::lock_guard<std::mutex> lock(_mutex_status_node_map);
         new_node = (_status_node_map.find(packet.nodeID) == _status_node_map.end());
         _status_node_map[packet.nodeID] = {packet.position, packet.timestamp};
@@ -171,6 +178,7 @@ void TrackingServer::_tr_check_node_map(){
 void TrackingServer::start() {
     LOG_F(WARNING, "Starting Tracking server");
     AbstractReliableBroadcastNode<TrackPacket>::start();
+
     _thread_check_node_map = std::thread(&TrackingServer::_tr_check_node_map, this);
     _thread_heartbeat = std::thread(&TrackingServer::_tr_heartbeat, this);
 
