@@ -17,6 +17,7 @@
 #include "AbstractReliableBroadcast.hpp"
 #include "common.hpp"
 #include "TrackPacket.hpp"
+#include "database_utils/DbUtils.hpp"
 
 typedef std::map<uint8_t, std::pair<Position, uint32_t>> nodemap_t;
 
@@ -27,6 +28,10 @@ private:
     const unsigned short _heart_period=TRACKING_HEARTBEAT_PERIOD;
     const unsigned short _peer_lost_timeout = TRACKING_PEER_LOSS_TIMEOUT;
     const unsigned short _period_mapcheck = TRACKING_PERIOD_CHECK_NODEMAP;
+
+    // Db
+    const char* _path_db = DB_PATH;
+    sqlite3 * _db;
 
     // Unix Socket Sender
     const char* _usocket_path = FP_USOCKET_PATH;

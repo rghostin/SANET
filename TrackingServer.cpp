@@ -27,7 +27,11 @@ std::string TrackingServer::_get_json_nodemap(const nodemap_t& map) {
 
 TrackingServer::TrackingServer(unsigned short port, uint8_t nodeID) : 
     AbstractReliableBroadcastNode<TrackPacket>(nodeID, port, "TrackSrv"),
-     _flight_server_addr(), _usockfd(), _mutex_status_node_map(),_status_node_map(), _thread_check_node_map(),_thread_heartbeat() {}
+     _db(), _flight_server_addr(), _usockfd(), _mutex_status_node_map(),_status_node_map(),
+     _thread_check_node_map(),_thread_heartbeat()
+     {
+    _db = dbOpen(_path_db);
+    }
 
  
 TrackingServer::~TrackingServer() {
@@ -39,6 +43,7 @@ TrackingServer::~TrackingServer() {
         _thread_check_node_map.join();
     }
     close(_usockfd);
+    dbClose(_db);
 }
 
 

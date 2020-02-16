@@ -35,4 +35,7 @@
 #define FP_CURR_POS_FILE_PATH "current.position"
 #define FP_CURR_POS_LOCK_PATH "current.position.lock"
 
+// Database settings
+#define DB_PATH "database_utils/sanet.db"
+
 #endif
