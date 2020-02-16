@@ -65,6 +65,7 @@ void TrackingServer::_process_packet(const TrackPacket& packet) {
         std::lock_guard<std::mutex> lock(_mutex_status_node_map);
         new_node = (_status_node_map.find(packet.nodeID) == _status_node_map.end());
         _status_node_map[packet.nodeID] = {packet.position, packet.timestamp};
+        dbInsertOrUpdateNode(_db, packet.nodeID, packet.position, packet.timestamp);
     }
     if (new_node) {
         LOG_F(WARNING, "New NodeID=%d", packet.nodeID);
@@ -155,8 +156,10 @@ void TrackingServer::_tr_check_node_map(){
 
                 if ((curr_timestamp - std::get<1>(it->second)) > _peer_lost_timeout) {
                     //dead drone
-                    LOG_F(WARNING, "Peer lost NodeID=%d", it->first);
+                    uint8_t nodeid = it->first;
+                    LOG_F(WARNING, "Peer lost NodeID=%d", nodeid);
                     _status_node_map.erase(it++);
+                    dbRemoveNode(_db, nodeid);
                     need_fp_recompute = true;
                 } else {
                     ++it;

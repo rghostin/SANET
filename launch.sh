@@ -1,6 +1,15 @@
 #!/bin/bash
-pkill -f tmux
 
+DB_DIR="database_utils"
+DB_PATH="${DB_DIR}/sanet.db"
+DB_INIT_SCRIPT="${DB_DIR}/init.sql"
+
+# database setup
+rm -rf "$DB_PATH"
+sqlite3 "$DB_PATH" < "$DB_INIT_SCRIPT"
+
+# tmux
+pkill -f tmux
 tmux new-session -d bash
 tmux split-window -h bash
 #sends keys to first and second terminals

@@ -208,7 +208,7 @@ inline P AbstractBroadcastNode<P>::_produce_packet() {
 
 template <typename P>
 Position AbstractBroadcastNode<P>::_get_current_position() const {
-    std::ifstream ifs;             // creates stream ifs
+    /*std::ifstream ifs;             // creates stream ifs
     Position position;             // vector to store the numerical values in
 
     while (access(FP_CURR_POS_LOCK_PATH, F_OK) != -1) {
@@ -236,8 +236,8 @@ Position AbstractBroadcastNode<P>::_get_current_position() const {
         perror("lockfile cannot remove");
         LOG_F(ERROR, "Cannot remove lockfile");
     }
-    return position;
-    //return Position(28,28);
+    return position;*/
+    return Position(28,28);
 }
 
 template<typename P>
