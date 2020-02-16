@@ -4,10 +4,14 @@ from utils import euclidian_distance, print_red
 from time import sleep
 import os
 import global_settings as gs
+from db_utils import db_update_currPos
+import sqlite3
+
 
 class Autopilot:
-    def __init__(self, speed):
+    def __init__(self, speed, nodeID):
         self.__speed = speed        # wp/sec
+        self.__nodeID = nodeID
 
         self.__position = (None, None)
 
@@ -20,6 +24,8 @@ class Autopilot:
         self.__thread_update_position = None
         self.__mutex_halt = Lock()
         self.__halt = False
+
+        self.__con = None
 
  
 
@@ -41,25 +47,11 @@ class Autopilot:
             self.__mutex_halt.release()
 
     def set_position(self, newpos):
-        to_write = "%f\n%f" % newpos
-
-        # Checking if file is locked (if FILENAME.LOCK exists)
-        while os.access(gs.FP_CURR_POS_FILE_PATH, os.R_OK | os.X_OK):
-            # file locked - wait
-            pass
-
-        try:
-            # Locking the file
-            with open(gs.FP_CURR_POS_LOCK_PATH, 'w'):
-                print('creating lock')
-
-            # Writing pos on file
-            with open(gs.FP_CURR_POS_FILE_PATH, 'w') as pos_file:
-                pos_file.write(to_write)
-        finally:
-            # Unlocking the file
-            os.remove(gs.FP_CURR_POS_LOCK_PATH)
-        print_red("Written %s to position" % str(newpos))
+        self.__position = newpos 
+        self.__con = sqlite3.connect(gs.DB_PATH)
+        db_update_currPos(self.__con, self.__nodeID, longitude=newpos[0], latitude=newpos[1])
+        self.__con.close()
+        print_red("Position: %s" % str(newpos))
 
     def start(self):
         print_red("Starting AP")

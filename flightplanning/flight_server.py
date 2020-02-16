@@ -16,7 +16,7 @@ class FlightServer:
         self.__display_ = display
         self.__connection_ = None
         self.__my_nodeId_ = parseNodeId(gs.NODE_ID_PATH)
-        self.__autopilot = Autopilot(speed=gs.AUTOPILOT_SPEED)     # 1 waypoint / sec
+        self.__autopilot = Autopilot(speed=gs.AUTOPILOT_SPEED, nodeID=self.__my_nodeId_)     # 1 waypoint / sec
         self.__last_status_node_map_ = dict()
 
 

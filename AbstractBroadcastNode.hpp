@@ -17,6 +17,8 @@
 #include "common.hpp"
 #include "Position.hpp"
 #include "settings.hpp"
+#include "database_utils/DbUtils.hpp"
+
 
 
 template <typename P>
@@ -41,6 +43,10 @@ protected:
     const char* _name;
     virtual std::string threadname(std::string) const;
 
+        // Db
+    const char* _path_db = DB_PATH;
+    sqlite3 * _db;
+
     virtual bool _to_be_ignored(const P&) const;
     virtual void _process_packet(const P&) = 0;
     virtual P _produce_packet();
@@ -63,8 +69,13 @@ public:
 
 template<typename P>
 AbstractBroadcastNode<P>::AbstractBroadcastNode(uint8_t nodeID, unsigned short port, const char* name):
-    _port(port), sockfd(), _srvaddr(), _bc_sockaddr(), b_iface(), _thread_receiver(), _nodeID(nodeID), _name(name)
+    _port(port), sockfd(), _srvaddr(), _bc_sockaddr(), b_iface(),
+    _db(),
+    _thread_receiver(), _nodeID(nodeID), _name(name)
 {
+    // dbs
+    _db = dbOpen(_path_db);
+
     // setup reception sockaddr
     memset(&_srvaddr, 0, sizeof(_srvaddr));
     _srvaddr.sin_family = AF_INET;
@@ -208,36 +219,10 @@ inline P AbstractBroadcastNode<P>::_produce_packet() {
 
 template <typename P>
 Position AbstractBroadcastNode<P>::_get_current_position() const {
-    /*std::ifstream ifs;             // creates stream ifs
-    Position position;             // vector to store the numerical values in
-
-    while (access(FP_CURR_POS_LOCK_PATH, F_OK) != -1) {
-        // lock exists - active waiting
-    }
-
-    try {
-        // create our lock
-        std::ofstream lockfile(FP_CURR_POS_LOCK_PATH);
-
-        ifs.open(FP_CURR_POS_FILE_PATH);  //opens file
-        if (ifs.fail()) {
-            LOG_F(ERROR, "Cannot open file");
-            throw;
-        }
-        ifs >> position.longitude;
-        ifs >> position.latitude;
-        ifs.close();
-        lockfile.close();
-    } catch (int e){
-        ; // ignore - just ignore and delete lock 
-    }
-
-    if (remove(FP_CURR_POS_LOCK_PATH) != 0) {
-        perror("lockfile cannot remove");
-        LOG_F(ERROR, "Cannot remove lockfile");
-    }
-    return position;*/
-    return Position(28,28);
+    std::ifstream ifs;             // creates stream ifs
+    Position position = std::get<0>(dbGetNodeStatus(_db, _nodeID));
+    
+    return position;
 }
 
 template<typename P>

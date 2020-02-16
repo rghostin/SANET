@@ -18,7 +18,6 @@
 #include "AbstractReliableBroadcast.hpp"
 #include "common.hpp"
 #include "TrackPacket.hpp"
-#include "database_utils/DbUtils.hpp"
 
 typedef std::map<uint8_t, std::pair<Position, uint32_t>> nodemap_t;
 
@@ -27,10 +26,6 @@ class TrackingServer final : public AbstractReliableBroadcastNode<TrackPacket> {
 private:
     // self information and settings
     const unsigned short _peer_lost_timeout = TRACKING_PEER_LOSS_TIMEOUT;
-
-    // Db
-    const char* _path_db = DB_PATH;
-    sqlite3 * _db;
 
     // Unix Socket Sender
     const char* _usocket_path = FP_USOCKET_PATH;
