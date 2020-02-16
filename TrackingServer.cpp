@@ -38,7 +38,6 @@ TrackingServer::~TrackingServer() {
     if (_thread_check_node_map.joinable()) {
         _thread_check_node_map.join();
     }
-    close(_usockfd);
 }
 
 
@@ -114,6 +113,7 @@ void TrackingServer::_setup_usocket(){
 }
 
 void TrackingServer::_send_status_node_map(){
+    _setup_usocket();
     std::lock_guard<std::mutex> locksend(_mutex_send_map);
     std::string json_nodemap;
     {
@@ -124,6 +124,8 @@ void TrackingServer::_send_status_node_map(){
         perror("Cannot send the node map");
     }
     LOG_F(WARNING, "Node map sent: %s", json_nodemap.c_str());
+    close(_usockfd);
+
 }
 // ===========================================================
 
@@ -169,7 +171,6 @@ void TrackingServer::_tr_check_node_map(){
 void TrackingServer::start() {
     LOG_F(WARNING, "Starting Tracking server");
     AbstractReliableBroadcastNode<TrackPacket>::start();
-    _setup_usocket();
     _thread_check_node_map = std::thread(&TrackingServer::_tr_check_node_map, this);
     _thread_heartbeat = std::thread(&TrackingServer::_tr_heartbeat, this);
 
