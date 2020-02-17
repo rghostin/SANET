@@ -3,6 +3,7 @@
 /cmake-build-debug/
 /.vscode/
 **/__pycache__
+CMakeLists.txt
 
 #  extensions
 **/*.pyc
