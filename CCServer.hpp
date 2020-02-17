@@ -35,7 +35,6 @@ private:
     int sockfd;
     sockaddr_in _srvaddr;
     ifreq b_iface;
-    const char* b_iface_name=BATMAN_IFACE;
     int _online_sockets[CC_MAX_CONNECTIONS] = {0};
 
     std::thread _thread_receiver;

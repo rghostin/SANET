@@ -157,7 +157,7 @@ void CCServer::_tr_receiver() {
                     } else {
                         // data received
                         LOG_F(INFO, "received from (%s:%d) command=%d", inet_ntoa(cliaddr.sin_addr) , ntohs(cliaddr.sin_port), command);
-                        auto hand = std::async(std::launch::async, &CCServer::_dispatch, this, sd, command);
+                        std::async(std::launch::async, &CCServer::_dispatch, this, sd, command);
                     }
                 }
 
@@ -184,28 +184,14 @@ void CCServer::_dispatch(int socket, uint8_t command){
 
 
 void CCServer::_execute_fetch_all_pos(int socket) {
-    std::vector<NodePositionPacket> vec_node_struct;
-    vec_node_struct = dbFetchAllNodesPositions(_db);
-    unsigned long size_vec(vec_node_struct.size());
-    NodePositionPacket packet{};
+    std::string map_node_json;
+    map_node_json = dbFetchAllNodesPositions(_db);
 
-    if (send(socket, &size_vec, sizeof(int), 0) < 0) {
+    if (send(socket, &map_node_json, map_node_json.size(), 0) < 0) {
         perror("Cannot send the node map");
     }
 
-    for (unsigned long i = 0; i < size_vec; ++i) {
-        packet = vec_node_struct[i];
-
-        if (send(socket, &packet.nodeID, sizeof(uint8_t), 0) < 0) {
-            perror("Cannot send NodeID");
-        }
-        if (send(socket, &packet.longitude, sizeof(double), 0) < 0) {
-            perror("Cannot send longitude");
-        }
-        if (send(socket, &packet.latitude, sizeof(double), 0) < 0) {
-            perror("Cannot send latitude");
-        }
-    }
+    LOG_F(INFO, "Sent map : =%s", map_node_json);
 }
 
 
@@ -217,5 +203,4 @@ void CCServer::start() {
 
 void CCServer::join() {
     _thread_receiver.join();
-    _thread_sender.join();
 }
