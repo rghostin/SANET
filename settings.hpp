@@ -2,7 +2,7 @@
 #define _SETTINGS_HPP_
 
 // Global settings
-#define CFG_NODEID "nodeid.cfg"
+#define CFG_NODEID "conf/nodeid.cfg"
 
 // Command&Control settings
 #define CC_SERVER_PORT  6280

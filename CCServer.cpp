@@ -15,8 +15,8 @@ bool add_socket(int* array, const size_t max_size, int newsockfd) {
     return inserted;    // false -> CC_MAX_CONNECTION exceeded
 }
 
- 
-CCServer::CCServer(unsigned short port, uint8_t nodeID) : 
+
+CCServer::CCServer(unsigned short port, uint8_t nodeID) :
 _db(), _port(port), _nodeID(nodeID),
 sockfd(), _srvaddr(), b_iface(), _thread_receiver()
 {
@@ -29,7 +29,7 @@ sockfd(), _srvaddr(), b_iface(), _thread_receiver()
     _srvaddr.sin_addr.s_addr = INADDR_ANY;
     _srvaddr.sin_port = htons(_port);
 
-}  
+}
 
 CCServer::~CCServer() {
     if (_thread_receiver.joinable()) {
@@ -157,14 +157,55 @@ void CCServer::_tr_receiver() {
                     } else {
                         // data received
                         LOG_F(INFO, "received from (%s:%d) command=%d", inet_ntoa(cliaddr.sin_addr) , ntohs(cliaddr.sin_port), command);
+                        auto hand = std::async(std::launch::async, &CCServer::_dispatch, this, sd, command);
                     }
                 }
 
             }
         }
-
     }
     LOG_F(INFO, "process_stop=true; exiting");
+}
+
+
+void CCServer::_dispatch(int socket, uint8_t command){
+
+    switch (command) {
+        case FETCH_NODES_POS:  // Fetch All positions
+            _execute_fetch_all_pos(socket);
+            break;
+        case FETCH_GLOBAL_IMAGE:  // Fetch All Images
+            break;
+        default:
+            LOG_F(WARNING, "Unknow command=%d", command);
+            break;
+    }
+}
+
+
+void CCServer::_execute_fetch_all_pos(int socket) {
+    std::vector<NodePositionPacket> vec_node_struct;
+    vec_node_struct = dbFetchAllNodesPositions(_db);
+    unsigned long size_vec(vec_node_struct.size());
+    NodePositionPacket packet{};
+
+    if (send(socket, &size_vec, sizeof(int), 0) < 0) {
+        perror("Cannot send the node map");
+    }
+
+    for (unsigned long i = 0; i < size_vec; ++i) {
+        packet = vec_node_struct[i];
+
+        if (send(socket, &packet.nodeID, sizeof(uint8_t), 0) < 0) {
+            perror("Cannot send NodeID");
+        }
+        if (send(socket, &packet.longitude, sizeof(double), 0) < 0) {
+            perror("Cannot send longitude");
+        }
+        if (send(socket, &packet.latitude, sizeof(double), 0) < 0) {
+            perror("Cannot send latitude");
+        }
+    }
 }
 
 
@@ -173,6 +214,8 @@ void CCServer::start() {
     _thread_receiver = std::thread(&CCServer::_tr_receiver, this);
 }
 
+
 void CCServer::join() {
     _thread_receiver.join();
+    _thread_sender.join();
 }
