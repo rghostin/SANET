@@ -196,9 +196,18 @@ class MapGUI(object):
             cv2.imwrite("test.png", picture)
         return picture
 
+    def set_display_flight_plans(self, flag):
+        if flag:
+            self.display = True
+        else:
+            self.display = False
+
+    def destroy_window(self):
+        cv2.destroyWindow(winname=self.window_name)
+
     ############ TEST FONCTIONS ##################
 
-
+    #### OFFLINE SIMULATION ######
     def simulate_drones_surveillance(self):
         # Simulation of all drones flying and taking pictures
         images = {}
@@ -269,13 +278,7 @@ class MapGUI(object):
             lengths.append(len(order_images[drone_id]))
         return order_images, lengths
 
-    def set_display_flight_plans(self, flag):
-        if flag:
-            self.display = True
-        else:
-            self.display = False
-
-
+    ###### ONLINE TEST #########
     def area_reconstruction_position(self, nodes_status):
         # reconstruction of global area using drones photos
         # save last nodes_status
@@ -304,9 +307,10 @@ class MapGUI(object):
 
         self.create_picture(self.reconstruct_filename, self.transparent_img)
 
+    
 
-    def destroy_window(self):
-        cv2.destroyWindow(winname=self.window_name)
+
+
 
         # ============================================================================
 

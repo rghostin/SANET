@@ -25,6 +25,8 @@ MAP_1_PATH = "resource_images/image_set/map_1.jpg"
 MAP_3_PATH = "resource_images/image_set/map_3.jpg"
 MAP_5_PATH = "resource_images/image_set/map_5.jpg"
 MAP_7_PATH = "resource_images/image_set/map_7.jpg"
+CCLIENT_IP = "10.93.210.132"
+CCLIENT_PORT = 6280
 
 threadLock = threading.Lock()
 threads = []
@@ -54,7 +56,7 @@ class UserGUI(QWidget):
         self.select_area_window.setModal(True)
 
         # Cclient objet
-        self.cclient = CCClient('10.93.210.132', 6280)
+        self.cclient = CCClient(CCLIENT_IP, CCLIENT_PORT)
         self.nodes_status = None
 
 
@@ -66,11 +68,6 @@ class UserGUI(QWidget):
         self.connect_button.setFixedSize(200, 50)
         self.connect_button.clicked.connect(self.connect_button_action)
 
-        # disconnect button
-        self.disconnect_button = QPushButton("Disconnect")
-        self.disconnect_button.setFixedSize(200, 50)
-        self.disconnect_button.clicked.connect(self.disconnect_button_action)
-        self.disconnect_button.hide()
         # select map button
         self.select_map_button = QPushButton("Select Map")
         self.select_map_button.setFixedSize(200, 50)
@@ -100,6 +97,12 @@ class UserGUI(QWidget):
         self.show_hide_button.clicked.connect(self.show_hide_button_action)
         self.show_hide_button.hide()
 
+        # real time button
+        self.real_time_button = QPushButton("Execute Test")
+        self.real_time_button.setFixedSize(200, 50)
+        self.real_time_button.clicked.connect(self.real_time_button_action)
+        self.real_time_button.hide()
+
 
         # Labels
         image = QtGui.QPixmap(MENU_WELCOME_PICTURE_PATH)
@@ -117,13 +120,12 @@ class UserGUI(QWidget):
         division_line = QFrame()
         division_line.setFrameShape(QFrame.VLine)
 
-
+        # Connect button layout
         hbox_connect_button = QHBoxLayout()
         hbox_connect_button.stretch(1)
         hbox_connect_button.addWidget(self.connect_button)
-        hbox_connect_button.addWidget(self.disconnect_button)
         hbox_connect_button.addWidget(self.connect_led)
-
+        # buttons layout
         hbox_buttons = QHBoxLayout()
         hbox_buttons.addLayout(hbox_connect_button)
         hbox_buttons.addWidget(division_line)
@@ -132,18 +134,18 @@ class UserGUI(QWidget):
         hbox_buttons.addWidget(self.flight_plans_button)
         hbox_buttons.addWidget(self.stop_button)
         hbox_buttons.addWidget(self.show_hide_button)
-
+        # picture layout
         self.hbox_picture = QVBoxLayout()
         self.hbox_picture.addWidget(self.pic)
         self.hbox_picture.setAlignment(QtCore.Qt.AlignHCenter)
-
+        # main layout
         vbox_main = QVBoxLayout()
         vbox_main.addLayout(self.hbox_picture)
         vbox_main.addLayout(hbox_buttons)
 
-
         self.setLayout(vbox_main)
 
+        # gradient effect background
         p = QtGui.QPalette()
         gradient = QtGui.QLinearGradient(0, 0, 0, 1000)
         gradient.setColorAt(0.0, QtGui.QColor(75, 75, 203)) # color up
@@ -158,9 +160,11 @@ class UserGUI(QWidget):
 
 
     def select_map_button_action(self):
+        # function that show select area map window
         self.select_area_window.show()
 
     def close_select_map_window(self):
+        # function that close select area map window
         self.select_area_window.close()
         self.select_area_button.setEnabled(True)
 
@@ -182,15 +186,16 @@ class UserGUI(QWidget):
     def connect_button_action(self):
         if not self.connected:
             try:
-                self.cclient.start()
+                #self.cclient.start()
                 self.connected = True
                 self.set_connect_button_properties(connected=True)
+                self.real_time_button.show()  # TEST
             except:
                 pass
                 #TODO show dialog error
         else:
             self.connected = False
-            self.cclient.stop()
+            #self.cclient.stop()
             self.set_connect_button_properties(connected=False)
 
 
@@ -222,6 +227,7 @@ class UserGUI(QWidget):
             self.show_flight_plan = True
         self.map_gui.set_display_flight_plans(self.show_flight_plan)
         self.area_reconstruction_position()
+        # self.area_reconstruction()  OFFLINE TEST
         self.update_picture_frame(GLOBAL_AREA_IMG_PATH_RECONSTRUCTION)
         QApplication.processEvents()
 
@@ -262,15 +268,14 @@ class UserGUI(QWidget):
                 self.update_picture_frame(GLOBAL_AREA_IMG_PATH_RECONSTRUCTION)
             sleep(1)
 
-    def area_reconstruction(self, area):
-        threadLock.acquire()
-        self.map_gui.area_reconstruction(images=area)
-        threadLock.release()
-
     def area_reconstruction_position(self):
         threadLock.acquire()
         self.map_gui.area_reconstruction_position(nodes_status=self.nodes_status)
         threadLock.release()
+
+    def real_time_button_action(self):
+
+        self.start_thread_simulation()
 
 
     def update_picture_frame(self, picture_filename):
@@ -310,6 +315,31 @@ class UserGUI(QWidget):
             event.accept()
         else:
             event.ignore()
+
+    ################ OFFLINE SIMULATION FUNCTIONS ##########################
+
+    def start_offline_simulation(self):
+        images = self.map_gui.simulate_drones_surveillance()
+        order_images, lengths = self.map_gui.order_received_images(images=images)
+        step = 0
+        area_step = {}
+        for drone_id in order_images:
+            area_step[drone_id] = []
+        # while boucle
+        while (step < max(lengths) and not self.stop):
+            for drone_id in order_images:
+                area_step[drone_id].append(order_images[drone_id][step % len(order_images[drone_id])])
+            self.map_gui.area_reconstruction(images=area_step)
+            if not self.stop:
+                self.update_picture_frame(GLOBAL_AREA_IMG_PATH_RECONSTRUCTION)
+                QApplication.processEvents()
+            step += 1
+            sleep(1)
+
+    def area_reconstruction(self, area):
+        threadLock.acquire()
+        self.map_gui.area_reconstruction(images=area)
+        threadLock.release()
 
 
 
