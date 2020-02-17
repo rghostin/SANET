@@ -19,24 +19,28 @@ function changeKeyboard {
 function usage() {
 	echo "This script must be run with super-user privileges.
 	Usage: $0 [arguments]
-	  - i:NodeID (0 <= i <= 254)
-    - h:Hostname
-    - a:Antenna (0 : to enable | 1 : to disable)"
+	-i NodeID (0 <= i <= 254)
+  -h Hostname
+  bool_Antenna (0 : to enable | 1 : to disable)"
+    exit 1
 }
 
 cd "$ROOT"
 
 # force run as root
 if [[ $EUID -ne 0 ]]; then
-   echo "This script must be run as root" 
+   echo "This script must be run as root"
    exit 1
 fi
 
 # check params
-if [[ $# != 2 ]]; then
-  echo "[!] Error usage: setup.sh hostid hostname"
+if [[ $# -lt 2 ]]; then
+  usage
   exit 1
 fi
+
+#Antenna_off
+a=1
 
 # getting params
 while getopts ":h:i:a:" o; do
@@ -58,6 +62,13 @@ while getopts ":h:i:a:" o; do
 done
 shift $((OPTIND-1))
 
+if [ -z "${i}" ] || [ -z "${a}" ]; then
+    usage
+fi
+
+echo "i = ${i}"
+echo "a = ${a}"
+
 echo "changing hostname to $h"
 hostnamectl set-hostname "$h"
 
@@ -72,8 +83,11 @@ apt update
 apt upgrade -y
 apt autoremove -y
 
-echo '[*] Installing  requirements'
-apt install wireless-tools iw batctl alfred make g++ python3-setuptools libssl-dev hostapd isc-dhcp-server -y
+echo '[*] Installing requirements'
+apt install wireless-tools iw batctl alfred make g++ python3-setuptools python3-pip libssl-dev libgeos++-dev hostapd isc-dhcp-server -y
+
+echo '[*] Installing Python3 - requirements'
+pip3 install --user -r "$RSRC_DIR/requirements_rasp.txt" || exit 1
 
 echo "[*] Setting keyboard layout to $KBLAYOUT"
 loadkeys "$KBLAYOUT"
@@ -90,25 +104,43 @@ make rebuild
 echo '[*] Enabling batman and robin on reboot'
 echo "@reboot   root    ${RUN_SCRIPT}" >> /etc/crontab
 
-if [[ $a -eq 0 ]] ; then  # Enabling Antenna
+if [[ "$a" -eq "0" ]] ; then  # Enabling Antenna
     echo "- setting static IP address=$P_IP_ADDR/24"
     ip addr add dev "$P_IFACE" "$P_IP_ADDR"/24
 
-    echo '[*] Writing dhcpd configuration'
-    #dhcpd_file="/etc/dhcp/dhcpd.conf"  # Todo cp file
+    echo '[*] Overwriting dhcpd configuration'
+    mv "$RSRC_DIR/dhcpd.conf" "/etc/dhcp/dhcpd.conf"
 
-    # Todo cp file -> /etc/default/isc-dhcp-server
+    echo '[*] Overwriting isc-dhcp-server default configuration'
+    mv "$RSRC_DIR/isc-dhcp-server" "/etc/default/isc-dhcp-server"
 
     echo '[*] Restarting DHCP server'
+    systemctl unmask isc-dhcp-server
     service isc-dhcp-server restart
 
-    # Todo cp file -> /etc/hostapd/hostapd.conf + /etc/default/hostapd
+    echo '[*] Overwriting hostapd configuration'
+    mv "$RSRC_DIR/hostapd.conf" "/etc/hostapd/hostapd.conf"
+
+    echo '[*] Overwriting hostapd default configuration'
+    mv "$RSRC_DIR/hostapd" "/etc/default/hostapd"
+
+    systemctl unmask hostapd
+    service hostapd restart
+
+    echo '[*] Overwriting sysctl configuration'
+    mv "$RSRC_DIR/sysctl.conf" "/etc/sysctl.conf"
 
     echo '[*] Activation of forwarding'
     sh -c "echo 1 > /proc/sys/net/ipv4/ip_forward"
 else
+    systemctl stop isc-dhcp-server
     systemctl mask isc-dhcp-server
+    systemctl stop hostapd
     systemctl mask hostapd
 fi
 
 echo '[*] Done'
+
+echo '[*] Reboot to apply changes'
+sleep 1
+reboot
