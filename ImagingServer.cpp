@@ -2,7 +2,9 @@
 
 ImagingServer::ImagingServer(unsigned short port, uint8_t nodeID) :
         AbstractBroadcastNode<ImageChunkPacket>(nodeID, port, "ImgSrv"),
-        _mutex_image_map(), _image_map(), _mutex_building_image_map(), _building_image_map(), _thread_check_timeout_imgs() {}
+        _mutex_image_map(), _image_map(), _mutex_building_image_map(), _building_image_map(),
+        _thread_check_timeout_imgs() {
+}
 
 
 ImagingServer::~ImagingServer() {

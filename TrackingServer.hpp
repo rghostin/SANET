@@ -12,6 +12,7 @@
 #include <thread>
 #include <mutex>
 #include <sys/un.h>
+#include <future>
 #include "loguru.hpp"
 #include "settings.hpp"
 #include "AbstractReliableBroadcast.hpp"
@@ -24,9 +25,7 @@ typedef std::map<uint8_t, std::pair<Position, uint32_t>> nodemap_t;
 class TrackingServer final : public AbstractReliableBroadcastNode<TrackPacket> {
 private:
     // self information and settings
-    const unsigned short _heart_period=TRACKING_HEARTBEAT_PERIOD;
     const unsigned short _peer_lost_timeout = TRACKING_PEER_LOSS_TIMEOUT;
-    const unsigned short _period_mapcheck = TRACKING_PERIOD_CHECK_NODEMAP;
 
     // Unix Socket Sender
     const char* _usocket_path = FP_USOCKET_PATH;
@@ -44,7 +43,7 @@ private:
     std::thread _thread_check_node_map;
     void _tr_check_node_map();
     std::thread _thread_heartbeat;
-    void _tr_hearbeat();
+    void _tr_heartbeat();
 
     TrackPacket _produce_packet() override;
     virtual void _process_packet(const TrackPacket&) override;  

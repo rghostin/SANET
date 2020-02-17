@@ -18,6 +18,7 @@
 #include "common.hpp"
 #include "ImageChunkPacket.hpp"
 #include "ImageBuilder.hpp"
+#include "database_utils/DbUtils.hpp"
 
 #define INPUT_FILE(x) PATH_IMG #x TYPE_IMG  // TODO rm
 
@@ -32,6 +33,7 @@ private:
     std::map<Position, Image> _image_map;
     mutable std::mutex _mutex_building_image_map;
     std::map<Position, ImageBuilder> _building_image_map;
+
 
     // threads
     std::thread _thread_check_timeout_imgs;

@@ -17,14 +17,18 @@ bool add_socket(int* array, const size_t max_size, int newsockfd) {
 
  
 CCServer::CCServer(unsigned short port, uint8_t nodeID) : 
-_port(port), _nodeID(nodeID),
+_db(), _port(port), _nodeID(nodeID),
 sockfd(), _srvaddr(), b_iface(), _thread_receiver()
 {
+    // Database setup
+    _db = dbOpen(_path_db);
+
     // setup reception sockaddr
     memset(&_srvaddr, 0, sizeof(_srvaddr));
     _srvaddr.sin_family = AF_INET;
     _srvaddr.sin_addr.s_addr = INADDR_ANY;
     _srvaddr.sin_port = htons(_port);
+
 }  
 
 CCServer::~CCServer() {
@@ -35,6 +39,7 @@ CCServer::~CCServer() {
     if (close(sockfd) < 0) {
         perror("Cannot close socket");
     }
+    dbClose(_db);
 }
 
 
