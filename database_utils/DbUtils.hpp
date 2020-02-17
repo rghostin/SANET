@@ -262,25 +262,33 @@ inline const std::pair<Position, uint32_t> dbGetNodeStatus(sqlite3 *db, uint8_t 
 }
 
 
-inline std::vector<NodePositionPacket> dbFetchAllNodesPositions(sqlite3 *db){
+inline std::string dbFetchAllNodesPositions(sqlite3 *db){
     // Get all nodes status
     LOG_SCOPE_FUNCTION(INFO);
-    std::vector<NodePositionPacket> node_pos_vector;
     const char *pSQL;
     data_display mydata;
-    std::string SQL = "SELECT (nodeId, latitude, longitude) FROM node_status_map";
+    std::string SQL = "SELECT nodeID, latitude, longitude FROM node_status_map";
     pSQL = SQL.c_str();
     LOG_F(INFO, "Asking for the following SQL query: '%s'", pSQL);
     dbExecute(db, pSQL, dbCallback_display, (void *) &mydata);
 
+    char buffer[4096]="";
+    std::string node_pos_json = "{";
+
     for (size_t i=0; i < mydata.res.size(); i += 3) {
-        NodePositionPacket temp_node = NodePositionPacket();
-        temp_node.nodeID = static_cast<uint8_t>(std::stoi(mydata.res[0]));
-        temp_node.latitude = std::stoi(mydata.res[1]);
-        temp_node.longitude = std::stoi(mydata.res[2]);
-        node_pos_vector.push_back(temp_node);
+        uint8_t nodeID = static_cast<uint8_t>(std::stoi(mydata.res[i]));
+        double latitude = std::stoi(mydata.res[i+1]);
+        double longitude = std::stoi(mydata.res[i+2]);
+
+        // JSONify
+        snprintf(buffer, sizeof(buffer), "\"%u\": [%f, %f]", nodeID, longitude, latitude);
+        node_pos_json += buffer;
+        node_pos_json += ",";
+        memset(buffer, 0, sizeof(buffer));
     }
-    return node_pos_vector;
+    node_pos_json.pop_back();       // remove last ,
+    node_pos_json += "}";
+    return node_pos_json; 
 }
 
 
