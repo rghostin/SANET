@@ -42,7 +42,6 @@ class FlightServer:
         except ValueError:
             print("Ignoring packet")
             return
-        print("! valid")
         if not(status_node_map== self.__last_status_node_map_):
             self.__last_status_node_map_ = status_node_map
             self.__fplanner_.recompute(status_node_map)
