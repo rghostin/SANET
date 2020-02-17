@@ -29,10 +29,6 @@ private:
     const uint32_t _image_reception_timeout=IMAGE_RECEPTION_TIMEOUT;
     const uint32_t _image_reception_check=IMAGE_TIMEOUT_CHECK_PERIOD;
 
-    // Db
-    const char* _path_db = DB_PATH;
-    sqlite3 * _db;
-
     mutable std::mutex _mutex_image_map;
     std::map<Position, Image> _image_map;
     mutable std::mutex _mutex_building_image_map;

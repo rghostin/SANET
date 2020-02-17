@@ -41,8 +41,6 @@ TrackingServer::~TrackingServer() {
     if (_thread_check_node_map.joinable()) {
         _thread_check_node_map.join();
     }
-
-    dbClose(_db);
 }
 
 
