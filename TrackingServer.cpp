@@ -116,7 +116,6 @@ void TrackingServer::_setup_usocket(){
 
 void TrackingServer::_send_status_node_map(){
     _setup_usocket();
-//    std::lock_guard<std::mutex> locksend(_mutex_send_map);
     std::string json_nodemap;
     {
         std::lock_guard<std::mutex> lock(_mutex_status_node_map);
