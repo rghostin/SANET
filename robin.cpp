@@ -7,6 +7,7 @@
 #include "common.hpp"
 #include "TrackingServer.hpp"
 #include "ImagingServer.hpp"
+#include <sqlite3.h>
 
 
 // Stopping mechanism 
@@ -62,6 +63,8 @@ int main(int argc, char** argv) {
 
     // setup signals
     signal(SIGINT, exit_handler);
+
+    sqlite3_config(SQLITE_CONFIG_SERIALIZED);
 
     // Tracking server
     TrackingServer trackingserver(TRACKING_SERVER_PORT, nodeID);

@@ -24,3 +24,4 @@ tools/image_sneder
 # specifics
 /conf/nodeid.conf
 /conf/usocket
+/database_utils/sanet.db

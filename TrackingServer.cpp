@@ -27,7 +27,8 @@ std::string TrackingServer::_get_json_nodemap(const nodemap_t& map) {
 
 TrackingServer::TrackingServer(unsigned short port, uint8_t nodeID) : 
     AbstractReliableBroadcastNode<TrackPacket>(nodeID, port, "TrackSrv"),
-     _flight_server_addr(), _usockfd(), _mutex_status_node_map(),_status_node_map(), _thread_check_node_map(),_thread_heartbeat() {}
+     _flight_server_addr(), _usockfd(), _mutex_status_node_map(),_status_node_map(),
+     _thread_check_node_map(),_thread_heartbeat() {}
 
  
 TrackingServer::~TrackingServer() {
@@ -38,7 +39,6 @@ TrackingServer::~TrackingServer() {
     if (_thread_check_node_map.joinable()) {
         _thread_check_node_map.join();
     }
-    close(_usockfd);
 }
 
 
@@ -55,10 +55,11 @@ TrackPacket TrackingServer::_produce_packet() {
 void TrackingServer::_process_packet(const TrackPacket& packet) {
     AbstractReliableBroadcastNode<TrackPacket>::_process_packet(packet);    
     bool new_node=false;
-    {
+    { // TODO - need for queue to make asynchrone ?
         std::lock_guard<std::mutex> lock(_mutex_status_node_map);
         new_node = (_status_node_map.find(packet.nodeID) == _status_node_map.end());
         _status_node_map[packet.nodeID] = {packet.position, packet.timestamp};
+        dbInsertOrUpdateNode(_db, packet.nodeID, packet.position, packet.timestamp);
     }
     if (new_node) {
         LOG_F(WARNING, "New NodeID=%d", packet.nodeID);
@@ -70,16 +71,22 @@ void TrackingServer::_process_packet(const TrackPacket& packet) {
 }
 
 
-void TrackingServer::_tr_hearbeat() {
+void TrackingServer::_tr_heartbeat() {
+    Position lastpos;
+
     loguru::set_thread_name( this->threadname("heartbeat").c_str()); 
-    LOG_F(INFO, "Starting %s heartbeat with period=%d", _name,_heart_period);
+    LOG_F(INFO, "Starting heartbeat");
 
     while (! process_stop) {
-        TrackPacket packet = _produce_packet();
-        this->broadcast(packet);
+        Position currpos = _get_current_position();
+        if (currpos != lastpos) { 
+            lastpos = currpos;
+            TrackPacket packet = _produce_packet();
+            this->broadcast(packet);
+            LOG_F(INFO, "Sent hearbeat packet: %s", packet.repr().c_str());
+        }
 
-        LOG_F(INFO, "Sent hearbeat packet: %s", packet.repr().c_str());
-        std::this_thread::sleep_for(std::chrono::seconds(_heart_period));
+        std::this_thread::sleep_for(std::chrono::seconds(1/FP_AUTOPILOT_SPEED));        
     }
     LOG_F(INFO, "TrServer heartbeat process_stop=true; exiting");
 }
@@ -108,6 +115,7 @@ void TrackingServer::_setup_usocket(){
 }
 
 void TrackingServer::_send_status_node_map(){
+    _setup_usocket();
     std::string json_nodemap;
     {
         std::lock_guard<std::mutex> lock(_mutex_status_node_map);
@@ -117,6 +125,8 @@ void TrackingServer::_send_status_node_map(){
         perror("Cannot send the node map");
     }
     LOG_F(WARNING, "Node map sent: %s", json_nodemap.c_str());
+    close(_usockfd);
+
 }
 // ===========================================================
 
@@ -139,8 +149,10 @@ void TrackingServer::_tr_check_node_map(){
 
                 if ((curr_timestamp - std::get<1>(it->second)) > _peer_lost_timeout) {
                     //dead drone
-                    LOG_F(WARNING, "Peer lost NodeID=%d", it->first);
+                    uint8_t nodeid = it->first;
+                    LOG_F(WARNING, "Peer lost NodeID=%d", nodeid);
                     _status_node_map.erase(it++);
+                    dbRemoveNode(_db, nodeid);
                     need_fp_recompute = true;
                 } else {
                     ++it;
@@ -152,7 +164,7 @@ void TrackingServer::_tr_check_node_map(){
             need_fp_recompute = false;  // reset for next iter
             _send_status_node_map();    // Send to python flight server through unix socket
         }
-        std::this_thread::sleep_for(std::chrono::seconds(_period_mapcheck));
+        std::this_thread::sleep_for(std::chrono::seconds(3));
     }
     LOG_F(INFO, "Tracker checkNodeMap - process_stop=true; exiting");
 }
@@ -162,9 +174,9 @@ void TrackingServer::_tr_check_node_map(){
 void TrackingServer::start() {
     LOG_F(WARNING, "Starting Tracking server");
     AbstractReliableBroadcastNode<TrackPacket>::start();
-    _setup_usocket();
+
     _thread_check_node_map = std::thread(&TrackingServer::_tr_check_node_map, this);
-    _thread_heartbeat = std::thread(&TrackingServer::_tr_hearbeat, this);
+    _thread_heartbeat = std::thread(&TrackingServer::_tr_heartbeat, this);
 
     // send at least one status-nodemap anyway
     std::async(std::launch::async,

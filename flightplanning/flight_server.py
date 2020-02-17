@@ -16,7 +16,7 @@ class FlightServer:
         self.__display_ = display
         self.__connection_ = None
         self.__my_nodeId_ = parseNodeId(gs.NODE_ID_PATH)
-        self.__autopilot = Autopilot(speed=2*scope)     # 2scope/sec - 1 waypoint / sec
+        self.__autopilot = Autopilot(speed=gs.AUTOPILOT_SPEED, nodeID=self.__my_nodeId_)     # 1 waypoint / sec
         self.__last_status_node_map_ = dict()
 
 
@@ -42,7 +42,6 @@ class FlightServer:
         except ValueError:
             print("Ignoring packet")
             return
-        n = len(status_node_map)
         if not(status_node_map== self.__last_status_node_map_):
             self.__last_status_node_map_ = status_node_map
             self.__fplanner_.recompute(status_node_map)
@@ -71,21 +70,27 @@ class FlightServer:
     def start(self):
         self.setup_usocket()
         print('Waiting for a connection')  # Wait for a connection
-        self.__connection_, client_address = self.__usockfd_.accept()
-        print('Connection open', client_address)
+        
         self.__autopilot.start()
 
         while True:
-            json_status_nodemap = self.receiveData(self.__connection_, client_address)
-            print("Received", json_status_nodemap)
+            self.__connection_, client_address = self.__usockfd_.accept()
+            print('Connection open', client_address)
+
+            received_chunk = self.__connection_.recv(4096)
+            json_status_nodemap = received_chunk.decode() if received_chunk else None
+
+            print("Received #", json_status_nodemap, "#")
             if not json_status_nodemap:
+                print("closing connection")
                 self.__connection_.close()  # Clean up the connection
                 break
             self.processReceived(json_status_nodemap)
     
     def stop(self):
         self.__autopilot.stop()
-        self.__connection_.close()  # Clean up the connection
+        if self.__connection_:
+            self.__connection_.close()  # Clean up the connection
 
 if __name__ == "__main__":
     SCOPE = 20 # TODO camera
