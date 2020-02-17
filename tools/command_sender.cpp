@@ -2,9 +2,12 @@
 #include <sys/socket.h> 
 #include <arpa/inet.h> 
 #include <unistd.h> 
-#include <cstring> 
+#include <cstring>
+#include <vector>
 #include "../loguru.hpp"
 #include "../settings.hpp"
+#include "../CCPackets.hpp"
+#include "../CCCommands.hpp"
 
 
 #define SRV_IP "127.0.0.1"
@@ -57,6 +60,30 @@ int main(int argc, char const *argv[])
         command = input_uint8();
         send(sockfd , &command , sizeof(command), 0 );
         printf("sent command=%d\n", command);
+
+        if (command == FETCH_NODES_POS) {
+            std::vector<NodePositionPacket> vec_node_packt;
+            int size_vec(0);
+
+            if (recv(sockfd, &size_vec, sizeof(int), 0) < 0) {
+                perror("Cannot send the node map");
+            }
+
+            for (int i = 0; i < size_vec; ++i) {
+                NodePositionPacket packet{};
+                if (recv(sockfd, &packet.nodeID, sizeof(uint8_t), 0) < 0) {
+                    perror("Cannot send NodeID");
+                }
+                if (recv(sockfd, &packet.longitude, sizeof(double), 0) < 0) {
+                    perror("Cannot send longitude");
+                }
+                if (recv(sockfd, &packet.latitude, sizeof(double), 0) < 0) {
+                    perror("Cannot send latitude");
+                }
+
+                vec_node_packt.push_back(packet);
+            }
+        }
     }
 
     return 0; 

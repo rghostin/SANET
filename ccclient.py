@@ -2,28 +2,17 @@ import numpy as np
 import socket
 import json
 
-
-def parseHppSetting(setting):
-    setting_value = None
-    with open("settings.hpp", "r") as settings_file:
-        for line in settings_file:
-            line = line.strip().split()
-            if len(line) != 0 and line[1]==setting:
-                setting_value = int(line[2])
-                break
-    return setting_value
-
-
-
-CCCommands = {
-    "FETCHALLNODES":2
-}
-
 class CCClient:
+    CCCommands = {
+        "FETCHALLNODES":2       # TODO: parse CCCommands
+    }
+
     def __init__(self, ip_addr, port):
         self.__socket_ = None
         self.__ip_addr_ = ip_addr
         self.__port_ = port
+
+
 
     def __setUpSocket_(self):
         if self.__socket_ is not None:
@@ -31,28 +20,25 @@ class CCClient:
         self.__socket_ = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.__socket_.connect((self.__ip_addr_, self.__port_))
 
-    def send_uint8(self, to_send):
+    def _send_uint8(self, to_send):
         if not 0<=to_send<256:
             raise TypeError("Uint8 out of bounds")
         print("Sending [uint8]=", to_send)
         self.__socket_.send(np.uint8(to_send))
 
-    def receive_json(self):
+    def _receive_json(self):
        received_chunk = self.__socket_.recv(4096)
        json_str = received_chunk.decode()
        return json.loads(json_str)
 
     def fetchAllNodes(self):
-        self.send_uint8(CCCommands["FETCHALLNODES"])
-        status_node_map = self.receive_json()
-
-        # {nodeid: {longitude, latitude}}
-
-
+        self._send_uint8(self.CCCommands["FETCHALLNODES"])
+        status_node_map = self._receive_json()
         print(status_node_map)
+        return status_node_map
 
     def start(self):
-        self.__setUpSocket_()
+        self.__setUpSocket_() 
         while True:
             try:
                 input("contiinue")
@@ -68,6 +54,6 @@ class CCClient:
  
 
 if __name__ == "__main__":
-    cc_port = parseHppSetting("CC_SERVER_PORT")
+    cc_port = 6280
     client = CCClient('localhost', cc_port)
     client.start()
