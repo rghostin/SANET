@@ -14,3 +14,5 @@ add_library(MyLib AbstractBroadcastNode.hpp AbstractReliableBroadcast.hpp common
 add_library(LittleLib TrackPacket.hpp ImageChunkPacket.hpp settings.hpp Position.hpp robin.cpp common.hpp loguru.hpp utils.hpp loguru.cpp)
 
 target_link_libraries(robin MyLib)
+target_link_libraries(packetsender LittleLib)
+target_link_libraries(imagesender LittleLib)
