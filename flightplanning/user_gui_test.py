@@ -42,7 +42,7 @@ class UserGUI(QWidget):
                               crop_withfps_filename=GLOBAL_AREA_IMG_PATH_FPS,
                               reconstruct_area_filename=GLOBAL_AREA_IMG_PATH_RECONSTRUCTION,
                               drones_photo_path=DRONE_PHOTO_PATH,
-                              display=True)
+                              display=False)
         self.connected = False  # flag that shows connexion status
         self.chosen_map_path = None
         self.stop = False
@@ -65,6 +65,12 @@ class UserGUI(QWidget):
         self.connect_button = QPushButton("Connect")
         self.connect_button.setFixedSize(200, 50)
         self.connect_button.clicked.connect(self.connect_button_action)
+
+        # disconnect button
+        self.disconnect_button = QPushButton("Disconnect")
+        self.disconnect_button.setFixedSize(200, 50)
+        self.disconnect_button.clicked.connect(self.disconnect_button_action)
+        self.disconnect_button.hide()
         # select map button
         self.select_map_button = QPushButton("Select Map")
         self.select_map_button.setFixedSize(200, 50)
@@ -115,6 +121,7 @@ class UserGUI(QWidget):
         hbox_connect_button = QHBoxLayout()
         hbox_connect_button.stretch(1)
         hbox_connect_button.addWidget(self.connect_button)
+        hbox_connect_button.addWidget(self.disconnect_button)
         hbox_connect_button.addWidget(self.connect_led)
 
         hbox_buttons = QHBoxLayout()
@@ -173,20 +180,31 @@ class UserGUI(QWidget):
         self.show()
 
     def connect_button_action(self):
-        if self.connected:
+        if not self.connected:
+            try:
+                self.cclient.start()
+                self.connected = True
+                self.set_connect_button_properties(connected=True)
+            except:
+                pass
+                #TODO show dialog error
+        else:
+            self.connected = False
+            self.cclient.stop()
+            self.set_connect_button_properties(connected=False)
+
+
+
+    def set_connect_button_properties(self, connected):
+        if not connected:
             led_path = "resource_images/gui/red_dot_3d.png"
             button_text = "Connect"
-            self.connected = False
             self.set_welcome_window()
-            self.cclient.stop()
 
         else:
             led_path = "resource_images/gui/green_dot_3d.png"
-            self.connected = True
             button_text = "Disconnect"
             self.select_map_button.setEnabled(True)
-            self.cclient.start()
-
 
         image = QtGui.QPixmap(led_path)
         self.connect_led.setPixmap((image.scaled(self.connect_led.width(), self.connect_led.height())))
@@ -242,7 +260,7 @@ class UserGUI(QWidget):
             self.area_reconstruction_position()
             if not self.stop:
                 self.update_picture_frame(GLOBAL_AREA_IMG_PATH_RECONSTRUCTION)
-            sleep(3)
+            sleep(1)
 
     def area_reconstruction(self, area):
         threadLock.acquire()

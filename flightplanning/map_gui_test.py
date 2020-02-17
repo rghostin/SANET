@@ -119,6 +119,7 @@ class MapGUI(object):
             # Waiting for the user to press any key
             cv2.waitKey()
 
+
     def check_selected_polygon(self):
         valid_polygon = False
         if(len(self.points)> 2):
@@ -132,9 +133,6 @@ class MapGUI(object):
         else:
             valid_polygon = False
         return valid_polygon
-
-
-
 
 
     def crop_polygon(self):
@@ -198,6 +196,8 @@ class MapGUI(object):
             cv2.imwrite("test.png", picture)
         return picture
 
+    ############ TEST FONCTIONS ##################
+
 
     def simulate_drones_surveillance(self):
         # Simulation of all drones flying and taking pictures
@@ -233,7 +233,6 @@ class MapGUI(object):
         # create transparent picture
         img_height, img_width = self.crop_picture.shape[:2]
         self.transparent_img = np.zeros((img_height, img_width, 4), dtype=np.uint8)
-        drone_layer = self.transparent_img.copy() # Version 1
         x_pos = y_pos = photo_height = photo_width = 0
         # reconstruction of pictures
         for drone_id in images:
@@ -246,12 +245,6 @@ class MapGUI(object):
             # create transparent picture and add drone
             drone = cv2.imread(self.drones_photo_path, -1)
             drone = cv2.resize(drone, (photo_width, photo_height))
-            ########## version 1 #######################
-            # drone_layer[y_pos:y_pos + photo_height, x_pos:x_pos + photo_width] = drone
-            # # add drone to area image
-            # temp_layer = drone_layer[:, :, 3] >0
-            # transparent_img[temp_layer] = drone_layer[temp_layer]
-            ########## version 2 #######################
             self.transparent_img[y_pos:y_pos + photo_height, x_pos:x_pos + photo_width] = drone
 
         if self.display:
@@ -286,11 +279,11 @@ class MapGUI(object):
     def area_reconstruction_position(self, nodes_status):
         # reconstruction of global area using drones photos
         # save last nodes_status
-        self.scope = 20
+        self.scope = 50
         self.current_status = nodes_status
         # create transparent picture
         img_height, img_width = self.crop_picture.shape[:2]
-        self.transparent_img = np.zeros((img_height, img_width, 4), dtype=np.uint8)
+        self.transparent_img = np.zeros((2000, 2000, 4), dtype=np.uint8)
         x_pos = y_pos = photo_height = photo_width = 0
         # show drones positions
         for node in nodes_status:
@@ -310,9 +303,6 @@ class MapGUI(object):
             self.transparent_img = self.draw_flight_plans(self.transparent_img)
 
         self.create_picture(self.reconstruct_filename, self.transparent_img)
-
-
-
 
 
     def destroy_window(self):
