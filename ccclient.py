@@ -38,14 +38,7 @@ class CCClient:
         return status_node_map
 
     def start(self):
-        self.__setUpSocket_() 
-        while True:
-            try:
-                input("contiinue")
-                self.fetchAllNodes()
-            except KeyboardInterrupt:
-                self.stop()
-                break
+        self.__setUpSocket_()
 
     def stop(self):
         self.__socket_.close()
