@@ -45,7 +45,6 @@ TrackingServer::~TrackingServer() {
 TrackPacket TrackingServer::_produce_packet() {
     TrackPacket packet = AbstractReliableBroadcastNode<TrackPacket>::_produce_packet();
     packet.led_status = false;
-    packet.timestamp = static_cast<uint32_t>(std::time(nullptr)); 
     packet.position = _get_current_position();
     LOG_F(3, "Generated packet: %s", packet.repr().c_str());
     return packet;    
