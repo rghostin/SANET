@@ -96,3 +96,9 @@ def parsePolygonFile(file_path):
 def euclidian_distance(p1, p2):
     return math.sqrt( math.pow((p1[0] - p2[0]), 2) + math.pow((p1[1] - p2[1]), 2))
     
+
+
+def calcul_scope(image, alpha):
+    pixel_distance = max(image.shape[:2])
+    scope = math.ceil(pixel_distance / (2 * alpha))
+    return scope
