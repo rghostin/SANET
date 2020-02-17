@@ -41,13 +41,15 @@ int main(int argc, char** argv) {
         throw;
     }
 
-    LOG_F(WARNING, "NodeID=%d", nodeID);
 
     // setup logs 
     loguru::g_stderr_verbosity = loguru::Verbosity_INFO;
     loguru::add_file("robin.log", loguru::Truncate, loguru::Verbosity_3);
     loguru::set_thread_name("robin_main");
     while((opt = getopt(argc, argv, "i:v:")) != -1)
+
+    LOG_F(WARNING, "NodeID=%d", nodeID);
+
     {
         switch(opt)
         {
