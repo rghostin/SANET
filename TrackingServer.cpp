@@ -79,7 +79,7 @@ void TrackingServer::_tr_heartbeat() {
 
     while (! process_stop) {
         Position currpos = _get_current_position();
-        if (true){ //(currpos != lastpos) { 
+        if (currpos != lastpos) { 
             lastpos = currpos;
             TrackPacket packet = _produce_packet();
             this->broadcast(packet);
