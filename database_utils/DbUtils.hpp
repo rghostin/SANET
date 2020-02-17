@@ -30,8 +30,13 @@ inline sqlite3 *dbOpen(const char *filename) {
 inline void dbExecute(sqlite3 *db, const char *pSQL, int (*callback)(void *, int, char **, char **), void *data) {
     LOG_SCOPE_FUNCTION(INFO);
     char *szErrMsg = nullptr;
-    if ((sqlite3_exec(db, pSQL, callback, data, &szErrMsg)) != SQLITE_OK) {
-        LOG_F(ERROR, "SQL error: %s\n", szErrMsg);
+    int sts;
+    do {
+        sts = sqlite3_exec(db, pSQL, callback, data, &szErrMsg);
+    } while (sts == SQLITE_BUSY);
+    
+    if (sts != SQLITE_OK) {
+        LOG_F(ERROR, "SQL error: %s\n-%d", szErrMsg, sts);
         sqlite3_free(szErrMsg);
     }
 }
@@ -182,8 +187,7 @@ inline void dbInsertOrUpdateNode(sqlite3 *db, uint8_t nodeId, const Position &ne
     std::string logitude_str = std::to_string(new_pos.longitude);
     std::string timestamp_str = std::to_string(new_timestamp);
     std::string SQL_insertion_in_users =
-            "UPDATE node_status_map (nodeID,latitude,longitude,timestamp) VALUES ('" + node_id_str + "', '" +
-            latitude_str + "', '" + logitude_str + "', '" + timestamp_str + "') WHERE nodeID='" + node_id_str + "'";
+            "UPDATE node_status_map SET nodeID='"+node_id_str+"', latitude='" + latitude_str + "', longitude='"+logitude_str +"', timestamp='"+timestamp_str+"' WHERE nodeID='" + node_id_str + "';";
     pSQL = SQL_insertion_in_users.c_str();
     LOG_F(INFO, "Asking for the following SQL query: '%s'", pSQL);
     data_display mydata;

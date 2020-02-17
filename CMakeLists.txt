@@ -9,17 +9,10 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}" )
 
 # Pour lancer les différents programmes
 add_executable(robin robin.cpp)
-add_executable(cmd_sender tools/command_sender.cpp)
-add_executable(img_sender tools/imagesender.cpp)
-add_executable(nd_sender tools/nodemap_sender.cpp)
-add_executable(packt_sender tools/tpacket_broadcaster.cpp)
+#add_executable(main main.cpp)
+add_library(MyLib AbstractBroadcastNode.hpp AbstractReliableBroadcast.hpp common.hpp loguru.hpp loguru.cpp TrackPacket.hpp ImageChunkPacket.hpp Position.hpp TrackingServer.hpp TrackingServer.cpp utils.hpp robin.cpp ImagingServer.cpp ImagingServer.hpp ImageBuilder.hpp Image.hpp ImageBuilder.cpp database_utils/DbUtils.hpp CCPackets.hpp)
+add_library(LittleLib TrackPacket.hpp ImageChunkPacket.hpp settings.hpp Position.hpp robin.cpp common.hpp loguru.hpp utils.hpp loguru.cpp)
 
-add_library(ABNLibs AbstractBroadcastNode.hpp AbstractReliableBroadcast.hpp common.hpp loguru.hpp loguru.cpp TrackPacket.hpp ImageChunkPacket.hpp Position.hpp TrackingServer.hpp TrackingServer.cpp utils.hpp ImagingServer.cpp ImagingServer.hpp ImageBuilder.hpp Image.hpp ImageBuilder.cpp database_utils/DbUtils.hpp CCPackets.hpp)
-add_library(ToolsLib TrackPacket.hpp ImageChunkPacket.hpp settings.hpp Position.hpp robin.cpp common.hpp loguru.hpp utils.hpp loguru.cpp)
-add_library(CCLib TrackPacket.hpp CCServer.hpp CCServer.cpp loguru.hpp loguru.cpp common.hpp settings.hpp database_utils/DbUtils.hpp CCobin.cpp)
-
-target_link_libraries(robin ABNLibs)
-target_link_libraries(cmd_sender ToolsLib)
-target_link_libraries(img_sender ToolsLib)
-target_link_libraries(nd_sender ToolsLib)
-target_link_libraries(packt_sender ToolsLib)
+target_link_libraries(robin MyLib)
+target_link_libraries(packetsender LittleLib)
+target_link_libraries(imagesender LittleLib)
