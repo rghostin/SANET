@@ -5,6 +5,7 @@ from sympy import Polygon
 from operator import itemgetter
 from utils import Colors
 from utils import calcul_scope
+from utils import create_dic_bidon
 from flight_planner import FlightPlanner
 
 
@@ -285,6 +286,7 @@ class MapGUI(object):
     def area_reconstruction_position(self, nodes_status):
         # reconstruction of global area using drones photos
         # save last nodes_status
+        self.scope = 20
         self.current_status = nodes_status
         # create transparent picture
         img_height, img_width = self.crop_picture.shape[:2]
@@ -295,13 +297,13 @@ class MapGUI(object):
             #
             # create transparent picture and add drone
             drone = cv2.imread(self.drones_photo_path, -1)
-            drone = cv2.resize(drone, (img_width, img_height))
+            drone = cv2.resize(drone, (self.scope, self.scope))
             # get position
             print(node, nodes_status[node][0], nodes_status[node][1])
-            x_pos = max((nodes_status[node][0] - self.scope), 0)
-            y_pos = max((nodes_status[node][1] - self.scope), 0)
+            x_pos = int(max((nodes_status[node][0] - self.scope), 0))
+            y_pos = int(max((nodes_status[node][1] - self.scope), 0))
             # draw drone
-            self.transparent_img[y_pos:y_pos + photo_height, x_pos:x_pos + photo_width] = drone
+            self.transparent_img[y_pos:y_pos + self.scope, x_pos:x_pos + self.scope] = drone
 
         if self.display:
             # draw flight plans

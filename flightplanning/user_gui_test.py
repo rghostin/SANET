@@ -5,13 +5,14 @@ from PyQt5.QtWidgets import QPushButton, QDialog, QMessageBox
 from PyQt5 import QtGui, QtCore
 from time import sleep
 import threading
+from ccclient import CCClient
 
 
 
 
 WINDOW_TITLE = "CITY MAP"
 MENU_WELCOME_PICTURE_PATH = "resource_images/gui/logo.jpg"
-GLOBAL_AREA_POLYGON_PATH = "flight_planner_backend/global_area.polygon"
+GLOBAL_AREA_POLYGON_PATH = "global_area.polygon"
 GLOBAL_AREA_IMG_PATH = "resource_images/cropped_images/croped_image.png"
 GLOBAL_AREA_IMG_PATH_BLACKMASK = "resource_images/cropped_images/croped_image_black.png"
 GLOBAL_AREA_IMG_PATH_FPS = "resource_images/cropped_images/croped_image_fps.jpg"
@@ -53,7 +54,7 @@ class UserGUI(QWidget):
         self.select_area_window.setModal(True)
 
         # Cclient objet
-        self.cclient = None
+        self.cclient = CCClient('10.93.210.132', 6280)
         self.nodes_status = None
 
 
@@ -177,16 +178,20 @@ class UserGUI(QWidget):
             button_text = "Connect"
             self.connected = False
             self.set_welcome_window()
+            self.cclient.stop()
 
         else:
             led_path = "resource_images/gui/green_dot_3d.png"
             self.connected = True
             button_text = "Disconnect"
             self.select_map_button.setEnabled(True)
+            self.cclient.start()
+
 
         image = QtGui.QPixmap(led_path)
         self.connect_led.setPixmap((image.scaled(self.connect_led.width(), self.connect_led.height())))
         self.connect_button.setText(button_text)
+
 
     def stop_button_action(self):
         self.stop = True
@@ -233,11 +238,11 @@ class UserGUI(QWidget):
 
     def start_simulation(self):
         while(not self.stop):
-            self.nodes_status = self.cclient.getallnodes()
+            self.nodes_status = self.cclient.fetchAllNodes()
             self.area_reconstruction_position()
             if not self.stop:
                 self.update_picture_frame(GLOBAL_AREA_IMG_PATH_RECONSTRUCTION)
-            sleep(1)
+            sleep(3)
 
     def area_reconstruction(self, area):
         threadLock.acquire()

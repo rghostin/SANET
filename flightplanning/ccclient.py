@@ -48,5 +48,6 @@ class CCClient:
 
 if __name__ == "__main__":
     cc_port = 6280
-    client = CCClient('localhost', cc_port)
+    client = CCClient('10.93.210.132', cc_port)
     client.start()
+    client.stop()
