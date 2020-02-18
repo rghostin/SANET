@@ -307,7 +307,22 @@ class MapGUI(object):
 
         self.create_picture(self.reconstruct_filename, self.transparent_img)
 
-    
+    def get_polygon(self, file_path):
+        self.points = []
+        with open(file_path, "r") as global_polygon:
+            for line in global_polygon:
+                vertex = line.strip().split(',')
+                print(vertex)
+                self.points.append(vertex)
+
+    def start_ui_test(self):
+        self.crop_polygon()
+        self.create_polygon_file()
+        self.points = list()
+        self.create_picture(filename=self.crop_filename, picture=self.crop_picture, to_png=False)
+        self.create_picture(filename=self.crop_withblack_filename, picture=self.crop_withblack, to_png=True)
+
+
 
 
 

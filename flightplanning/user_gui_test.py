@@ -50,6 +50,9 @@ class UserGUI(QWidget):
         self.stop = False
         self.show_flight_plan = False
 
+        # offline simulation variables
+        self.current_area = None
+
         # Select Area Window
         self.select_area_window = SelectMapWindow(self)
         self.select_area_window.setFixedSize(1000, 800)
@@ -134,6 +137,7 @@ class UserGUI(QWidget):
         hbox_buttons.addWidget(self.flight_plans_button)
         hbox_buttons.addWidget(self.stop_button)
         hbox_buttons.addWidget(self.show_hide_button)
+        hbox_buttons.addWidget(self.real_time_button)
         # picture layout
         self.hbox_picture = QVBoxLayout()
         self.hbox_picture.addWidget(self.pic)
@@ -226,8 +230,8 @@ class UserGUI(QWidget):
         else:
             self.show_flight_plan = True
         self.map_gui.set_display_flight_plans(self.show_flight_plan)
-        self.area_reconstruction_position()
-        # self.area_reconstruction()  OFFLINE TEST
+        # self.area_reconstruction_position() # TEST
+        self.area_reconstruction(self.current_area)  # OFFLINE SIMULATION
         self.update_picture_frame(GLOBAL_AREA_IMG_PATH_RECONSTRUCTION)
         QApplication.processEvents()
 
@@ -260,7 +264,7 @@ class UserGUI(QWidget):
         thread.start()
 
 
-    def start_simulation(self):
+    def start_test(self):
         while(not self.stop):
             self.nodes_status = self.cclient.fetchAllNodes()
             self.area_reconstruction_position()
@@ -274,8 +278,11 @@ class UserGUI(QWidget):
         threadLock.release()
 
     def real_time_button_action(self):
+        self.map_gui.set_picture("resource_images/image_set/map_7")
+        self.map_gui.get_polygon(file_path=GLOBAL_AREA_POLYGON_PATH)
+        self.map_gui.start_ui_test()
 
-        self.start_thread_simulation()
+        #self.start_thread_simulation()
 
 
     def update_picture_frame(self, picture_filename):
@@ -322,14 +329,14 @@ class UserGUI(QWidget):
         images = self.map_gui.simulate_drones_surveillance()
         order_images, lengths = self.map_gui.order_received_images(images=images)
         step = 0
-        area_step = {}
+        self.current_area = {}
         for drone_id in order_images:
-            area_step[drone_id] = []
+            self.current_area[drone_id] = []
         # while boucle
         while (step < max(lengths) and not self.stop):
             for drone_id in order_images:
-                area_step[drone_id].append(order_images[drone_id][step % len(order_images[drone_id])])
-            self.map_gui.area_reconstruction(images=area_step)
+                self.current_area[drone_id].append(order_images[drone_id][step % len(order_images[drone_id])])
+            self.map_gui.area_reconstruction(images=self.current_area)
             if not self.stop:
                 self.update_picture_frame(GLOBAL_AREA_IMG_PATH_RECONSTRUCTION)
                 QApplication.processEvents()
@@ -341,7 +348,7 @@ class UserGUI(QWidget):
         self.map_gui.area_reconstruction(images=area)
         threadLock.release()
 
-
+######### USEFUL CLASSES ######
 
 class SelectMapWindow(QDialog):
     """ QDialog Class that allows users to select area map"""
@@ -385,17 +392,17 @@ class SelectMapWindow(QDialog):
 
 class Simulation (threading.Thread):
    """
-        Thread Class used for the real time are view
+        Thread Class used for the real time area view
    """
    def __init__(self, window):
       threading.Thread.__init__(self)
       self.window = window
    def run(self):
-       self.window.start_simulation()
+       self.window.start_offline_simulation()
 
 
 
-
+####### MAIN ################
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
