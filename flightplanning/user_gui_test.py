@@ -13,9 +13,9 @@ from ccclient import CCClient
 WINDOW_TITLE = "CITY MAP"
 MENU_WELCOME_PICTURE_PATH = "resource_images/gui/logo.jpg"
 GLOBAL_AREA_POLYGON_PATH = "global_area.polygon"
-GLOBAL_AREA_IMG_PATH = "resource_images/cropped_images/croped_image.png"
+GLOBAL_AREA_IMG_PATH = "resource_images/cropped_images/croped_image.jpg"
 GLOBAL_AREA_IMG_PATH_BLACKMASK = "resource_images/cropped_images/croped_image_black.png"
-GLOBAL_AREA_IMG_PATH_FPS = "resource_images/cropped_images/croped_image_fps.jpg"
+GLOBAL_AREA_IMG_PATH_FPS = "resource_images/cropped_images/croped_image_fps.png"
 GLOBAL_AREA_IMG_PATH_RECONSTRUCTION = "resource_images/cropped_images/croped_image_reconstruction.png"
 DRONE_PHOTO_PATH = "resource_images/gui/drone.png"
 N = 3
@@ -101,10 +101,10 @@ class UserGUI(QWidget):
         self.show_hide_button.hide()
 
         # real time button
-        self.real_time_button = QPushButton("Execute Test")
-        self.real_time_button.setFixedSize(200, 50)
-        self.real_time_button.clicked.connect(self.real_time_button_action)
-        self.real_time_button.hide()
+        self.test_button = QPushButton("Execute Test")
+        self.test_button.setFixedSize(200, 50)
+        self.test_button.clicked.connect(self.start_test_button_action)
+        self.test_button.hide()
 
 
         # Labels
@@ -137,7 +137,7 @@ class UserGUI(QWidget):
         hbox_buttons.addWidget(self.flight_plans_button)
         hbox_buttons.addWidget(self.stop_button)
         hbox_buttons.addWidget(self.show_hide_button)
-        hbox_buttons.addWidget(self.real_time_button)
+        hbox_buttons.addWidget(self.test_button)
         # picture layout
         self.hbox_picture = QVBoxLayout()
         self.hbox_picture.addWidget(self.pic)
@@ -193,7 +193,7 @@ class UserGUI(QWidget):
                 #self.cclient.start()
                 self.connected = True
                 self.set_connect_button_properties(connected=True)
-                self.real_time_button.show()  # TEST
+                self.test_button.show()  # TEST
             except:
                 pass
                 #TODO show dialog error
@@ -251,22 +251,18 @@ class UserGUI(QWidget):
             self.select_map_button.hide()
             self.show_hide_button.show()
             self.stop_button.show()
-            self.start_thread_simulation()
+            self.start_thread_simulation()  # offline simulation
         else:
             # comeback to select area menu
             self.update_picture_frame(self.chosen_map_path)
             self.flight_plans_button.hide()
             self.select_area_button.setEnabled(True)
 
-    def start_thread_simulation(self):
-        self.stop = False
-        thread = Simulation(self)
-        thread.start()
-
 
     def start_test(self):
+        self.nodes_status = []
         while(not self.stop):
-            self.nodes_status = self.cclient.fetchAllNodes()
+            self.nodes_status.append(self.cclient.fetchAllNodes())
             self.area_reconstruction_position()
             if not self.stop:
                 self.update_picture_frame(GLOBAL_AREA_IMG_PATH_RECONSTRUCTION)
@@ -277,12 +273,12 @@ class UserGUI(QWidget):
         self.map_gui.area_reconstruction_position(nodes_status=self.nodes_status)
         threadLock.release()
 
-    def real_time_button_action(self):
-        self.map_gui.set_picture("resource_images/image_set/map_7")
+    def start_test_button_action(self):
+        self.map_gui.set_picture("resource_images/image_set/map_7.jpg")
         self.map_gui.get_polygon(file_path=GLOBAL_AREA_POLYGON_PATH)
         self.map_gui.start_ui_test()
-
-        #self.start_thread_simulation()
+        self.map_gui.flight_plans_calculating(ALPHA, N)
+        #self.start_test()
 
 
     def update_picture_frame(self, picture_filename):
@@ -324,6 +320,11 @@ class UserGUI(QWidget):
             event.ignore()
 
     ################ OFFLINE SIMULATION FUNCTIONS ##########################
+
+    def start_thread_simulation(self):
+        self.stop = False
+        thread = Simulation(self)
+        thread.start()
 
     def start_offline_simulation(self):
         images = self.map_gui.simulate_drones_surveillance()

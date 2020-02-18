@@ -176,6 +176,7 @@ class MapGUI(object):
         # draws flight plans in the selected area
         # calcul scope
         self.scope = calcul_scope(self.crop_picture, alpha)
+        print("SCOPE:",self.scope)
         # create object FlightPlanner
         self.fplanner = FlightPlanner(global_area_path=self.points_filename, scope=self.scope)
         self.fplanner.recompute(create_dic_bidon(N_drones))
@@ -226,7 +227,7 @@ class MapGUI(object):
         print("taking pictures: done")
         return images
 
-    def take_photo(self, position, scope, path):
+    def take_photo(self, position, scope, path=None):
         # Drone taking picture at given position
         # create photo scope
         x = max((position[0] - scope), 0)
@@ -279,32 +280,38 @@ class MapGUI(object):
         return order_images, lengths
 
     ###### ONLINE TEST #########
-    def area_reconstruction_position(self, nodes_status):
+    def area_reconstruction_position(self, drones_path):
         # reconstruction of global area using drones photos
-        # save last nodes_status
-        self.scope = 50
-        self.current_status = nodes_status
         # create transparent picture
         img_height, img_width = self.crop_picture.shape[:2]
-        self.transparent_img = np.zeros((2000, 2000, 4), dtype=np.uint8)
-        x_pos = y_pos = photo_height = photo_width = 0
-        # show drones positions
-        for node in nodes_status:
-            #
+        self.transparent_img = np.zeros((img_height, img_width, 4), dtype=np.uint8)
+        # save last nodes_status
+        last_nodes_status = None
+        # draw path
+        for nodes_status in drones_path:
+            for node in nodes_status:
+                # take photo
+                position = [nodes_status[node][0], nodes_status[node][1]]
+                photo = self.take_photo(position=position, scope=self.scope)
+                photo_height, photo_width = photo.shape[:2]
+                x_pos = int(max((nodes_status[node][0] - self.scope), 0))
+                y_pos = int(max((nodes_status[node][1] - self.scope), 0))
+                png_photo = self.create_png_image(image=photo, transparency=255)
+                self.transparent_img[y_pos:y_pos + photo_height, x_pos:x_pos + photo_width] = png_photo
+            last_nodes_status = nodes_status
+        # draw drones
+        for node in last_nodes_status:
+            x_pos = int(max((last_nodes_status[node][0] - self.scope), 0))
+            y_pos = int(max((last_nodes_status[node][1] - self.scope), 0))
+            photo_height, photo_width = 2*self.scope
             # create transparent picture and add drone
             drone = cv2.imread(self.drones_photo_path, -1)
-            drone = cv2.resize(drone, (self.scope, self.scope))
-            # get position
-            print(node, nodes_status[node][0], nodes_status[node][1])
-            x_pos = int(max((nodes_status[node][0] - self.scope), 0))
-            y_pos = int(max((nodes_status[node][1] - self.scope), 0))
+            drone = cv2.resize(drone, (photo_width, photo_height))
             # draw drone
-            self.transparent_img[y_pos:y_pos + self.scope, x_pos:x_pos + self.scope] = drone
+            self.transparent_img[y_pos:y_pos + photo_height, x_pos:x_pos + photo_width] = drone
 
-        if self.display:
-            # draw flight plans
-            self.transparent_img = self.draw_flight_plans(self.transparent_img)
-
+        # draw flight plans
+        self.transparent_img = self.draw_flight_plans(self.transparent_img)
         self.create_picture(self.reconstruct_filename, self.transparent_img)
 
     def get_polygon(self, file_path):
@@ -313,11 +320,10 @@ class MapGUI(object):
             for line in global_polygon:
                 vertex = line.strip().split(',')
                 print(vertex)
-                self.points.append(vertex)
+                self.points.append([int(vertex[0]), int(vertex[1])])
 
     def start_ui_test(self):
         self.crop_polygon()
-        self.create_polygon_file()
         self.points = list()
         self.create_picture(filename=self.crop_filename, picture=self.crop_picture, to_png=False)
         self.create_picture(filename=self.crop_withblack_filename, picture=self.crop_withblack, to_png=True)
