@@ -12,6 +12,7 @@
 #include <thread>
 #include <mutex>
 #include <map>
+#include <functional>
 #include "loguru.hpp"
 #include "settings.hpp"
 #include "AbstractBroadcastNode.hpp"

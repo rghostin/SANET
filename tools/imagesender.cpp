@@ -10,12 +10,12 @@
 #include <time.h>
 #include <ctime>
 #include <limits>
-#include "ImageChunkPacket.hpp"
+#include "../ImageChunkPacket.hpp"
 #include <fstream>
 #include <thread>
 #include <chrono>
 #include <openssl/md5.h>
-#include "settings.hpp"
+#include "../settings.hpp"
 
 #define EXIT_PROG_CODE 99
 #define SRVPORT 5821

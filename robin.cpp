@@ -74,11 +74,11 @@ int main(int argc, char** argv) {
 
     sqlite3_config(SQLITE_CONFIG_SERIALIZED);
 
-    // Tracking server
-    TrackingServer trackingServer(TRACKING_SERVER_PORT, nodeID);
-    trackingServer.start();
+    // Tracking server  //TODO
+//    TrackingServer trackingServer(TRACKING_SERVER_PORT, nodeID);
+//    trackingServer.start();
 
-    // Tracking server
+    // Imaging server
     ImagingServer imagingServer(TRACKING_SERVER_PORT, nodeID);
     imagingServer.start();
 
@@ -88,7 +88,7 @@ int main(int argc, char** argv) {
 
     // join all services
     ccServer.join();
-    trackingServer.join();
+//    trackingServer.join();
     imagingServer.join();
 
     LOG_F(WARNING, "Robin exiting");

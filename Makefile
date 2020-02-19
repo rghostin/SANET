@@ -8,7 +8,7 @@ all: robin ccmain
 
 rebuild : clean all
 
-robin: robin.cpp loguru.o TrackingServer.o CCServer.o
+robin: robin.cpp loguru.o TrackingServer.o CCServer.o ImagingServer.o
 	$(CXX) $(CFLAGS) $^ -o $@ $(LDFLAGS)
 
 ccmain: ccmain.cpp CCServer.o loguru.o
