@@ -6,26 +6,25 @@ from PyQt5 import QtGui, QtCore
 from time import sleep
 import threading
 from ccclient import CCClient
+from copy import deepcopy
 
-
-
+import global_settings as gs
 
 WINDOW_TITLE = "CITY MAP"
-MENU_WELCOME_PICTURE_PATH = "resource_images/gui/logo.jpg"
-GLOBAL_AREA_POLYGON_PATH = "global_area.polygon"
-GLOBAL_AREA_IMG_PATH = "resource_images/cropped_images/croped_image.jpg"
-GLOBAL_AREA_IMG_PATH_BLACKMASK = "resource_images/cropped_images/croped_image_black.png"
-GLOBAL_AREA_IMG_PATH_FPS = "resource_images/cropped_images/croped_image_fps.png"
-GLOBAL_AREA_IMG_PATH_RECONSTRUCTION = "resource_images/cropped_images/croped_image_reconstruction.png"
-DRONE_PHOTO_PATH = "resource_images/gui/drone.png"
-N = 3
-ALPHA = 30
+# MENU_WELCOME_PICTURE_PATH = "resource_images\\gui\\logo.jpg"
+#GLOBAL_AREA_POLYGON_PATH = "global_area.polygon"
+#GLOBAL_AREA_IMG_PATH = "resource_images/cropped_images/croped_image.jpg"
+#GLOBAL_AREA_IMG_PATH_BLACKMASK = "resource_images/cropped_images/croped_image_black.png"
+#GLOBAL_AREA_IMG_PATH_FPS = "resource_images/cropped_images/croped_image_fps.png"
+#GLOBAL_AREA_IMG_PATH_RECONSTRUCTION = "resource_images/cropped_images/croped_image_reconstruction.png"
+#DRONE_PHOTO_PATH = "resource_images/gui/drone.png"
 DATASET = 7
+# todo set in gs
 MAP_1_PATH = "resource_images/image_set/map_1.jpg"
 MAP_3_PATH = "resource_images/image_set/map_3.jpg"
 MAP_5_PATH = "resource_images/image_set/map_5.jpg"
 MAP_7_PATH = "resource_images/image_set/map_7.jpg"
-CCLIENT_IP = "10.93.210.132"
+CCLIENT_IP = "10.93.197.168"
 CCLIENT_PORT = 6280
 
 threadLock = threading.Lock()
@@ -38,17 +37,19 @@ class UserGUI(QWidget):
         self.initUI()
         # Object MapGUI
         self.map_gui = MapGUI(window_name=WINDOW_TITLE,
-                              points_filename=GLOBAL_AREA_POLYGON_PATH,
-                              crop_filename=GLOBAL_AREA_IMG_PATH,
-                              crop_withblack_filename=GLOBAL_AREA_IMG_PATH_BLACKMASK,
-                              crop_withfps_filename=GLOBAL_AREA_IMG_PATH_FPS,
-                              reconstruct_area_filename=GLOBAL_AREA_IMG_PATH_RECONSTRUCTION,
-                              drones_photo_path=DRONE_PHOTO_PATH,
+                              points_filename=gs.GLOBAL_AREA_POLYGON_PATH,
+                              crop_filename=gs.GLOBAL_AREA_IMG_PATH,
+                              crop_withblack_filename=gs.GLOBAL_AREA_IMG_PATH_BLACKMASK,
+                              crop_withfps_filename=gs.GLOBAL_AREA_IMG_PATH_FPS,
+                              reconstruct_area_filename=gs.GLOBAL_AREA_IMG_PATH_RECONSTRUCTION,
+                              drones_photo_path=gs.DRONE_PHOTO_PATH,
                               display=False)
         self.connected = False  # flag that shows connexion status
         self.chosen_map_path = None
         self.stop = False
         self.show_flight_plan = False
+        self.N = None
+
 
         # offline simulation variables
         self.current_area = None
@@ -57,6 +58,7 @@ class UserGUI(QWidget):
         self.select_area_window = SelectMapWindow(self)
         self.select_area_window.setFixedSize(1000, 800)
         self.select_area_window.setModal(True)
+        
 
         # Cclient objet
         self.cclient = CCClient(CCLIENT_IP, CCLIENT_PORT)
@@ -85,7 +87,7 @@ class UserGUI(QWidget):
         # calcul flight plans button
         self.flight_plans_button = QPushButton("Get Flight Plans")
         self.flight_plans_button.setFixedSize(200, 50)
-        self.flight_plans_button.clicked.connect(self.calcul_flight_plans)
+        #self.flight_plans_button.clicked.connect(self.calcul_flight_plans)
         self.flight_plans_button.hide()
 
         # stop real time view button
@@ -108,7 +110,7 @@ class UserGUI(QWidget):
 
 
         # Labels
-        image = QtGui.QPixmap(MENU_WELCOME_PICTURE_PATH)
+        image = QtGui.QPixmap(gs.MENU_WELCOME_PICTURE_PATH)
         self.pic = QLabel(self)
         self.pic.setFixedSize(1200, 800)
         self.pic.setPixmap(image.scaled(self.pic.width(),self.pic.height(), QtCore.Qt.KeepAspectRatio))
@@ -180,7 +182,7 @@ class UserGUI(QWidget):
         self.map_gui.set_picture(self.chosen_map_path)
         if self.map_gui.start_ui():
             self.map_gui.destroy_window()
-            self.update_picture_frame(GLOBAL_AREA_IMG_PATH_BLACKMASK)
+            self.update_picture_frame(gs.GLOBAL_AREA_IMG_PATH_BLACKMASK)
             self.select_area_button.setDisabled(True)
             self.flight_plans_button.show()
         else:
@@ -190,16 +192,15 @@ class UserGUI(QWidget):
     def connect_button_action(self):
         if not self.connected:
             try:
-                #self.cclient.start()
+                self.cclient.start()
                 self.connected = True
                 self.set_connect_button_properties(connected=True)
                 self.test_button.show()  # TEST
-            except:
-                pass
-                #TODO show dialog error
+            except Exception as e:
+                raise e
         else:
             self.connected = False
-            #self.cclient.stop()
+            self.cclient.stop()
             self.set_connect_button_properties(connected=False)
 
 
@@ -232,15 +233,15 @@ class UserGUI(QWidget):
         self.map_gui.set_display_flight_plans(self.show_flight_plan)
         # self.area_reconstruction_position() # TEST
         self.area_reconstruction(self.current_area)  # OFFLINE SIMULATION
-        self.update_picture_frame(GLOBAL_AREA_IMG_PATH_RECONSTRUCTION)
+        self.update_picture_frame(gs.GLOBAL_AREA_IMG_PATH_RECONSTRUCTION)
         QApplication.processEvents()
 
-    def calcul_flight_plans(self):
+    """def calcul_flight_plans(self):
         # Area partition and Drones path calculations
-        self.map_gui.flight_plans_calculating(ALPHA, N)
+        self.map_gui.flight_plans_calculating(gs.ALPHA, self.N)
 
         # Show flight plans in GUI
-        self.update_picture_frame(GLOBAL_AREA_IMG_PATH_FPS)
+        self.update_picture_frame(gs.GLOBAL_AREA_IMG_PATH_FPS)
 
         # Show Confirm window
         confirmation = QMessageBox.question(self, 'Confirm', "Are you sure?", QMessageBox.Yes | QMessageBox.No)
@@ -256,29 +257,41 @@ class UserGUI(QWidget):
             # comeback to select area menu
             self.update_picture_frame(self.chosen_map_path)
             self.flight_plans_button.hide()
-            self.select_area_button.setEnabled(True)
+            self.select_area_button.setEnabled(True)"""
+
+
+
 
 
     def start_test(self):
         self.nodes_status = []
+        last_all_nodes = dict()
         while(not self.stop):
-            self.nodes_status.append(self.cclient.fetchAllNodes())
-            self.area_reconstruction_position()
-            if not self.stop:
-                self.update_picture_frame(GLOBAL_AREA_IMG_PATH_RECONSTRUCTION)
-            sleep(1)
+            recv_allnodes = self.cclient.fetchAllNodes();
+            if recv_allnodes != last_all_nodes:
+                if len(last_all_nodes) != len(recv_allnodes):
+                    self.N = len(recv_allnodes)
+                    self.map_gui.flight_plans_calculating(gs.ALPHA, deepcopy(recv_allnodes))
+                self.nodes_status.append(deepcopy(recv_allnodes))
+                self.area_reconstruction_position()
+                if not self.stop:
+                    self.update_picture_frame(gs.GLOBAL_AREA_IMG_PATH_RECONSTRUCTION)
+                last_all_nodes = deepcopy(recv_allnodes)
+            else:
+                print("discarding")
+            sleep(0.5)
 
     def area_reconstruction_position(self):
         threadLock.acquire()
-        self.map_gui.area_reconstruction_position(nodes_status=self.nodes_status)
+        copie = deepcopy(self.nodes_status)
+        self.map_gui.area_reconstruction_position(drones_path=copie)
         threadLock.release()
 
     def start_test_button_action(self):
-        self.map_gui.set_picture("resource_images/image_set/map_7.jpg")
-        self.map_gui.get_polygon(file_path=GLOBAL_AREA_POLYGON_PATH)
+        self.map_gui.set_picture(gs.GLOBAL_AREA_IMAGE_TEST)
+        self.map_gui.get_polygon(file_path=gs.GLOBAL_AREA_POLYGON_PATH)
         self.map_gui.start_ui_test()
-        self.map_gui.flight_plans_calculating(ALPHA, N)
-        #self.start_test()
+        self.start_test()
 
 
     def update_picture_frame(self, picture_filename):
@@ -299,7 +312,7 @@ class UserGUI(QWidget):
         self.flight_plans_button.hide()
         self.stop_button.hide()
         self.show_hide_button.hide()
-        self.update_picture_frame(picture_filename=MENU_WELCOME_PICTURE_PATH)
+        self.update_picture_frame(picture_filename=gs.MENU_WELCOME_PICTURE_PATH)
 
     def set_menu_window(self):
         self.select_map_button.show()
@@ -308,7 +321,7 @@ class UserGUI(QWidget):
         self.select_area_button.setDisabled(True)
         self.stop_button.hide()
         self.show_hide_button.hide()
-        self.update_picture_frame(picture_filename=MENU_WELCOME_PICTURE_PATH)
+        self.update_picture_frame(picture_filename=gs.MENU_WELCOME_PICTURE_PATH)
 
     def closeEvent(self, event):
         # Show Confirm window
@@ -339,7 +352,7 @@ class UserGUI(QWidget):
                 self.current_area[drone_id].append(order_images[drone_id][step % len(order_images[drone_id])])
             self.map_gui.area_reconstruction(images=self.current_area)
             if not self.stop:
-                self.update_picture_frame(GLOBAL_AREA_IMG_PATH_RECONSTRUCTION)
+                self.update_picture_frame(gs.GLOBAL_AREA_IMG_PATH_RECONSTRUCTION)
                 QApplication.processEvents()
             step += 1
             sleep(1)

@@ -5,7 +5,6 @@ from sympy import Polygon
 from operator import itemgetter
 from utils import Colors
 from utils import calcul_scope
-from utils import create_dic_bidon
 from flight_planner import FlightPlanner
 
 
@@ -172,14 +171,14 @@ class MapGUI(object):
         else:
             cv2.imwrite(filename=filename, img=picture, params=[int(cv2.IMWRITE_JPEG_QUALITY), 30])
 
-    def flight_plans_calculating(self, alpha, N_drones):
+    def flight_plans_calculating(self, alpha, status_node_map):
         # draws flight plans in the selected area
         # calcul scope
         self.scope = calcul_scope(self.crop_picture, alpha)
         print("SCOPE:",self.scope)
         # create object FlightPlanner
         self.fplanner = FlightPlanner(global_area_path=self.points_filename, scope=self.scope)
-        self.fplanner.recompute(create_dic_bidon(N_drones))
+        self.fplanner.recompute(status_node_map)
         # draw flight plans
         png_crop_picture = self.create_png_image(image=self.crop_picture, transparency=255)
         self.crop_with_fps = self.draw_flight_plans(png_crop_picture)
@@ -291,11 +290,11 @@ class MapGUI(object):
         for nodes_status in drones_path:
             for node in nodes_status:
                 # take photo
-                position = [nodes_status[node][0], nodes_status[node][1]]
+                position = [int(nodes_status[node][0]), int(nodes_status[node][1])]
                 photo = self.take_photo(position=position, scope=self.scope)
                 photo_height, photo_width = photo.shape[:2]
-                x_pos = int(max((nodes_status[node][0] - self.scope), 0))
-                y_pos = int(max((nodes_status[node][1] - self.scope), 0))
+                x_pos = int(max((position[0] - self.scope), 0))
+                y_pos = int(max((position[1] - self.scope), 0))
                 png_photo = self.create_png_image(image=photo, transparency=255)
                 self.transparent_img[y_pos:y_pos + photo_height, x_pos:x_pos + photo_width] = png_photo
             last_nodes_status = nodes_status
@@ -303,7 +302,7 @@ class MapGUI(object):
         for node in last_nodes_status:
             x_pos = int(max((last_nodes_status[node][0] - self.scope), 0))
             y_pos = int(max((last_nodes_status[node][1] - self.scope), 0))
-            photo_height, photo_width = 2*self.scope
+            photo_height = photo_width = 2*self.scope
             # create transparent picture and add drone
             drone = cv2.imread(self.drones_photo_path, -1)
             drone = cv2.resize(drone, (photo_width, photo_height))
