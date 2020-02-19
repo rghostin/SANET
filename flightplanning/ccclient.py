@@ -41,8 +41,9 @@ class CCClient:
         self.__setUpSocket_()
 
     def stop(self):
-        self.__socket_.close()
-        print("Closing CCClient")
+        if self.__socket_ is not None:
+            self.__socket_.close()
+            print("Closing CCClient")
 
  
 

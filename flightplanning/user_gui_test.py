@@ -201,6 +201,7 @@ class UserGUI(QWidget):
         else:
             self.connected = False
             self.cclient.stop()
+            self.stop = True
             self.set_connect_button_properties(connected=False)
 
 
@@ -327,6 +328,7 @@ class UserGUI(QWidget):
         # Show Confirm window
         confirmation = QMessageBox.question(self, 'Confirm', "Do you want to Exit?", QMessageBox.Yes | QMessageBox.No)
         if confirmation == QMessageBox.Yes:
+            self.cclient.stop()
             self.stop = True
             event.accept()
         else:

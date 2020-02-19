@@ -93,7 +93,7 @@ class FlightServer:
             self.__connection_.close()  # Clean up the connection
 
 if __name__ == "__main__":
-    SCOPE = 20 # TODO camera
+    SCOPE = 43 # TODO camera
 
     fp = FlightServer(gs.GLOBAL_AREA_POLYGON_PATH, SCOPE, gs.USOCKET_PATH, display=True)
     try:
