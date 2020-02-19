@@ -86,7 +86,7 @@ class Autopilot:
                     self.next_wp = next(self.it)
             finally:
                 self.__mutex_fp.release()
-            sleep(1 / self.__speed)
+            sleep(self.__speed)
             
     
 
