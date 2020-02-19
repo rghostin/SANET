@@ -31,6 +31,7 @@ threadLock = threading.Lock()
 threads = []
 
 class UserGUI(QWidget):
+    UPDATE_SLEEP_RATIO = 0.8
 
     def __init__(self):
         super().__init__()
@@ -260,10 +261,6 @@ class UserGUI(QWidget):
             self.flight_plans_button.hide()
             self.select_area_button.setEnabled(True)"""
 
-
-
-
-
     def start_test(self):
         self.nodes_status = []
         last_all_nodes = dict()
@@ -280,7 +277,7 @@ class UserGUI(QWidget):
                 last_all_nodes = deepcopy(recv_allnodes)
             else:
                 print("discarding")
-            sleep(0.5)
+            sleep(self.UPDATE_SLEEP_RATIO * gs.AUTOPILOT_SPEED)
 
     def area_reconstruction_position(self):
         threadLock.acquire()
