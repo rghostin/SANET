@@ -3,13 +3,16 @@
 ImagingServer::ImagingServer(unsigned short port, uint8_t nodeID) :
         AbstractBroadcastNode<ImageChunkPacket>(nodeID, port, "ImgSrv"),
         _mutex_image_map(), _image_map(), _mutex_building_image_map(), _building_image_map(),
-        _thread_check_timeout_imgs() {
+        _thread_check_timeout_imgs(), _thread_check_new_complete_img() {
 }
 
 
 ImagingServer::~ImagingServer() {
     if (_thread_check_timeout_imgs.joinable()) {
         _thread_check_timeout_imgs.join();
+    }
+    if (_thread_check_new_complete_img.joinable()) {
+        _thread_check_new_complete_img.join();
     }
 }
 
@@ -45,6 +48,27 @@ void ImagingServer::_tr_check_timeout_imgs() {
 }
 
 
+void ImagingServer::_tr_check_new_complete_img() {
+    std::unique_lock<std::mutex> lock(mutex_img_has_changed);
+    loguru::set_thread_name(threadname("checkImgTO").c_str());
+    LOG_F(INFO, "Starting ImagingSrv _check_new_complete_img");
+
+    while (! process_stop) {
+        {
+            thread_cond_var.wait(lock, std::bind(&ImagingServer::has_img_changed, this));
+            _send_image(true);
+        }
+        std::this_thread::sleep_for(std::chrono::seconds(_new_complete_image_check));
+    }
+    LOG_F(INFO, "ImagingSrv check_new_complete_img - process_stop=true; exiting");
+}
+
+
+bool ImagingServer::has_img_changed() {
+    return img_has_changed;
+}
+
+
 ImageChunkPacket ImagingServer::_produce_packet() {
     ImageChunkPacket packet = AbstractBroadcastNode<ImageChunkPacket>::_produce_packet();
     LOG_F(3, "Generated packet: %s", packet.repr().c_str());
@@ -75,7 +99,7 @@ void ImagingServer::_process_packet(const ImageChunkPacket& packet) {
 }
 
 
-void ImagingServer::_send_image() {
+void ImagingServer::_send_image(bool is_complete_img) {
     ImageChunkPacket packet = _produce_packet();
     uint32_t size_file_remaining;
     uint32_t bytes_to_treat(IMG_CHUNK_SIZE);
@@ -87,6 +111,9 @@ void ImagingServer::_send_image() {
     memset(&packet.chunk_content, '\0', IMG_CHUNK_SIZE);
     packet.sizeImage = get_size(path_img);
     size_file_remaining = packet.sizeImage;
+    if (is_complete_img) {
+        packet.is_complete_img = is_complete_img;
+    }
     image_file = fopen(path_img, "rb");
 
     if (IMG_CHUNK_SIZE > size_file_remaining) {
@@ -126,12 +153,14 @@ void ImagingServer::start() {
     LOG_F(WARNING, "Starting Imaging server");
     AbstractBroadcastNode<ImageChunkPacket>::start();
     _thread_check_timeout_imgs = std::thread(&ImagingServer::_tr_check_timeout_imgs, this);
+    _thread_check_new_complete_img = std::thread(&ImagingServer::_tr_check_new_complete_img, this);
 }
 
 
 void ImagingServer::join() {
     AbstractBroadcastNode<ImageChunkPacket>::join();
     _thread_check_timeout_imgs.join();
+    _thread_check_new_complete_img.join();
     LOG_F(WARNING, "ImgServer: joined all threads");
 }
  

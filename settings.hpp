@@ -5,6 +5,7 @@
 #define CC_SERVER_PORT  6280
 #define CC_MAX_CONNECTIONS 10
 #define CC_GC_PERIOD    10
+#define CC_IMAGE_CHUNK 4096
 
 // Batman specific settings
 #define BATMAN_IFACE "bat0"
@@ -22,6 +23,8 @@
 #define IMAGE_SEND_SLEEP_SEPARATOR 10        // msec
 #define PATH_IMG "img/"         // TODO rm
 #define TYPE_IMG ".png"         // TODO rm
+#define PATH_IMG_COMPLETE "img/complete.png"
+#define IMAGE_CHECK_NEW_IMAGE_SLEEP_SEPARATOR 1
 
 // Reliable Broadcast settings
 #define RELBC_PACKET_MAX_AGE (TRACKING_PEER_LOSS_TIMEOUT/2) // heartbeat < max_packet_age < lost_peer_timeout

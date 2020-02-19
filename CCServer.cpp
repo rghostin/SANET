@@ -176,6 +176,9 @@ void CCServer::_dispatch(int socket, uint8_t command){
             break;
         case FETCH_GLOBAL_IMAGE:  // Fetch All Images
             break;
+        case NEW_IMAGE:  // Get new image
+            _treat_new_img(socket);
+            break;
         default:
             LOG_F(WARNING, "Unknow command=%d", command);
             break;
@@ -192,6 +195,55 @@ void CCServer::_execute_fetch_all_pos(int socket) {
     }
  
     LOG_F(INFO, "Sent map : =%s", map_node_json.c_str());
+}
+
+
+void CCServer::_treat_new_img(int socket) {
+    FILE* image_file(fopen(PATH_IMG_COMPLETE, "wb"));
+    unsigned long size_image;
+    unsigned long size_image_remaining;
+    unsigned long bytes_to_treat(CC_IMAGE_CHUNK);
+
+    if (recv(socket, &size_image, sizeof(int), 0) < 0) {
+        perror("Cannot recv size img");
+    }
+
+    size_image_remaining = size_image;
+    char buffer[CC_IMAGE_CHUNK];
+    memset(buffer, '\0', CC_IMAGE_CHUNK);
+
+    if (CC_IMAGE_CHUNK > size_image_remaining) {
+        bytes_to_treat = size_image_remaining;
+    }
+    else {
+        bytes_to_treat = IMG_CHUNK_SIZE;
+    }
+
+    while (size_image_remaining > 0) {
+        if (recv(socket, &buffer, CC_IMAGE_CHUNK, 0) < 0) {
+            perror("Cannot recv part of img");
+        }
+        fwrite(&buffer, sizeof(char), bytes_to_treat, image_file);
+
+        size_image_remaining -= bytes_to_treat;
+
+        memset(buffer, '\0', CC_IMAGE_CHUNK);
+
+        if (CC_IMAGE_CHUNK > size_image_remaining) {
+            bytes_to_treat = size_image_remaining;
+        }
+        else {
+            bytes_to_treat = CC_IMAGE_CHUNK;
+        }
+    }
+
+    {
+        std::lock_guard<std::mutex> guard(mutex_img_has_changed);
+        img_has_changed = true;
+    }
+
+    fclose(image_file);
+    thread_cond_var.notify_one();
 }
 
 

@@ -104,8 +104,7 @@ void ImageBuilder::add_chunk(ImageChunkPacket packet) {
         if (_is_complete) return;
     }
 
-    //uint32_t index(compute_indexVec(packet));
-        auto index(static_cast<uint32_t>(ceil(static_cast<double>(packet.offset) / static_cast<double>(IMG_CHUNK_SIZE))));
+    auto index(compute_indexVec(packet));
 
 
     if (not _fillstate_vec[index]) {
@@ -142,7 +141,6 @@ void ImageBuilder::add_chunk(ImageChunkPacket packet) {
                 }
             }
             LOG_F(WARNING, "Image (%d,%d) is complete- MD5: %s", _nodeID, _timestamp, get_md5_string(&_image.content[0], _image.content.size()).c_str());
-            std::cout << "OK" << std::endl;
         }
     }
     else {

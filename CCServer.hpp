@@ -41,6 +41,7 @@ private:
     void _tr_receiver();
     void _dispatch(int, uint8_t);
     void _execute_fetch_all_pos(int);
+    void _treat_new_img(int);
 
 public:
     CCServer(unsigned short port, uint8_t nodeID);

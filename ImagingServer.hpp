@@ -28,20 +28,23 @@ private:
     // self information and settings
     const uint32_t _image_reception_timeout=IMAGE_RECEPTION_TIMEOUT;
     const uint32_t _image_reception_check=IMAGE_TIMEOUT_CHECK_PERIOD;
+    const uint32_t  _new_complete_image_check=IMAGE_CHECK_NEW_IMAGE_SLEEP_SEPARATOR;
 
     mutable std::mutex _mutex_image_map;
     std::map<Position, Image> _image_map;
     mutable std::mutex _mutex_building_image_map;
     std::map<Position, ImageBuilder> _building_image_map;
 
-
     // threads
     std::thread _thread_check_timeout_imgs;
     void _tr_check_timeout_imgs();
+    std::thread _thread_check_new_complete_img;
+    void _tr_check_new_complete_img();
+    bool has_img_changed();
 
     ImageChunkPacket _produce_packet() override;
     void _process_packet(const ImageChunkPacket&) override;
-    void _send_image();
+    void _send_image(bool);
     bool _to_be_ignored(const ImageChunkPacket&) const override;
 
 public:

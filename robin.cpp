@@ -7,11 +7,17 @@
 #include "common.hpp"
 #include "TrackingServer.hpp"
 #include "ImagingServer.hpp"
+#include "CCServer.hpp"
 #include <sqlite3.h>
+#include <condition_variable>
 
 
 // Stopping mechanism 
 std::atomic<bool> process_stop(false);
+bool img_has_changed(false);
+std::mutex mutex_img_has_changed;
+std::condition_variable thread_cond_var;
+
 
 void exit_handler(int s) {
     LOG_F(WARNING, "Caught signal %d", s);
@@ -69,11 +75,21 @@ int main(int argc, char** argv) {
     sqlite3_config(SQLITE_CONFIG_SERIALIZED);
 
     // Tracking server
-    TrackingServer trackingserver(TRACKING_SERVER_PORT, nodeID);
-    trackingserver.start();
+    TrackingServer trackingServer(TRACKING_SERVER_PORT, nodeID);
+    trackingServer.start();
+
+    // Tracking server
+    ImagingServer imagingServer(TRACKING_SERVER_PORT, nodeID);
+    imagingServer.start();
+
+    // CC server
+    CCServer ccServer(CC_SERVER_PORT, nodeID);
+    ccServer.start();
 
     // join all services
-    trackingserver.join();
+    ccServer.join();
+    trackingServer.join();
+    imagingServer.join();
 
     LOG_F(WARNING, "Robin exiting");
     return 0;
