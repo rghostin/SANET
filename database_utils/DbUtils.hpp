@@ -4,6 +4,7 @@
 #include <sqlite3.h>
 #include <iostream>
 #include <sstream>
+#include <string.h>
 #include <vector>
 #include "../loguru.hpp"
 #include "../Position.hpp"
@@ -34,7 +35,7 @@ inline void dbExecute(sqlite3 *db, const char *pSQL, int (*callback)(void *, int
     do {
         sts = sqlite3_exec(db, pSQL, callback, data, &szErrMsg);
     } while (sts == SQLITE_BUSY);
-    
+
     if (sts != SQLITE_OK) {
         LOG_F(ERROR, "SQL error: %s\n-%d", szErrMsg, sts);
         sqlite3_free(szErrMsg);
@@ -75,29 +76,20 @@ inline void dbInstanciateTables(sqlite3 *db) {
 
 // DB ADDING UTILS ================================================================
 
-inline void dbInsertNode(sqlite3 *db, uint8_t nodeId, const Position &pos, uint32_t timestamp) {
+inline void dbInsertOrUpdateNode(sqlite3 *db, uint8_t nodeId, const Position &pos, uint32_t timestamp) {
     //
     LOG_SCOPE_FUNCTION(INFO);
     const char *pSQL;
     // Checks if Node already exists;
     data_display verify_exists;
-    std::string SQL_verification = "SELECT * FROM node_status_map WHERE nodeID='" + std::to_string(
-            static_cast<int>(nodeId)) + "'";
-    pSQL = SQL_verification.c_str();
-    LOG_F(INFO, "Asking for the following SQL query: '%s'", pSQL);
-    dbExecute(db, pSQL, dbCallback_display, (void *) &verify_exists);
-    if (verify_exists.res.size() > 0) {
-        LOG_F(INFO, "Tried to add nodeId %d to dbs BUT nodeId already exists.", nodeId);
-        throw;
-    }
     std::string latitude_str = std::to_string(pos.latitude);
     std::string logitude_str = std::to_string(pos.longitude);
     std::string timestamp_str = std::to_string(timestamp);
-    std::string SQL_insertion_in_users =
-            "INSERT INTO node_status_map (nodeID,latitude,longitude,timestamp) VALUES ('" + std::to_string(
+    std::string SQL_insertion_in_ode_status_map =
+            "INSERT OR REPLACE INTO node_status_map (nodeID,latitude,longitude,timestamp) VALUES ('" + std::to_string(
                     static_cast<int>(nodeId))+ "', '" +
             latitude_str + "', '" + logitude_str + "', '" + timestamp_str + "');";
-    pSQL = SQL_insertion_in_users.c_str();
+    pSQL = SQL_insertion_in_ode_status_map.c_str();
     LOG_F(INFO, "Asking for the following SQL query: '%s'", pSQL);
     data_display mydata;
     dbExecute(db, pSQL, dbCallback_display, (void *) &mydata);
@@ -105,30 +97,19 @@ inline void dbInsertNode(sqlite3 *db, uint8_t nodeId, const Position &pos, uint3
 }
 
 inline void
-dbInsertImage(sqlite3 *db, uint8_t nodeId, uint32_t timestamp, const Position &pos, const std::vector<char> &content) {
+dbInsertOrUpdateImage(sqlite3 *db, uint8_t nodeId, uint32_t timestamp, const Position &pos, const std::vector<char> &content) {
     LOG_SCOPE_FUNCTION(INFO);
     const char *pSQL;
     // Checks if Node already exists;
-    data_display verify_exists;
     std::string latitude_str = std::to_string(pos.latitude);
     std::string logitude_str = std::to_string(pos.longitude);
     std::string timestamp_str = std::to_string(timestamp);
     std::string image_str(content.begin(), content.end());
-    std::string SQL_verification =
-            "SELECT * FROM image_map WHERE (latitude,longitude)=('" + latitude_str + "', '" + logitude_str + "');";
-    pSQL = SQL_verification.c_str();
-    LOG_F(INFO, "Asking for the following SQL query: '%s'", pSQL);
-    dbExecute(db, pSQL, dbCallback_display, (void *) &verify_exists);
-    if (verify_exists.res.size() > 0) {
-        LOG_F(INFO, "Tried to add image to dbs BUT image already exists.");
-        throw;
-    }
-    // else insert
-    std::string SQL_insertion_in_users =
-            "INSERT INTO image_map (latitude,longitude,nodeID,timestamp,content) VALUES ('" + latitude_str + "', '" +
+    std::string SQL_insertion_in_image_map =
+            "INSERT OR REPLACE INTO image_map (latitude,longitude,nodeID,timestamp,content) VALUES ('" + latitude_str + "', '" +
             logitude_str + "', '" + std::to_string(
                     static_cast<int>(nodeId)) + "', '" + timestamp_str + "', '" + image_str + "');";
-    pSQL = SQL_insertion_in_users.c_str();
+    pSQL = SQL_insertion_in_image_map.c_str();
     LOG_F(INFO, "Asking for the following SQL query: '%s'", pSQL);
     data_display mydata;
     dbExecute(db, pSQL, dbCallback_display, (void *) &mydata);
@@ -162,74 +143,6 @@ inline void dbRemoveImage(sqlite3 *db, const Position &pos) {
     data_display delete_image;
     dbExecute(db, pSQL, dbCallback_display, (void *) &delete_image);
 }
-
-
-
-// DB UPDATING UTILS ================================================================
-
-inline void dbInsertOrUpdateNode(sqlite3 *db, uint8_t nodeId, const Position &new_pos, uint32_t new_timestamp) {
-    // Update Position, timestamp for a given nodeId.
-    LOG_SCOPE_FUNCTION(INFO);
-    const char *pSQL;
-    // Checks if Node already exists;
-    data_display verify_exists;
-    std::string node_id_str = std::to_string(static_cast<int>(nodeId));
-    std::string SQL_verification = "SELECT * FROM node_status_map WHERE nodeID='" + node_id_str + "'";
-    pSQL = SQL_verification.c_str();
-    LOG_F(INFO, "Asking for the following SQL query: '%s'", pSQL);
-    dbExecute(db, pSQL, dbCallback_display, (void *) &verify_exists);
-    if (verify_exists.res.size() <= 0) {
-        LOG_F(INFO, "Tried to update nodeId %d to dbs BUT nodeId does not exists.", nodeId);
-        dbInsertNode(db, nodeId, new_pos, new_timestamp);
-        return;
-    }
-    std::string latitude_str = std::to_string(new_pos.latitude);
-    std::string logitude_str = std::to_string(new_pos.longitude);
-    std::string timestamp_str = std::to_string(new_timestamp);
-    std::string SQL_insertion_in_users =
-            "UPDATE node_status_map SET nodeID='"+node_id_str+"', latitude='" + latitude_str + "', longitude='"+logitude_str +"', timestamp='"+timestamp_str+"' WHERE nodeID='" + node_id_str + "';";
-    pSQL = SQL_insertion_in_users.c_str();
-    LOG_F(INFO, "Asking for the following SQL query: '%s'", pSQL);
-    data_display mydata;
-    dbExecute(db, pSQL, dbCallback_display, (void *) &mydata);
-    LOG_F(INFO, "Updated nodeId %d into table 'node_status_map'", nodeId);
-}
-
-
-inline void dbInsertOrUpdateImage(sqlite3 *db, uint8_t new_nodeId, uint32_t new_timestamp, const Position &pos,
-                           const std::vector<char> &new_content) {
-    // Update nodeId, timestamp, image for a given Position.
-    LOG_SCOPE_FUNCTION(INFO);
-    const char *pSQL;
-    // Checks if Node already exists;
-    data_display verify_exists;
-    std::string latitude_str = std::to_string(pos.latitude);
-    std::string logitude_str = std::to_string(pos.longitude);
-    std::string timestamp_str = std::to_string(new_timestamp);
-    std::string image_str(new_content.begin(), new_content.end());
-    std::string SQL_verification =
-            "SELECT * FROM image_map WHERE (latitude,longitude)=('" + latitude_str + "', '" + logitude_str + "');";
-    pSQL = SQL_verification.c_str();
-    LOG_F(INFO, "Asking for the following SQL query: '%s'", pSQL);
-    dbExecute(db, pSQL, dbCallback_display, (void *) &verify_exists);
-    if (verify_exists.res.size() <= 0) {
-        LOG_F(INFO, "Tried to add image to dbs BUT image already exists.");
-        dbInsertImage(db, new_nodeId, new_timestamp, pos, new_content);
-        return;
-    }
-    // else insert
-    std::string SQL_insertion_in_users =
-            "UPDATE image_map (latitude,longitude,nodeID,timestamp,content) VALUES ('" + latitude_str + "', '" +
-            logitude_str + "', '" +  std::to_string(
-                    static_cast<int>(new_nodeId)) + "', '" + timestamp_str + "', '" + image_str +
-            "') WHERE (latitude,longitude)=('" + latitude_str + "', '" + logitude_str + "');";
-    pSQL = SQL_insertion_in_users.c_str();
-    LOG_F(INFO, "Asking for the following SQL query: '%s'", pSQL);
-    data_display mydata;
-    dbExecute(db, pSQL, dbCallback_display, (void *) &mydata);
-    LOG_F(INFO, "Added image for nodeId %d to table 'image_map'",  (new_nodeId));
-}
-
 
 // DB GETTER UTILS ================================================================
 
@@ -288,7 +201,7 @@ inline std::string dbFetchAllNodesPositions(sqlite3 *db){
     }
     node_pos_json.pop_back();       // remove last ,
     node_pos_json += "}";
-    return node_pos_json; 
+    return node_pos_json;
 }
 
 
@@ -321,6 +234,40 @@ inline const Image dbGetImage(sqlite3 *db, const Position &pos) {
     return Image(nodeId, timestamp, pos, content);
 }
 
+inline std::string dbFetchAllImages(sqlite3 *db){
+    // latitude,longitude,nodeID,timestamp,content
+    // Get all images
+    LOG_SCOPE_FUNCTION(INFO);
+    const char *pSQL;
+    data_display mydata;
+    std::string SQL = "SELECT * FROM image_map";
+    pSQL = SQL.c_str();
+    LOG_F(INFO, "Asking for the following SQL query: '%s'", pSQL);
+    dbExecute(db, pSQL, dbCallback_display, (void *) &mydata);
+
+    char buffer[4096]="";
+    std::string node_pos_json = "{";
+
+    for (size_t i=0; i < mydata.res.size(); i += 5) {
+        double latitude = std::stoi(mydata.res[i]);
+        double longitude = std::stoi(mydata.res[i+1]);
+        uint8_t nodeID = static_cast<uint8_t>(std::stoi(mydata.res[i+2]));
+        uint32_t timestamp = static_cast<uint32_t>(std::stoi(mydata.res[i+3]));
+        std::vector<char> content(mydata.res[i+4].begin(), mydata.res[i+4].end());
+        std::string image(mydata.res[i+4].begin(), mydata.res[i+4].end());
+
+        // JSONify
+        snprintf(buffer, sizeof(buffer), "\"(%f, %f)\": [%u, %u, \"%s\"]", longitude, latitude, nodeID, timestamp, image.c_str());
+        node_pos_json += buffer;
+        LOG_F(INFO, "Getting Image %s", buffer);
+        node_pos_json += ",";
+        memset(buffer, 0, sizeof(buffer));
+    }
+    node_pos_json.pop_back();       // remove last ,
+    node_pos_json += "}";
+    return node_pos_json;
+}
+
 
 
 // Closing utils
@@ -328,5 +275,6 @@ inline const Image dbGetImage(sqlite3 *db, const Position &pos) {
 inline void dbClose(sqlite3 *db){
     sqlite3_close(db);
 }
+
 
 #endif //
