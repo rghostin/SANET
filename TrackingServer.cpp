@@ -86,7 +86,7 @@ void TrackingServer::_tr_heartbeat() {
             LOG_F(INFO, "Sent hearbeat packet: %s", packet.repr().c_str());
         }
 
-        std::this_thread::sleep_for(std::chrono::seconds(1/FP_AUTOPILOT_SPEED));        
+        std::this_thread::sleep_for(std::chrono::seconds(static_cast<int>(FP_AUTOPILOT_SPEED)));        
     }
     LOG_F(INFO, "TrServer heartbeat process_stop=true; exiting");
 }

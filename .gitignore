@@ -17,6 +17,7 @@ CMakeLists.txt
 
 # binaries 
 robin
+ccmain
 tools/tpacket_broadcaster
 tools/command_sender
 tools/nodemap_sender

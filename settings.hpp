@@ -29,10 +29,10 @@
 // Flight planning settings
 #define CFG_DIR "conf/"
 #define CFG_NODEID CFG_DIR "nodeid.conf"
-#define FP_USOCKET_PATH CFG_DIR "usocket"
+#define FP_USOCKET_PATH "/tmp/usocket" //CFG_DIR "usocket"
 #define FP_CURR_POS_FILE_PATH CFG_DIR "current.position"
 #define FP_CURR_POS_LOCK_PATH CFG_DIR "current.position.lock"
-#define FP_AUTOPILOT_SPEED 1
+#define FP_AUTOPILOT_SPEED 2
 
 // Database settings
 #define DB_PATH "database_utils/sanet.db"
