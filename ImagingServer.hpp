@@ -39,8 +39,8 @@ private:
     std::thread _thread_check_timeout_imgs;
     void _tr_check_timeout_imgs();
     std::thread _thread_check_new_complete_img;
-    void _tr_check_new_complete_img();
-    bool has_img_changed();
+    void _tr_check_new_global_img();
+    bool has_global_img_changed();
 
     ImageChunkPacket _produce_packet() override;
     void _process_packet(const ImageChunkPacket&) override;

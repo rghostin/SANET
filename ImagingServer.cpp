@@ -48,23 +48,23 @@ void ImagingServer::_tr_check_timeout_imgs() {
 }
 
 
-void ImagingServer::_tr_check_new_complete_img() {
+void ImagingServer::_tr_check_new_global_img() {
     std::unique_lock<std::mutex> lock(mutex_img_has_changed);
     loguru::set_thread_name(threadname("checkImgTO").c_str());
     LOG_F(INFO, "Starting ImagingSrv _check_new_complete_img");
 
     while (! process_stop) {
         {
-            thread_cond_var.wait(lock, std::bind(&ImagingServer::has_img_changed, this));
+            thread_cond_var.wait(lock, std::bind(&ImagingServer::has_global_img_changed, this));
             _send_image(true);
         }
         std::this_thread::sleep_for(std::chrono::seconds(_new_complete_image_check));
     }
-    LOG_F(INFO, "ImagingSrv check_new_complete_img - process_stop=true; exiting");
+    LOG_F(INFO, "ImagingSrv check_new_global_img - process_stop=true; exiting");
 }
 
 
-bool ImagingServer::has_img_changed() {
+bool ImagingServer::has_global_img_changed() {
     return img_has_changed;
 }
 
@@ -85,11 +85,23 @@ void ImagingServer::_process_packet(const ImageChunkPacket& packet) {
     else {
         _building_image_map[packet.position].add_chunk(packet);
         if (_building_image_map[packet.position].is_complete()) {
-            {
-                std::lock_guard<std::mutex> lock(_mutex_image_map);
-                _image_map[packet.position] = _building_image_map[packet.position].get_image();
+            Image newImage = _building_image_map[packet.position].get_image();
+
+            if (not _building_image_map[packet.position].is_global()) {
+                {
+                    std::lock_guard<std::mutex> lock(_mutex_image_map);
+                    _image_map[packet.position] = newImage;
+                }
+
+                LOG_F(3, "Image moved to _image_map: %s", packet.repr().c_str());
             }
-            LOG_F(3, "Image moved to _image_map: %s", packet.repr().c_str());
+            else {
+                FILE* image_file(fopen(PATH_IMG_COMPLETE, "wb"));
+                fwrite(&newImage.content, sizeof(char), newImage.content.size(), image_file);
+                fclose(image_file);
+
+                LOG_F(3, "Image saved into disk: %s", packet.repr().c_str());
+            }
 
             _building_image_map.erase(packet.position);  // image completed -> delete ImageBuilder
 
@@ -99,7 +111,7 @@ void ImagingServer::_process_packet(const ImageChunkPacket& packet) {
 }
 
 
-void ImagingServer::_send_image(bool is_complete_img) {
+void ImagingServer::_send_image(bool is_global) {
     ImageChunkPacket packet = _produce_packet();
     uint32_t size_file_remaining;
     uint32_t bytes_to_treat(IMG_CHUNK_SIZE);
@@ -111,8 +123,10 @@ void ImagingServer::_send_image(bool is_complete_img) {
     memset(&packet.chunk_content, '\0', IMG_CHUNK_SIZE);
     packet.sizeImage = get_size(path_img);
     size_file_remaining = packet.sizeImage;
-    if (is_complete_img) {
-        packet.is_complete_img = is_complete_img;
+    if (is_global) {
+        packet.nodeID = 255;
+        packet.position = Position(0,0);
+        packet.is_global = is_global;
     }
     image_file = fopen(path_img, "rb");
 
@@ -153,7 +167,7 @@ void ImagingServer::start() {
     LOG_F(WARNING, "Starting Imaging server");
     AbstractBroadcastNode<ImageChunkPacket>::start();
     _thread_check_timeout_imgs = std::thread(&ImagingServer::_tr_check_timeout_imgs, this);
-    _thread_check_new_complete_img = std::thread(&ImagingServer::_tr_check_new_complete_img, this);
+    _thread_check_new_complete_img = std::thread(&ImagingServer::_tr_check_new_global_img, this);
 }
 
 

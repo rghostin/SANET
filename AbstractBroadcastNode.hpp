@@ -70,8 +70,7 @@ public:
 template<typename P>
 AbstractBroadcastNode<P>::AbstractBroadcastNode(uint8_t nodeID, unsigned short port, const char* name):
     _port(port), sockfd(), _srvaddr(), _bc_sockaddr(), b_iface(),
-    _db(),
-    _thread_receiver(), _nodeID(nodeID), _name(name)
+    _thread_receiver(), _nodeID(nodeID), _name(name), _db()
 {
     // dbs
     _db = dbOpen(_path_db);
