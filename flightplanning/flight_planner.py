@@ -67,7 +67,9 @@ class FlightPlanner:
                         checkpoints[fp_index][dr_index] = check_point
         return distance_matrix, checkpoints
 
-    def __computeBestAssignments_(self, drones):
+    def __computeBestAssignments_(self, drones_map):
+        drones = {int(k):drones_map[k] for k in drones_map.keys()}
+        print("drones->>>>", drones)
         drone_positions = list(drones.values())
         rev = {tuple(v): k for k, v in drones.items()}
         distance_matrix, checkpoints = self.__computeDistanceMatrix_(drone_positions)
