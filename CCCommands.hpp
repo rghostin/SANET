@@ -4,6 +4,7 @@
 
 #define FETCH_GLOBAL_IMAGE 1
 #define FETCH_NODES_POS 2
+ #define UPDATE_GLOBAL_AREA_POLYGON 4
 
 
 #endif

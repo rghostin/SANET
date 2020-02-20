@@ -24,7 +24,7 @@ MAP_1_PATH = "resource_images/image_set/map_1.jpg"
 MAP_3_PATH = "resource_images/image_set/map_3.jpg"
 MAP_5_PATH = "resource_images/image_set/map_5.jpg"
 MAP_7_PATH = "resource_images/image_set/map_7.jpg"
-CCLIENT_IP = "10.93.197.168"
+CCLIENT_IP = "164.15.121.70"
 CCLIENT_PORT = 6280
 
 threadLock = threading.Lock()
@@ -180,8 +180,11 @@ class UserGUI(QWidget):
         self.hide()
         # Create object map_gui
         # shows fullscreen map image
+
         self.map_gui.set_picture(self.chosen_map_path)
         if self.map_gui.start_ui():
+            # at this point, global_area.polygon is created
+            self.cclient.sendGlobalPolygon(gs.GLOBAL_AREA_POLYGON_PATH)
             self.map_gui.destroy_window()
             self.update_picture_frame(gs.GLOBAL_AREA_IMG_PATH_BLACKMASK)
             self.select_area_button.setDisabled(True)
@@ -288,6 +291,7 @@ class UserGUI(QWidget):
     def start_test_button_action(self):
         self.map_gui.set_picture(gs.GLOBAL_AREA_IMAGE_TEST)
         self.map_gui.get_polygon(file_path=gs.GLOBAL_AREA_POLYGON_PATH)
+        self.cclient.sendGlobalPolygon(sendGlobalPolygon)
         self.map_gui.start_ui_test()
         self.start_test()
 

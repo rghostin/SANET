@@ -176,6 +176,8 @@ void CCServer::_dispatch(int socket, uint8_t command){
             break;
         case FETCH_GLOBAL_IMAGE:  // Fetch All Images
             break;
+        case UPDATE_GLOBAL_AREA_POLYGON:  // Get updated area polygon
+            _update_global_polygon(socket);
         default:
             LOG_F(WARNING, "Unknow command=%d", command);
             break;
@@ -192,6 +194,33 @@ void CCServer::_execute_fetch_all_pos(int socket) {
     }
  
     LOG_F(INFO, "Sent map : =%s", map_node_json.c_str());
+}
+
+
+void CCServer::_update_global_polygon(int socket) {
+    FILE* polygon_file(fopen(FP_GLOBAL_AREA_POLYGON_PATH, "wb")); 
+
+    char buffer[2048];
+    memset(buffer, '\0', sizeof(buffer));
+
+    if (recv(socket, &buffer, sizeof(buffer), 0) < 0) {
+        perror("Cannot recv part of img");
+        throw;
+    }
+
+    std::string json_encoded(buffer);
+    std::stringstream ss(json_encoded);
+    std::string temp;
+
+    for (int i = 0; i < std::count(json_encoded.begin(), json_encoded.end(), '['); ++i) {
+        std::getline(ss, temp, '[');
+        std::getline(ss, temp, ']');
+        temp += "\n";
+        fwrite(temp.c_str(), sizeof(char), temp.size(), polygon_file);
+    }
+
+    fclose(polygon_file);
+    LOG_F(3, "Global area polygon file updated");
 }
 
 

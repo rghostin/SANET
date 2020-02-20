@@ -33,6 +33,7 @@
 #define FP_CURR_POS_FILE_PATH CFG_DIR "current.position"
 #define FP_CURR_POS_LOCK_PATH CFG_DIR "current.position.lock"
 #define FP_AUTOPILOT_SPEED 2
+#define FP_GLOBAL_AREA_POLYGON_PATH CFG_DIR "global_area.polygon"
 
 // Database settings
 #define DB_PATH "database_utils/sanet.db"
