@@ -50,6 +50,7 @@ class UserGUI(QWidget):
         self.stop = False
         self.show_flight_plan = False
         self.N = None
+        self.new_nodes = None
 
 
         # offline simulation variables
@@ -86,10 +87,10 @@ class UserGUI(QWidget):
         self.select_area_button.setDisabled(True)
 
         # calcul flight plans button
-        self.flight_plans_button = QPushButton("Get Flight Plans")
-        self.flight_plans_button.setFixedSize(200, 50)
-        self.flight_plans_button.clicked.connect(self.calcul_flight_plans)
-        self.flight_plans_button.hide()
+        self.send_area_button = QPushButton("Send AREA")
+        self.send_area_button.setFixedSize(200, 50)
+        self.send_area_button.clicked.connect(self.send_area_button_action)
+        self.send_area_button.hide()
 
         # stop real time view button
         self.stop_button = QPushButton("STOP")
@@ -137,7 +138,7 @@ class UserGUI(QWidget):
         hbox_buttons.addWidget(division_line)
         hbox_buttons.addWidget(self.select_map_button)
         hbox_buttons.addWidget(self.select_area_button)
-        hbox_buttons.addWidget(self.flight_plans_button)
+        hbox_buttons.addWidget(self.send_area_button)
         hbox_buttons.addWidget(self.stop_button)
         hbox_buttons.addWidget(self.show_hide_button)
         hbox_buttons.addWidget(self.test_button)
@@ -165,35 +166,10 @@ class UserGUI(QWidget):
         self.setWindowTitle('DRONE SURVEILLANCE')
         self.show()
 
-
-    def select_map_button_action(self):
-        # function that show select area map window
-        self.select_area_window.show()
-
-    def close_select_map_window(self):
-        # function that close select area map window
-        self.select_area_window.close()
-        self.select_area_button.setEnabled(True)
-
-
-    def select_area_button_action(self):
-        self.hide()
-        # Create object map_gui
-        # shows fullscreen map image
-        self.map_gui.set_picture(self.chosen_map_path)
-        if self.map_gui.start_ui():
-            self.map_gui.destroy_window()
-            self.update_picture_frame(gs.GLOBAL_AREA_IMG_PATH_BLACKMASK)
-            self.select_area_button.setDisabled(True)
-            self.flight_plans_button.show()
-        else:
-            self.map_gui.destroy_window()
-        self.show()
-
     def connect_button_action(self):
         if not self.connected:
             try:
-                self.cclient.start()
+                #self.cclient.start()
                 self.connected = True
                 self.set_connect_button_properties(connected=True)
                 self.test_button.show()  # TEST
@@ -201,11 +177,9 @@ class UserGUI(QWidget):
                 raise e
         else:
             self.connected = False
-            self.cclient.stop()
+            #self.cclient.stop()
             self.stop = True
             self.set_connect_button_properties(connected=False)
-
-
 
     def set_connect_button_properties(self, connected):
         if not connected:
@@ -222,6 +196,49 @@ class UserGUI(QWidget):
         self.connect_led.setPixmap((image.scaled(self.connect_led.width(), self.connect_led.height())))
         self.connect_button.setText(button_text)
 
+    def select_map_button_action(self):
+        # function that show select area map window
+        self.select_area_window.show()
+
+    def close_select_map_window(self):
+        # function that close select area map window
+        self.select_area_window.close()
+        self.select_area_button.setEnabled(True)
+
+    def select_area_button_action(self):
+        self.hide()
+        # Create object map_gui
+        # shows fullscreen map image
+        self.map_gui.set_picture(self.chosen_map_path)
+        if self.map_gui.start_ui():
+            self.map_gui.destroy_window()
+            self.update_picture_frame(gs.GLOBAL_AREA_IMG_PATH_BLACKMASK)
+            self.select_area_button.setDisabled(True)
+            self.send_area_button.show()
+        else:
+            self.map_gui.destroy_window()
+        self.show()
+
+    def send_area_button_action(self):
+        # Area partition and Drones path calculations
+        # self.map_gui.flight_plans_calculating(gs.ALPHA, self.N)
+        # Show Confirm window
+        confirmation = QMessageBox.question(self, 'Confirm', "Are you sure?", QMessageBox.Yes | QMessageBox.No)
+        if confirmation == QMessageBox.Yes:
+            print("sending picture....")
+            self.send_area_button.hide()
+            self.select_area_button.hide()
+            self.select_map_button.hide()
+            self.cclient.sendGlobalPolygon(gs.GLOBAL_AREA_POLYGON_PATH)
+            print("picture sent!")
+            self.stop_button.show()
+            #self.start_thread_simulation()  # offline simulation
+            self.start_test()
+        else:
+            # comeback to select area menu
+            self.update_picture_frame(self.chosen_map_path)
+            self.send_area_button.hide()
+            self.select_area_button.setEnabled(True)
 
     def stop_button_action(self):
         self.stop = True
@@ -238,42 +255,21 @@ class UserGUI(QWidget):
         self.update_picture_frame(gs.GLOBAL_AREA_IMG_PATH_RECONSTRUCTION)
         QApplication.processEvents()
 
-    def calcul_flight_plans(self):
-        # Area partition and Drones path calculations
-        # self.map_gui.flight_plans_calculating(gs.ALPHA, self.N)
 
-        # Show selected area in GUI
-        self.update_picture_frame(gs.GLOBAL_AREA_IMG_PATH_BLACKMASK)
-
-        # Show Confirm window
-        confirmation = QMessageBox.question(self, 'Confirm', "Are you sure?", QMessageBox.Yes | QMessageBox.No)
-        if confirmation == QMessageBox.Yes:
-            print("sending picture....")
-            self.flight_plans_button.hide()
-            self.select_area_button.hide()
-            self.select_map_button.hide()
-            self.cclient.sendGlobalPolygon(gs.GLOBAL_AREA_POLYGON_PATH)
-            print("picture sent!")
-            self.stop_button.show()
-            #self.start_thread_simulation()  # offline simulation
-            self.start_test()
-        else:
-            # comeback to select area menu
-            self.update_picture_frame(self.chosen_map_path)
-            self.flight_plans_button.hide()
-            self.select_area_button.setEnabled(True)
 
     def start_test(self):
         self.nodes_status = []
         last_all_nodes = dict()
         while(not self.stop):
-            recv_allnodes = self.cclient.fetchAllNodes();
+            recv_allnodes = self.cclient.fetchAllNodes()
             if recv_allnodes != last_all_nodes:
                 if len(last_all_nodes) != len(recv_allnodes):
                     self.N = len(recv_allnodes)
-                    self.map_gui.flight_plans_calculating(gs.ALPHA, deepcopy(recv_allnodes))
+                    self.new_nodes = deepcopy(recv_allnodes)
+                    # calculating flight plans in a new thread
+                    self.start_thread_calcul_flights()
                 self.nodes_status.append(deepcopy(recv_allnodes))
-                self.area_reconstruction_position()
+                self.map_gui.area_reconstruction_position(drones_path=self.nodes_status)
                 if not self.stop:
                     self.update_picture_frame(gs.GLOBAL_AREA_IMG_PATH_RECONSTRUCTION)
                 last_all_nodes = deepcopy(recv_allnodes)
@@ -281,11 +277,15 @@ class UserGUI(QWidget):
                 print("discarding")
             sleep(self.UPDATE_SLEEP_RATIO * gs.AUTOPILOT_SPEED)
 
-    def area_reconstruction_position(self):
-        threadLock.acquire()
-        copie = deepcopy(self.nodes_status)
-        self.map_gui.area_reconstruction_position(drones_path=copie)
-        threadLock.release()
+    def start_thread_calcul_flights(self):
+        print("starting calcul flights thread...")
+        thread = CalculFlights(self)
+        thread.start()
+
+    def calcul_flight_plans(self):
+        self.map_gui.set_display_flight_plans(False)
+        self.map_gui.flight_plans_calculating(gs.ALPHA, self.new_nodes)
+        self.map_gui.set_display_flight_plans(True)
 
     def start_test_button_action(self):
         self.map_gui.set_picture(gs.GLOBAL_AREA_IMAGE_TEST)
@@ -309,7 +309,7 @@ class UserGUI(QWidget):
         self.select_area_button.show()
         self.select_map_button.setDisabled(True)
         self.select_area_button.setDisabled(True)
-        self.flight_plans_button.hide()
+        self.send_area_button.hide()
         self.stop_button.hide()
         self.show_hide_button.hide()
         self.update_picture_frame(picture_filename=gs.MENU_WELCOME_PICTURE_PATH)
@@ -405,7 +405,7 @@ class SelectMapWindow(QDialog):
             return False
 
 
-class Simulation (threading.Thread):
+class CalculFlights (threading.Thread):
    """
         Thread Class used for the real time area view
    """
@@ -413,7 +413,7 @@ class Simulation (threading.Thread):
       threading.Thread.__init__(self)
       self.window = window
    def run(self):
-       self.window.start_offline_simulation()
+       self.window.calcul_flight_plans()
 
 
 

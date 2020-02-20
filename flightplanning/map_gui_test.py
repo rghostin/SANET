@@ -84,8 +84,8 @@ class MapGUI(object):
         self.done = False
         self.cancel = False
         # Create window and set a mouse callback to handle events
-        cv2.namedWindow(winname=self.window_name, flags=cv2.WND_PROP_FULLSCREEN)
-        cv2.setWindowProperty(self.window_name, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+        cv2.namedWindow(winname=self.window_name, flags=cv2.WINDOW_NORMAL)
+        cv2.resizeWindow(winname=self.window_name, width=1000, height=800)
         cv2.imshow(winname=self.window_name, mat=self.canvas)
         cv2.waitKey(delay=1)
         cv2.setMouseCallback(self.window_name, self.mouse_clic_action)
@@ -95,7 +95,7 @@ class MapGUI(object):
             cv2.imshow(winname=self.window_name, mat=self.canvas)
             # And wait 50ms before next iteration (this will pump window messages meanwhile)
             key_pressed =cv2.waitKey(50)
-            if key_pressed == 13:  # Press Enter to finish the area selection
+            if key_pressed == 32:  # Press Enter to finish the area selection
                 if Polygon(*self.points).is_convex():
                     self.done = True
                 else:
@@ -314,7 +314,8 @@ class MapGUI(object):
             self.transparent_img[y_pos:y_pos + photo_height, x_pos:x_pos + photo_width] = drone
 
         # draw flight plans
-        self.transparent_img = self.draw_flight_plans(self.transparent_img)
+        if self.display:
+            self.transparent_img = self.draw_flight_plans(self.transparent_img)
         self.create_picture(self.reconstruct_filename, self.transparent_img)
 
     def get_polygon(self, file_path):
