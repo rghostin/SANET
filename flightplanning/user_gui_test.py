@@ -88,7 +88,7 @@ class UserGUI(QWidget):
         # calcul flight plans button
         self.flight_plans_button = QPushButton("Get Flight Plans")
         self.flight_plans_button.setFixedSize(200, 50)
-        #self.flight_plans_button.clicked.connect(self.calcul_flight_plans)
+        self.flight_plans_button.clicked.connect(self.calcul_flight_plans)
         self.flight_plans_button.hide()
 
         # stop real time view button
@@ -238,28 +238,30 @@ class UserGUI(QWidget):
         self.update_picture_frame(gs.GLOBAL_AREA_IMG_PATH_RECONSTRUCTION)
         QApplication.processEvents()
 
-    """def calcul_flight_plans(self):
+    def calcul_flight_plans(self):
         # Area partition and Drones path calculations
-        self.map_gui.flight_plans_calculating(gs.ALPHA, self.N)
+        # self.map_gui.flight_plans_calculating(gs.ALPHA, self.N)
 
-        # Show flight plans in GUI
-        self.update_picture_frame(gs.GLOBAL_AREA_IMG_PATH_FPS)
+        # Show selected area in GUI
+        self.update_picture_frame(gs.GLOBAL_AREA_IMG_PATH_BLACKMASK)
 
         # Show Confirm window
         confirmation = QMessageBox.question(self, 'Confirm', "Are you sure?", QMessageBox.Yes | QMessageBox.No)
         if confirmation == QMessageBox.Yes:
-            print("send picture!")
+            print("sending picture....")
             self.flight_plans_button.hide()
             self.select_area_button.hide()
             self.select_map_button.hide()
-            self.show_hide_button.show()
+            self.cclient.sendGlobalPolygon(gs.GLOBAL_AREA_POLYGON_PATH)
+            print("picture sent!")
             self.stop_button.show()
-            self.start_thread_simulation()  # offline simulation
+            #self.start_thread_simulation()  # offline simulation
+            self.start_test()
         else:
             # comeback to select area menu
             self.update_picture_frame(self.chosen_map_path)
             self.flight_plans_button.hide()
-            self.select_area_button.setEnabled(True)"""
+            self.select_area_button.setEnabled(True)
 
     def start_test(self):
         self.nodes_status = []
