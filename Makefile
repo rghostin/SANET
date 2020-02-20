@@ -4,15 +4,15 @@ CXXFLAGS := -std=c++17 -Weffc++  -Wctor-dtor-privacy -Wpedantic -Wall -Wextra -W
 # ggdb3 long128
 LDFLAGS:=-lpthread -ldl -lssl -lcrypto -lsqlite3
 
-all: robin ccmain
+all: robin # ccmain
 
 rebuild : clean all
 
 robin: robin.cpp loguru.o TrackingServer.o CCServer.o
 	$(CXX) $(CFLAGS) $^ -o $@ $(LDFLAGS)
 
-ccmain: ccmain.cpp CCServer.o loguru.o
-	$(CXX) $(CFLAGS) $^ -o $@ $(LDFLAGS)
+#ccmain: ccmain.cpp CCServer.o loguru.o#
+#	$(CXX) $(CFLAGS) $^ -o $@ $(LDFLAGS)
 
 
 .PHONY: clean

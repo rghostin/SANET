@@ -48,6 +48,9 @@ private:
     TrackPacket _produce_packet() override;
     virtual void _process_packet(const TrackPacket&) override;  
 
+    bool _received_first_poly=false;
+    std::thread _thread_update_poly;
+    void _tr_update_poly();
 public:
     TrackingServer(unsigned short port, uint8_t nodeID);
     TrackingServer(const TrackingServer&) = delete;

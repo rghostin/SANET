@@ -24,7 +24,7 @@ MAP_1_PATH = "resource_images/image_set/map_1.jpg"
 MAP_3_PATH = "resource_images/image_set/map_3.jpg"
 MAP_5_PATH = "resource_images/image_set/map_5.jpg"
 MAP_7_PATH = "resource_images/image_set/map_7.jpg"
-CCLIENT_IP = "164.15.121.70"
+CCLIENT_IP = "127.0.0.1" #"164.15.121.70"
 CCLIENT_PORT = 6280
 
 threadLock = threading.Lock()
@@ -291,7 +291,7 @@ class UserGUI(QWidget):
     def start_test_button_action(self):
         self.map_gui.set_picture(gs.GLOBAL_AREA_IMAGE_TEST)
         self.map_gui.get_polygon(file_path=gs.GLOBAL_AREA_POLYGON_PATH)
-        self.cclient.sendGlobalPolygon(sendGlobalPolygon)
+        self.cclient.sendGlobalPolygon(gs.GLOBAL_AREA_POLYGON_PATH)
         self.map_gui.start_ui_test()
         self.start_test()
 

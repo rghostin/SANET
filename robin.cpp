@@ -9,6 +9,9 @@
 #include "ImagingServer.hpp"
 #include <sqlite3.h>
 
+#include <condition_variable>
+#include "CCServer.hpp"
+
 
 // Stopping mechanism 
 std::atomic<bool> process_stop(false);
@@ -18,6 +21,11 @@ void exit_handler(int s) {
     process_stop = true;
     LOG_F(INFO, "program_stop=true"); 
 }
+
+
+std::mutex mutex_new_poly;
+bool new_poly=false;
+std::condition_variable cv_new_poly;
 
 
 int main(int argc, char** argv) {
@@ -71,6 +79,10 @@ int main(int argc, char** argv) {
     // Tracking server
     TrackingServer trackingserver(TRACKING_SERVER_PORT, nodeID);
     trackingserver.start();
+
+    // CCserver start
+    CCServer ccserver(CC_SERVER_PORT, nodeID);
+    ccserver.start(); 
 
     // join all services
     trackingserver.join();

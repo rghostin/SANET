@@ -39,7 +39,11 @@ TrackingServer::~TrackingServer() {
     if (_thread_check_node_map.joinable()) {
         _thread_check_node_map.join();
     }
-}
+
+    if (_thread_update_poly.joinable()) {
+        _thread_update_poly.join();
+    }
+} 
 
 
 TrackPacket TrackingServer::_produce_packet() {
@@ -162,13 +166,37 @@ void TrackingServer::_tr_check_node_map(){
 
         if (need_fp_recompute) {
             need_fp_recompute = false;  // reset for next iter
-            _send_status_node_map();    // Send to python flight server through unix socket
+
+            if (_received_first_poly) {
+                _send_status_node_map();    // Send to python flight server through unix socket
+            }
         }
         std::this_thread::sleep_for(std::chrono::seconds(3));
     }
     LOG_F(INFO, "Tracker checkNodeMap - process_stop=true; exiting");
+    // hack wakeup condvar wait
+    {
+        std::lock_guard<std::mutex> lock(mutex_new_poly);
+        new_poly=true;
+    }
+    cv_new_poly.notify_all();
 }
 
+
+void TrackingServer::_tr_update_poly() {
+    std::unique_lock<std::mutex> lock(mutex_new_poly);
+
+    while (! process_stop) {
+        cv_new_poly.wait(lock, []{return new_poly;});
+        LOG_F(WARNING, "Received new polygon");
+        _received_first_poly = true;
+        new_poly = false;
+        if (! process_stop) {
+            _send_status_node_map();
+        }
+    }
+    LOG_F(INFO, "TrackingServer update_poly - process_stop=true; exiting");
+}
 
 
 void TrackingServer::start() {
@@ -177,19 +205,21 @@ void TrackingServer::start() {
 
     _thread_check_node_map = std::thread(&TrackingServer::_tr_check_node_map, this);
     _thread_heartbeat = std::thread(&TrackingServer::_tr_heartbeat, this);
+    _thread_update_poly = std::thread(&TrackingServer::_tr_update_poly, this);
 
     // send at least one status-nodemap anyway
-    std::async(std::launch::async,
+    /*std::async(std::launch::async,
             [this] {
                 std::this_thread::sleep_for(std::chrono::seconds(TRACKING_INITIAL_FP_SLEEP));
-                _send_status_node_map();
-                }
-        );
+                send_status_node_map();
+            }
+        );*/
 }
 
 void TrackingServer::join() {
     AbstractReliableBroadcastNode<TrackPacket>::join();
     _thread_heartbeat.join();
     _thread_check_node_map.join();
+    _thread_update_poly.join();
     LOG_F(WARNING, "TrServer: joined all threads");
 }

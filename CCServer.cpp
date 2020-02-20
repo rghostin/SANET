@@ -220,7 +220,12 @@ void CCServer::_update_global_polygon(int socket) {
     }
 
     fclose(polygon_file);
-    LOG_F(3, "Global area polygon file updated");
+    {
+        std::lock_guard<std::mutex> lock(mutex_new_poly);
+        new_poly=true;
+    }
+    cv_new_poly.notify_one();
+    LOG_F(WARNING, "Global area polygon file updated : %s", json_encoded.c_str());
 }
 
 

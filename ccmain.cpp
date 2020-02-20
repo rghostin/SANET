@@ -25,7 +25,7 @@ int main() {
 
      // setup logs 
     loguru::g_stderr_verbosity = loguru::Verbosity_INFO;
-    loguru::add_file("robin.log", loguru::Truncate, loguru::Verbosity_3);
+    loguru::add_file("ccmain.log", loguru::Truncate, loguru::Verbosity_3);
     loguru::set_thread_name("cc_main");
 
 

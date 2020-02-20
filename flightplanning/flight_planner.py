@@ -22,6 +22,13 @@ class FlightPlanner:
         self.__individual_flight_plans_ = list()
         self.__scope_ = scope
 
+
+    def notifyNewPolygon(self):
+        print("Reading new polygon file")
+        self.__global_area_polygon_ = parsePolygonFile(global_area_path)
+        self.__global_area_vertices_ = [tuple(e) for e in
+                                        self.__global_area_polygon_.vertices]
+
     @property
     def flight_plans(self):
         return self.__individual_flight_plans_

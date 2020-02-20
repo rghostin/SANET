@@ -47,7 +47,7 @@ class CCClient:
        return json.loads(json_str)
 
     def fetchAllNodes(self):
-        self._send_uint8(self.CCCommands["FETCHALLNODES"])
+        self._send_uint8(self.CCCommands["FETCH_NODES_POS"])
         status_node_map = self._receive_json()
         print(status_node_map)
         return status_node_map
