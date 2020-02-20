@@ -178,6 +178,7 @@ void CCServer::_dispatch(int socket, uint8_t command){
             break;
         case UPDATE_GLOBAL_AREA_POLYGON:  // Get updated area polygon
             _update_global_polygon(socket);
+            break;
         default:
             LOG_F(WARNING, "Unknow command=%d", command);
             break;

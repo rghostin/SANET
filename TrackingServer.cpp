@@ -67,7 +67,14 @@ void TrackingServer::_process_packet(const TrackPacket& packet) {
     }
     if (new_node) {
         LOG_F(WARNING, "New NodeID=%d", packet.nodeID);
-        _send_status_node_map();
+        // on new node
+        {
+            std::lock_guard<std::mutex> lock(mutex_new_poly);
+            if (_received_first_poly) {
+                _send_status_node_map();
+
+            }
+        }
     }
     
     LOG_F(INFO, "Updated NodeID : %s", packet.repr().c_str());
@@ -167,8 +174,12 @@ void TrackingServer::_tr_check_node_map(){
         if (need_fp_recompute) {
             need_fp_recompute = false;  // reset for next iter
 
-            if (_received_first_poly) {
-                _send_status_node_map();    // Send to python flight server through unix socket
+            {
+            std::lock_guard<std::mutex> lock(mutex_new_poly);
+                if (_received_first_poly) {
+                    _send_status_node_map();
+
+                }
             }
         }
         std::this_thread::sleep_for(std::chrono::seconds(3));
