@@ -7,6 +7,7 @@
 #include "common.hpp"
 #include "TrackingServer.hpp"
 #include "ImagingServer.hpp"
+#include <sqlite3.h>
 
 
 // Stopping mechanism 
@@ -21,7 +22,7 @@ void exit_handler(int s) {
 
 int main(int argc, char** argv) {
 
-    uint8_t nodeID(255); // = read_int_from_file(CFG_NODEID_FNAME);
+    const uint8_t nodeID = read_int_from_file(CFG_NODEID);
     int opt;
     char *checkLong;
     long int verbose_value;
@@ -35,53 +36,37 @@ int main(int argc, char** argv) {
         }
     #endif
 
-    if (argc < 3) {
-        perror("Not enough arguments");
+    if (argc < 2) {
+        std::cerr << "Not enough arguments" << std::endl;
         throw;
     }
+
 
     // setup logs 
     loguru::g_stderr_verbosity = loguru::Verbosity_INFO;
     loguru::add_file("robin.log", loguru::Truncate, loguru::Verbosity_3);
     loguru::set_thread_name("robin_main");
-
-
     while((opt = getopt(argc, argv, "i:v:")) != -1)
+
+    LOG_F(WARNING, "NodeID=%d", nodeID);
+
     {
         switch(opt)
         {
-            case 'i':
-                verbose_value = strtol (optarg, &checkLong, 10);
-
-                if (std::strcmp(checkLong, "\0") == 0 and (0 <= verbose_value) and (verbose_value <= 254)) {
-                    nodeID = static_cast<uint8_t>(verbose_value);
-                }
-                else {
-                    perror("[NodeID] - OPTARG not an integer or not in range [0:100] !");
-                    throw;
-                }
-
-                LOG_F(WARNING, "NodeID=%d", nodeID);
-
-                break;
             case 'v':
                 verbose_value = strtol (optarg, &checkLong, 10);
-
                 if (std::strcmp(checkLong, "\0") == 0 and (-2 <= verbose_value) and (verbose_value <= 9)) {
                     loguru::g_stderr_verbosity = static_cast<int>(verbose_value);
                     LOG_F(WARNING, "Logging changed to the value -> {%d} through parameter -v", loguru::g_stderr_verbosity);
                 }
-
                 break;
         }
-    }
-    if (nodeID == 255) {
-        perror("NodeID not fixed !");
-        throw;
     }
 
     // setup signals
     signal(SIGINT, exit_handler);
+
+    sqlite3_config(SQLITE_CONFIG_SERIALIZED);
 
     // Tracking server
     TrackingServer trackingserver(TRACKING_SERVER_PORT, nodeID);

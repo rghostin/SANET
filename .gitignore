@@ -3,6 +3,7 @@
 /cmake-build-debug/
 /.vscode/
 **/__pycache__
+CMakeLists.txt
 
 #  extensions
 **/*.pyc
@@ -12,11 +13,17 @@
 **/*.jpg
 **/*.jpeg
 **/*.orig
+**/*.lock
 
-
-# binaries
+# binaries 
 robin
-tpacket_broadcaster
-command_sender
-nodemap_sender
+ccmain
+tools/tpacket_broadcaster
+tools/command_sender
+tools/nodemap_sender
+tools/image_sneder
 
+# specifics
+/conf/nodeid.conf
+/conf/usocket
+/database_utils/sanet.db

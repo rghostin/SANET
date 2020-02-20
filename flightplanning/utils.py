@@ -3,6 +3,19 @@ from functools import reduce
 import operator
 import math
 from sympy import Polygon
+import global_settings
+
+# PARSING FUNCTIONS =============================================================
+
+def parseNodeId(nodeId_path):
+    with open(nodeId_path, "r") as nodeId_file:
+        node_id = int(nodeId_file.readline().strip())
+        if not(0 <= node_id <= 255):
+            raise
+        return node_id
+    
+
+
 
 # EXCEPTIONS =========================================================
 class InvalidPolygonFile(Exception):
@@ -17,6 +30,8 @@ class Colors:
     RED = (0, 0, 255)
     WHITE = (255, 255, 255)
     ORANGE = (255,140,0)
+    WHITE_PNG = (255, 255, 255, 255)
+    ORANGE_PNG = (0, 165, 255, 255)
 
 
 def plotPoly(poly_vertices, color):
@@ -39,6 +54,11 @@ def plotAllFlightPlans(flight_plans):
         route = fp.route
         plotFlightPlan(vertices, route)
     plt.show()
+
+
+def print_red(s):
+    print("\033[93m%s\033[0m" % s)
+
 
 # GEOMETRY FUNCTIONS ==============================================================
 
@@ -78,3 +98,15 @@ def parsePolygonFile(file_path):
 def euclidian_distance(p1, p2):
     return math.sqrt( math.pow((p1[0] - p2[0]), 2) + math.pow((p1[1] - p2[1]), 2))
     
+
+
+def calcul_scope(image, alpha):
+    pixel_distance = max(image.shape[:2])
+    scope = math.ceil(pixel_distance / (2 * alpha))
+    return scope
+
+def create_dic_bidon(N):
+    dic = {}
+    for i in range(N):
+        dic[i]=(i+2, i+4)
+    return dic

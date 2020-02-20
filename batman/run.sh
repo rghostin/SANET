@@ -25,10 +25,10 @@ while getopts ":i:v:" o; do
             i=${OPTARG}
             (( i >= 0 && i <= 254 )) || usage
             ;;
-       # v)
-       #     v=${OPTARG}
-       #     (( v >= -2 && v <= 9 )) || usage
-       #     ;;
+        v)
+            v=${OPTARG}
+            (( v >= -2 && v <= 9 )) || usage
+            ;;
         *)
             usage
             ;;

@@ -15,17 +15,21 @@ bool add_socket(int* array, const size_t max_size, int newsockfd) {
     return inserted;    // false -> CC_MAX_CONNECTION exceeded
 }
 
- 
-CCServer::CCServer(unsigned short port, uint8_t nodeID) : 
-_port(port), _nodeID(nodeID),
+
+CCServer::CCServer(unsigned short port, uint8_t nodeID) :
+_db(), _port(port), _nodeID(nodeID),
 sockfd(), _srvaddr(), b_iface(), _thread_receiver()
 {
+    // Database setup
+    _db = dbOpen(_path_db);
+
     // setup reception sockaddr
     memset(&_srvaddr, 0, sizeof(_srvaddr));
     _srvaddr.sin_family = AF_INET;
     _srvaddr.sin_addr.s_addr = INADDR_ANY;
     _srvaddr.sin_port = htons(_port);
-}  
+
+}
 
 CCServer::~CCServer() {
     if (_thread_receiver.joinable()) {
@@ -35,6 +39,7 @@ CCServer::~CCServer() {
     if (close(sockfd) < 0) {
         perror("Cannot close socket");
     }
+    dbClose(_db);
 }
 
 
@@ -152,14 +157,41 @@ void CCServer::_tr_receiver() {
                     } else {
                         // data received
                         LOG_F(INFO, "received from (%s:%d) command=%d", inet_ntoa(cliaddr.sin_addr) , ntohs(cliaddr.sin_port), command);
+                        std::async(std::launch::async, &CCServer::_dispatch, this, sd, command);
                     }
                 }
 
             }
         }
-
     }
     LOG_F(INFO, "process_stop=true; exiting");
+}
+
+
+void CCServer::_dispatch(int socket, uint8_t command){
+
+    switch (command) {
+        case FETCH_NODES_POS:  // Fetch All positions
+            _execute_fetch_all_pos(socket);
+            break;
+        case FETCH_GLOBAL_IMAGE:  // Fetch All Images
+            break;
+        default:
+            LOG_F(WARNING, "Unknow command=%d", command);
+            break;
+    }
+}
+
+
+void CCServer::_execute_fetch_all_pos(int socket) {
+    std::string map_node_json;
+    map_node_json = dbFetchAllNodesPositions(_db);
+
+    if (send(socket, map_node_json.c_str(), map_node_json.size(), 0) < 0) {
+        perror("Cannot send the node map");
+    }
+ 
+    LOG_F(INFO, "Sent map : =%s", map_node_json.c_str());
 }
 
 
@@ -167,6 +199,7 @@ void CCServer::start() {
     _setup_socket();
     _thread_receiver = std::thread(&CCServer::_tr_receiver, this);
 }
+
 
 void CCServer::join() {
     _thread_receiver.join();

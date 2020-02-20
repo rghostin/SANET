@@ -2,18 +2,18 @@ CXX:=g++ #-8
 # CXXFLAGS := -std=c++17 -Wall -Werror -pedantic
 CXXFLAGS := -std=c++17 -Weffc++  -Wctor-dtor-privacy -Wpedantic -Wall -Wextra -Wconversion -Wsign-conversion  -Wstrict-null-sentinel -Wold-style-cast -Wnoexcept  -Woverloaded-virtual -Wsign-promo -Wzero-as-null-pointer-constant -Wsuggest-final-types -Wsuggest-final-methods -Wsuggest-override -fconcepts -lquadmath
 # ggdb3 long128
-LDFLAGS:=-lpthread -ldl -lssl -lcrypto
-OPENCVFLAG:='pkg-config --cflags --libs opencv'
+LDFLAGS:=-lpthread -ldl -lssl -lcrypto -lsqlite3
 
-all: robin test_camera
+all: robin ccmain
 
 rebuild : clean all
 
 robin: robin.cpp loguru.o TrackingServer.o CCServer.o
 	$(CXX) $(CFLAGS) $^ -o $@ $(LDFLAGS)
 
-test: test_camera.cpp Camera.o
-	$(CXX) $(CFLAGS) $^ -o `pkg-config --cflags --libs opencv`
+ccmain: ccmain.cpp CCServer.o loguru.o
+	$(CXX) $(CFLAGS) $^ -o $@ $(LDFLAGS)
+
 
 .PHONY: clean
 clean:

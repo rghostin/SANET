@@ -2,9 +2,12 @@
 #include <sys/socket.h> 
 #include <arpa/inet.h> 
 #include <unistd.h> 
-#include <cstring> 
+#include <cstring>
+#include <vector>
 #include "../loguru.hpp"
 #include "../settings.hpp"
+#include "../CCPackets.hpp"
+#include "../CCCommands.hpp"
 
 
 #define SRV_IP "127.0.0.1"
@@ -45,6 +48,9 @@ int main(int argc, char const *argv[])
     srv_addr.sin_port = htons(CC_SERVER_PORT); 
     srv_addr.sin_addr.s_addr = inet_addr(SRV_IP);
     memset(srv_addr.sin_zero, 0, sizeof(srv_addr.sin_zero));
+
+    char buffer[4096];
+    memset(buffer, '\0', 4096);
    
     if (connect(sockfd, (struct sockaddr *)&srv_addr, sizeof(srv_addr)) < 0) { 
         printf("\nConnection Failed \n"); 
@@ -57,6 +63,15 @@ int main(int argc, char const *argv[])
         command = input_uint8();
         send(sockfd , &command , sizeof(command), 0 );
         printf("sent command=%d\n", command);
+
+        if (command == FETCH_NODES_POS) {
+            if (recv(sockfd, &buffer, 4096, 0) < 0) {
+                perror("Cannot recv the node map");
+            }
+            printf("String received : %s \n", buffer);
+
+        }
+        memset(buffer, '\0', 4096);
     }
 
     return 0; 
