@@ -6,6 +6,7 @@
 #define CC_MAX_CONNECTIONS 10
 #define CC_GC_PERIOD    10
 #define CC_IMAGE_CHUNK 4096
+#define PATH_GLOBAL_AREA_POLYGON "conf/global_area.polygon"
 
 // Batman specific settings
 #define BATMAN_IFACE "bat0"

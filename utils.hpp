@@ -3,6 +3,7 @@
 
 #include <cstdio>
 #include <openssl/md5.h>
+#include <string>
 
 inline int read_int_from_file(const char* file_name){
   FILE* file;

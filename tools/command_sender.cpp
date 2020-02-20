@@ -88,7 +88,7 @@ int main(int argc, char const *argv[])
             }
 
             while(size_file_remaining > 0 and !feof(image_file)) {
-                fread(&buffer, sizeof(char), bytes_to_treat, image_file);
+                fread(&buffer, sizeof(char), bytes_to_treat, image_file);  // TODO send
 
                 size_file_remaining -= bytes_to_treat;
 

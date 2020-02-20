@@ -177,7 +177,10 @@ void CCServer::_dispatch(int socket, uint8_t command){
         case FETCH_GLOBAL_IMAGE:  // Fetch All Images
             break;
         case NEW_IMAGE:  // Get new image
-            _treat_new_img(socket);
+            _treat_new_global_img(socket);
+            break;
+        case UPDATE_GLOBAL_AREA_POLYGON:  // Get updated area polygon
+            _update_global_polygon(socket);
             break;
         default:
             LOG_F(WARNING, "Unknow command=%d", command);
@@ -198,8 +201,9 @@ void CCServer::_execute_fetch_all_pos(int socket) {
 }
 
 
-void CCServer::_treat_new_img(int socket) {
+void CCServer::_treat_new_global_img(int socket) {
     FILE* image_file(fopen(PATH_IMG_COMPLETE, "wb"));
+
     unsigned long size_image;
     unsigned long size_image_remaining;
     unsigned long bytes_to_treat(CC_IMAGE_CHUNK);
@@ -237,13 +241,46 @@ void CCServer::_treat_new_img(int socket) {
         }
     }
 
+    fclose(image_file);
+
     {
         std::lock_guard<std::mutex> guard(mutex_img_has_changed);
         img_has_changed = true;
     }
 
-    fclose(image_file);
     thread_cond_var.notify_one();
+}
+
+
+void CCServer::_update_global_polygon(int socket) {
+    FILE* polygon_file(fopen(PATH_GLOBAL_AREA_POLYGON, "wb"));
+
+    unsigned long size_json_global_polygon;
+
+    if (recv(socket, &size_json_global_polygon, sizeof(int), 0) < 0) {
+        perror("Cannot recv size img");
+    }
+
+    char buffer[size_json_global_polygon];
+    memset(buffer, '\0', size_json_global_polygon);
+
+    if (recv(socket, &buffer, size_json_global_polygon, 0) < 0) {
+        perror("Cannot recv part of img");
+    }
+
+    std::string json_decoded(buffer);
+    std::stringstream ss(json_decoded);
+    std::string temp;
+
+    for (int i = 0; i < std::count(json_decoded.begin(), json_decoded.end(), '['); ++i) {
+        std::getline(ss, temp, '[');
+        std::getline(ss, temp, ']');
+        temp += "\n";
+        fwrite(temp.c_str(), sizeof(char), temp.size(), polygon_file);
+    }
+
+    fclose(polygon_file);
+    LOG_F(3, "Global area polygon file updated");
 }
 
 

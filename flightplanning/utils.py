@@ -1,9 +1,10 @@
-import matplotlib.pyplot as plt
-from functools import reduce
-import operator
 import math
+import operator
+from functools import reduce
+
+import matplotlib.pyplot as plt
 from sympy import Polygon
-import global_settings
+
 
 # PARSING FUNCTIONS =============================================================
 

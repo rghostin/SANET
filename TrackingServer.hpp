@@ -14,6 +14,7 @@
 #include <sys/un.h>
 #include <future>
 #include "loguru.hpp"
+#include "utils_log.hpp"
 #include "settings.hpp"
 #include "AbstractReliableBroadcast.hpp"
 #include "common.hpp"

@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include "Position.hpp"
+#include <string>
 
 struct TrackPacket  {
     uint8_t nodeID=0;

@@ -63,7 +63,7 @@ char* input_filename() {
         std::cin >> buffer;
     }
     else {
-        strcpy(buffer, "img/41.jpg");
+        strcpy(buffer, "img/imglink.txt");
     }
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 

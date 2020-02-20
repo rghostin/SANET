@@ -5,7 +5,7 @@
 #include "utils.hpp"
 #include "settings.hpp"
 #include "common.hpp"
-#include "TrackingServer.hpp"
+//#include "TrackingServer.hpp"
 #include "ImagingServer.hpp"
 #include "CCServer.hpp"
 #include <sqlite3.h>
@@ -52,11 +52,9 @@ int main(int argc, char** argv) {
     loguru::g_stderr_verbosity = loguru::Verbosity_INFO;
     loguru::add_file("robin.log", loguru::Truncate, loguru::Verbosity_3);
     loguru::set_thread_name("robin_main");
-    while((opt = getopt(argc, argv, "i:v:")) != -1)
-
     LOG_F(WARNING, "NodeID=%d", nodeID);
 
-    {
+    while((opt = getopt(argc, argv, "v:")) != -1) {
         switch(opt)
         {
             case 'v':
@@ -79,7 +77,7 @@ int main(int argc, char** argv) {
 //    trackingServer.start();
 
     // Imaging server
-    ImagingServer imagingServer(TRACKING_SERVER_PORT, nodeID);
+    ImagingServer imagingServer(IMAGING_SERVER_PORT, nodeID);
     imagingServer.start();
 
     // CC server
