@@ -1,7 +1,7 @@
 import numpy as np
 import socket
 import json
-from flightplanning.utils import parsePolygonFile
+from utils import parsePolygonFile
 
 
 def parseHppSettings(settings_path):
