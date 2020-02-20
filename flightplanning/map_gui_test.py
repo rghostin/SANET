@@ -311,7 +311,10 @@ class MapGUI(object):
             drone = cv2.imread(self.drones_photo_path, -1)
             drone = cv2.resize(drone, (photo_width, photo_height))
             # draw drone
-            self.transparent_img[y_pos:y_pos + photo_height, x_pos:x_pos + photo_width] = drone
+            try:
+                self.transparent_img[y_pos:y_pos + photo_height, x_pos:x_pos + photo_width] = drone
+            except ValueError as e:
+                print("3!! valueerror")
 
         # draw flight plans
         self.transparent_img = self.draw_flight_plans(self.transparent_img)
