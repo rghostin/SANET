@@ -244,7 +244,10 @@ class MapGUI(object):
         x = max((position[0] - scope), 0)
         y = max((position[1] - scope), 0)
         # take photo
-        photo = self.crop_picture[y:y + (2 * scope), x:x + (2 * scope)].copy()
+        img_height, img_width = self.crop_picture.shape[:2]
+        x_end = min(img_width, (x + (2*scope)))
+        y_end = min(img_height, (y + (2 * scope)))
+        photo = self.crop_picture[y:y_end, x:x_end].copy()
         # save photo
         # cv2.imwrite(path, photo) # we dont save the pictures (just for the test)
         return photo
