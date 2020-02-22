@@ -17,6 +17,7 @@ std::string TrackingServer::_get_json_nodemap(const nodemap_t& map) {
         res += ",";
         memset(buffer, 0, sizeof(buffer));
     }
+    // adding self
     snprintf(buffer, sizeof(buffer), "\"%u\": [%f, %f]", _nodeID, _mypos.longitude, _mypos.latitude);
     res += buffer;
     res += "}";
