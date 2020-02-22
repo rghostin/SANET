@@ -32,7 +32,6 @@ std::string TrackingServer::_get_json_nodemap(const nodemap_t& map, bool is_new_
 //=================================================
 
 
-
 TrackingServer::TrackingServer(unsigned short port, uint8_t nodeID) : 
     AbstractReliableBroadcastNode<TrackPacket>(nodeID, port, "TrackSrv"),
      _flight_server_addr(), _usockfd(), _mutex_status_node_map(),_status_node_map(),
@@ -118,12 +117,10 @@ void TrackingServer::_tr_heartbeat() {
 
     while (! process_stop) {
         Position currpos = _get_current_position();
-        if (true) { // (currpos != lastpos) { 
-            lastpos = currpos;
-            TrackPacket packet = _produce_packet();
-            this->broadcast(packet);
-            LOG_F(INFO, "Sent hearbeat packet: %s", packet.repr().c_str());
-        }
+        lastpos = currpos;
+        TrackPacket packet = _produce_packet();
+        this->broadcast(packet);
+        LOG_F(INFO, "Sent hearbeat packet: %s", packet.repr().c_str());
 
         std::this_thread::sleep_for(std::chrono::seconds(static_cast<int>(FP_AUTOPILOT_SPEED)));        
     }

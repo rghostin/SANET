@@ -8,7 +8,6 @@
 #include "TrackingServer.hpp"
 #include "ImagingServer.hpp"
 #include <sqlite3.h>
-
 #include <condition_variable>
 #include "CCServer.hpp"
 
@@ -86,7 +85,8 @@ int main(int argc, char** argv) {
 
     // join all services
     trackingserver.join();
-
+    ccserver.join();
+    
     LOG_F(WARNING, "Robin exiting");
     return 0;
 }
