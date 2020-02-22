@@ -104,8 +104,8 @@ def euclidian_distance(p1, p2):
     
 
 
-def calcul_scope(image, alpha):
-    pixel_distance = max(image.shape[:2])
+def calcul_scope(longueur, largeur, alpha):
+    pixel_distance = max(longueur, largeur)
     scope = math.ceil(pixel_distance / (2 * alpha))
     return scope
 

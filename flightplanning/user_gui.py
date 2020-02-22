@@ -11,7 +11,7 @@ from copy import deepcopy
 import global_settings as gs
 
 WINDOW_TITLE = "CITY MAP"
-CCLIENT_IP = "10.93.197.168"
+CCLIENT_IP = "164.15.121.67"
 CCLIENT_PORT = 6280
 
 threadLock = threading.Lock()
@@ -32,7 +32,7 @@ class UserGUI(QWidget):
                               crop_withfps_filename=gs.GLOBAL_AREA_IMG_PATH_FPS,
                               reconstruct_area_filename=gs.GLOBAL_AREA_IMG_PATH_RECONSTRUCTION,
                               drones_photo_path=gs.DRONE_PHOTO_PATH,
-                              display=False)
+                              display=True)
         self.connected = False  # flag that shows connexion status
         self.chosen_map_path = None
         self.stop = False
@@ -151,7 +151,7 @@ class UserGUI(QWidget):
         if not self.connected:
             try:
                 self.cclient.start()
-                self.cclient.sendGlobalPolygon(gs.GLOBAL_AREA_POLYGON_PATH)
+                #self.cclient.sendGlobalPolygon(gs.GLOBAL_AREA_POLYGON_PATH)
                 self.connected = True
                 self.set_connect_button_properties(connected=True)
                 self.test_button.show()  # TEST
@@ -214,6 +214,7 @@ class UserGUI(QWidget):
             self.cclient.sendGlobalPolygon(gs.GLOBAL_AREA_POLYGON_PATH)
             print("picture sent!")
             self.stop_button.show()
+            self.show_hide_button.show()
             # self.start_thread_simulation()  # offline simulation
             self.start_test()
         else:
@@ -238,10 +239,15 @@ class UserGUI(QWidget):
         QApplication.processEvents()
 
     def start_test(self):
+        self.stop=False
+        print("starting test")
         last_all_nodes = dict()
         self.map_gui.reset_transparent_img()
+        sleep(1)
         while (not self.stop):
+            print("enter while")
             recv_allnodes = self.cclient.fetchAllNodes()
+            print("pass fetch")
             if recv_allnodes != last_all_nodes:
                 if len(last_all_nodes) != len(recv_allnodes):
                     # recalculate flight plans
@@ -249,8 +255,10 @@ class UserGUI(QWidget):
                     self.N = len(recv_allnodes)
                     self.new_nodes = deepcopy(recv_allnodes)
                     # calculating flight plans in a new thread
-                    self.start_thread_calcul_flights()
-                self.map_gui.area_reconstruction_position(drones_path=recv_allnodes)
+                    #self.map_gui.flight_plans_calculating(gs.ALPHA, self.new_nodes)
+                    #self.start_thread_calcul_flights()
+                    threading.Thread(target=self.calcul_flight_plans).start()
+                self.map_gui.area_reconstruction_position(recv_allnodes)
                 if not self.stop:
                     self.update_picture_frame(gs.GLOBAL_AREA_IMG_PATH_RECONSTRUCTION)
                 last_all_nodes = deepcopy(recv_allnodes)
@@ -273,6 +281,7 @@ class UserGUI(QWidget):
         self.map_gui.set_picture(gs.GLOBAL_AREA_IMAGE_TEST)
         self.map_gui.get_polygon(file_path=gs.GLOBAL_AREA_POLYGON_PATH)
         self.map_gui.start_ui_test()
+        self.cclient.sendGlobalPolygon(gs.GLOBAL_AREA_POLYGON_PATH)
         self.start_test()
 
     def update_picture_frame(self, picture_filename):

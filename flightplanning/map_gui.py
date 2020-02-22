@@ -3,7 +3,7 @@ import numpy as np
 import cv2 as cv2
 from sympy import Polygon
 from operator import itemgetter
-from utils import Colors, calcul_scope, parsePolygonFile, 
+from utils import Colors, calcul_scope, parsePolygonFile 
 from flight_planner import FlightPlanner
 from copy import deepcopy
 
@@ -177,7 +177,7 @@ class MapGUI(object):
     def flight_plans_calculating(self, alpha, status_node_map):
         # draws flight plans in the selected area
         # calcul scope
-        self.scope = calcul_scope(self.crop_picture, alpha)
+        self.scope = calcul_scope(*self.crop_picture.shape[:2], alpha)
         print("SCOPE:",self.scope)
         # create object FlightPlanner
         self.fplanner = FlightPlanner(global_area_path=self.points_filename, scope=self.scope)
@@ -221,9 +221,9 @@ class MapGUI(object):
         img_height, img_width = self.crop_picture.shape[:2]
         x_end = min(img_width, (x + (2 * scope)))
         y_end = min(img_height, (y + (2 * scope)))
-        photo = self.crop_picture[y:y_end, x:x_end].copy()
+        photo = self.crop_picture[y:y + (2 * scope), x:x + (2 * scope)].copy()
         # save photo
-        # cv2.imwrite(path, photo) # we dont save the pictures (just for the test)
+        cv2.imwrite("test.png", photo) # we dont save the pictures (just for the test)
         return photo
 
     def area_reconstruction_position(self, drones_positions):
@@ -232,7 +232,9 @@ class MapGUI(object):
         for drone_id in drones_positions:
             # take photos
             position = [int(drones_positions[drone_id][0]), int(drones_positions[drone_id][1])]
+            print("positions", position)
             photo = self.take_photo(position=position, scope=self.scope)
+            print(photo.shape[:2])
             x_pos = int(max((position[0] - self.scope), 0))
             y_pos = int(max((position[1] - self.scope), 0))
             png_photo = self.create_png_image(image=photo, transparency=255)

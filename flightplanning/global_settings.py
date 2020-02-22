@@ -4,6 +4,8 @@ CURR_DIR = os.path.dirname(__file__)
 CONF_DIR = os.path.join(CURR_DIR, "../conf")
 DB_DIR = os.path.join(CURR_DIR, "../database_utils")
 
+CCCOMMANDS_PATH = os.path.join(CURR_DIR, "../CCCommands.hpp")
+
 GLOBAL_AREA_POLYGON_PATH = os.path.join(CONF_DIR, "global_area.polygon")
 USOCKET_PATH = "/tmp/usocket" #os.path.join(CONF_DIR, "usocket")
 FP_CURR_POS_FILE_PATH = os.path.join(CONF_DIR, "current.position")

@@ -2,6 +2,7 @@ import numpy as np
 import socket
 import json
 from utils import parsePolygonFile
+import global_settings as gs
 
 
 def parseHppSettings(settings_path):
@@ -20,7 +21,7 @@ def positionsToJSON(vec_of_positions):
 
 
 class CCClient:
-    CCCommands = parseHppSettings("CCCommands.hpp")  
+    CCCommands = parseHppSettings(gs.CCCOMMANDS_PATH)  
 
     def __init__(self, ip_addr, port):
         self.__socket_ = None
