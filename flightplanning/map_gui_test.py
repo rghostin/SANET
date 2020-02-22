@@ -3,11 +3,9 @@ import numpy as np
 import cv2 as cv2
 from sympy import Polygon
 from operator import itemgetter
-from utils import Colors
-from utils import calcul_scope
+from utils import Colors, calcul_scope, parsePolygonFile
 from flight_planner import FlightPlanner
 from copy import deepcopy
-
 
 
 class MapGUI(object):
@@ -321,12 +319,14 @@ class MapGUI(object):
         self.create_picture(self.reconstruct_filename, self.transparent_img)
 
     def get_polygon(self, file_path):
-        self.points = []
-        with open(file_path, "r") as global_polygon:
-            for line in global_polygon:
-                vertex = line.strip().split(',')
-                print(vertex)
-                self.points.append([int(vertex[0]), int(vertex[1])])
+        poly = parsePolygonFile(file_path)
+        self.points = [ list(v) for v in poly.vertices]
+        #self.points = []
+        #with open(file_path, "r") as global_polygon:
+        #    for line in global_polygon:
+        #        vertex = line.strip().split(',')
+        #        print(vertex)
+        #        self.points.append([int(vertex[0]), int(vertex[1])])
 
     def start_ui_test(self):
         self.crop_polygon()
