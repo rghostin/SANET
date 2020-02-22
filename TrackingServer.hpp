@@ -14,6 +14,7 @@
 #include <sys/un.h>
 #include <future>
 #include "loguru.hpp"
+#include "utils.hpp"
 #include "settings.hpp"
 #include "AbstractReliableBroadcast.hpp"
 #include "common.hpp"
@@ -32,8 +33,8 @@ private:
     struct sockaddr_un _flight_server_addr;
     int _usockfd;
     void _setup_usocket();
-    void _send_status_node_map();
-    std::string _get_json_nodemap(const nodemap_t& map);
+    void _send_status_node_map(bool);
+    std::string _get_json_nodemap(const nodemap_t& map, bool is_new_poly);
 
 
     std::mutex _mutex_status_node_map;
@@ -47,6 +48,14 @@ private:
 
     TrackPacket _produce_packet() override;
     virtual void _process_packet(const TrackPacket&) override;  
+
+    bool _received_first_poly=false;
+    std::thread _thread_update_poly;
+    void _tr_update_poly();
+
+    std::mutex _mutex_json_global_poly;
+    std::array<char, TRACKING_GLOBALPOLY_MAXBUF> _json_global_poly;
+    uint16_t _polyid=0;
 
 public:
     TrackingServer(unsigned short port, uint8_t nodeID);

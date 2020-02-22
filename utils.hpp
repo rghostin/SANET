@@ -2,7 +2,16 @@
 #define _UTILS_HPP_
 
 #include <cstdio>
+#include <cassert>
+#include <vector>
+#include <array>
+#include <string>
 #include <openssl/md5.h>
+#include <fstream>
+#include <cstring>
+#include <sstream>
+#include <algorithm>
+#include "Position.hpp"
 
 inline int read_int_from_file(const char* file_name){
   FILE* file;
@@ -41,6 +50,78 @@ inline std::string get_md5_string(char* array, unsigned long size_array) {
     }
 
     return checksum_res;
+}
+
+
+inline std::vector<Position> read_global_poly(const char* global_poly_path) {
+    std::ifstream ifs;             // creates stream ifs
+    Position position;
+    char comma;
+    std::vector<Position> globalpoly;
+
+    ifs.open(global_poly_path);  //opens file
+    if (ifs.fail()) {
+        perror("Cannot open file");
+        throw;
+    }
+
+    while (true){
+        ifs >> position.longitude >> comma >> position.latitude;
+        if (ifs.fail() || ifs.eof()) {
+            break;
+        }
+        globalpoly.push_back(position);
+        memset(&position, 0x0, sizeof(position));
+    }
+    ifs.close();
+    return globalpoly;
+}
+
+
+
+inline std::string get_json_of_poly(std::vector<Position> globalpoly) {
+    char buffer[1024]="";
+    std::string res = "{";
+    
+    for (unsigned i=0; i<globalpoly.size(); ++i) {
+        const Position& pos = globalpoly[i];
+
+        snprintf(buffer, sizeof(buffer), "\"%u\": [%f, %f]", i, pos.longitude, pos.latitude);
+        res += buffer;
+        res += ",";
+        memset(buffer, 0, sizeof(buffer));
+    }
+    res.pop_back();
+    res += "}";
+    return res;
+}
+
+
+template<size_t N>
+inline std::array<char, N> string_to_chararray(const std::string& s) {
+    assert (s.size() < N);
+    std::array<char, N> arr;
+    std::copy(s.begin(), s.end(), arr.data());
+    arr[s.size()] = 0x00;
+    return arr;
+}
+
+inline void json_write_poly_to_file(const std::string& json_poly, const char* fname) {
+    FILE* polygon_file(fopen(fname, "wb")); 
+
+    char buffer[2048];
+    memset(buffer, '\0', sizeof(buffer));
+
+    std::stringstream ss(json_poly);
+    std::string temp;
+
+    for (int i = 0; i < std::count(json_poly.begin(), json_poly.end(), '['); ++i) {
+        std::getline(ss, temp, '[');
+        std::getline(ss, temp, ']');
+        temp += "\n";
+        fwrite(temp.c_str(), sizeof(char), temp.size(), polygon_file);
+    }
+    fclose(polygon_file);
 }
 
 

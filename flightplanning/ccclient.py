@@ -1,11 +1,26 @@
 import numpy as np
 import socket
 import json
+from utils import parsePolygonFile
+
+
+def parseHppSettings(settings_path):
+    lines = list()
+    with open(settings_path, "r") as file:
+        for line in file:
+            stripped_splitted_line = line.strip().split()
+            if len(stripped_splitted_line) > 2:
+                lines.append(stripped_splitted_line)
+    settings_map = {lines[i][1]: int(lines[i][2]) for i in range(len(lines))}
+    return settings_map
+
+
+def positionsToJSON(vec_of_positions):
+    return json.dumps({i:vec_of_positions[i] for i in range(len(vec_of_positions))})
+
 
 class CCClient:
-    CCCommands = {
-        "FETCHALLNODES":2       # TODO: parse CCCommands
-    }
+    CCCommands = parseHppSettings("CCCommands.hpp")  
 
     def __init__(self, ip_addr, port):
         self.__socket_ = None
@@ -32,10 +47,20 @@ class CCClient:
        return json.loads(json_str)
 
     def fetchAllNodes(self):
-        self._send_uint8(self.CCCommands["FETCHALLNODES"])
+        self._send_uint8(self.CCCommands["FETCH_NODES_POS"])
         status_node_map = self._receive_json()
         print(status_node_map)
         return status_node_map
+
+    def sendGlobalPolygon(self, global_area_polygon_path):
+        global_polygon = parsePolygonFile(global_area_polygon_path)
+        global_polyg_vertices = []
+        for point in global_polygon.vertices:
+            global_polyg_vertices.append((int(point[0]), int(point[1])))
+        json_to_send = positionsToJSON(global_polyg_vertices)
+        print("Sending polygon:", json_to_send)
+        self._send_uint8(self.CCCommands["UPDATE_GLOBAL_AREA_POLYGON"])
+        self.__socket_.send(json_to_send.encode())                   # senidng json
 
     def start(self):
         self.__setUpSocket_()

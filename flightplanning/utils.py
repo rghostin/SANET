@@ -4,6 +4,7 @@ import operator
 import math
 from sympy import Polygon
 import global_settings
+from time import sleep
 
 # PARSING FUNCTIONS =============================================================
 
@@ -79,14 +80,17 @@ def parsePolygonFile(file_path):
         if file_path.split('.')[-1] != "polygon":
             raise InvalidPolygonFile
         else:
+            sleep(1)
             vertices = list()
             with open(file_path, "r") as global_polygon:
                 for line in global_polygon:
-                    vertex = line.strip().split(',')
-                    try:
-                        vertices.append(tuple(map(int, vertex)))
-                    except ValueError:
-                        raise InvalidPolygonFile
+                    if line.strip():
+                        vertex = line.strip().split(',')
+                        try:
+                            vertices.append(tuple(int(float(v.strip())) for v in vertex))
+                        except ValueError:
+                            raise InvalidPolygonFile
+            print(vertices)
             return Polygon(*vertices)
     except IOError:
         print("The filepath is not valid")
@@ -110,3 +114,4 @@ def create_dic_bidon(N):
     for i in range(N):
         dic[i]=(i+2, i+4)
     return dic
+    

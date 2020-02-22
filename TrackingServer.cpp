@@ -2,7 +2,7 @@
 
 // JSON UTILS ===================================
 
-std::string TrackingServer::_get_json_nodemap(const nodemap_t& map) {
+std::string TrackingServer::_get_json_nodemap(const nodemap_t& map, bool is_new_poly=false) {
     char buffer[4096]="";
     std::string res = "{";
     
@@ -17,8 +17,15 @@ std::string TrackingServer::_get_json_nodemap(const nodemap_t& map) {
         res += ",";
         memset(buffer, 0, sizeof(buffer));
     }
+    // adding self
     snprintf(buffer, sizeof(buffer), "\"%u\": [%f, %f]", _nodeID, _mypos.longitude, _mypos.latitude);
     res += buffer;
+    if (is_new_poly) {
+        memset(buffer, 0, sizeof(buffer));
+        snprintf(buffer, sizeof(buffer), "\"255\": [0, 0]");
+        res += ",";
+        res += buffer;
+    }
     res += "}";
     return res;
 }
@@ -28,7 +35,7 @@ std::string TrackingServer::_get_json_nodemap(const nodemap_t& map) {
 TrackingServer::TrackingServer(unsigned short port, uint8_t nodeID) : 
     AbstractReliableBroadcastNode<TrackPacket>(nodeID, port, "TrackSrv"),
      _flight_server_addr(), _usockfd(), _mutex_status_node_map(),_status_node_map(),
-     _thread_check_node_map(),_thread_heartbeat() {}
+     _thread_check_node_map(),_thread_heartbeat(), _mutex_json_global_poly(), _json_global_poly() {}
 
  
 TrackingServer::~TrackingServer() {
@@ -39,13 +46,22 @@ TrackingServer::~TrackingServer() {
     if (_thread_check_node_map.joinable()) {
         _thread_check_node_map.join();
     }
-}
+
+    if (_thread_update_poly.joinable()) {
+        _thread_update_poly.join();
+    }
+} 
 
 
 TrackPacket TrackingServer::_produce_packet() {
     TrackPacket packet = AbstractReliableBroadcastNode<TrackPacket>::_produce_packet();
     packet.led_status = false;
     packet.position = _get_current_position();
+    {
+        std::lock_guard<std::mutex> lock(_mutex_json_global_poly);
+        packet.globalpoly = _json_global_poly;   // copy
+        packet.polyid = _polyid;
+    }
     LOG_F(3, "Generated packet: %s", packet.repr().c_str());
     return packet;    
 }
@@ -55,17 +71,39 @@ TrackPacket TrackingServer::_produce_packet() {
 void TrackingServer::_process_packet(const TrackPacket& packet) {
     AbstractReliableBroadcastNode<TrackPacket>::_process_packet(packet);    
     bool new_node=false;
+
     { // TODO - need for queue to make asynchrone ?
         std::lock_guard<std::mutex> lock(_mutex_status_node_map);
         new_node = (_status_node_map.find(packet.nodeID) == _status_node_map.end());
         _status_node_map[packet.nodeID] = {packet.position, packet.timestamp};
         dbInsertOrUpdateNode(_db, packet.nodeID, packet.position, packet.timestamp);
     }
+
     if (new_node) {
         LOG_F(WARNING, "New NodeID=%d", packet.nodeID);
-        _send_status_node_map();
+        // on new node
+        {
+            std::lock_guard<std::mutex> lock(mutex_new_poly);
+            if (_received_first_poly) {
+                _send_status_node_map(false);
+            }
+        }
     }
-    
+
+    {
+        std::lock_guard<std::mutex> lock(_mutex_json_global_poly);
+        if (packet.polyid > _polyid) {
+            {
+                std::lock_guard<std::mutex> lock(mutex_new_poly);
+                _received_first_poly = true;
+                _send_status_node_map(true);
+            }
+            _polyid = packet.polyid;
+            _json_global_poly = packet.globalpoly;
+            json_write_poly_to_file(packet.globalpoly.data(), FP_GLOBAL_AREA_POLYGON_PATH);
+        }   
+    }
+
     LOG_F(INFO, "Updated NodeID : %s", packet.repr().c_str());
     LOG_F(7, "status_node_map:\n%s", print_log_map(_status_node_map).c_str());
 }
@@ -79,12 +117,10 @@ void TrackingServer::_tr_heartbeat() {
 
     while (! process_stop) {
         Position currpos = _get_current_position();
-        if (currpos != lastpos) { 
-            lastpos = currpos;
-            TrackPacket packet = _produce_packet();
-            this->broadcast(packet);
-            LOG_F(INFO, "Sent hearbeat packet: %s", packet.repr().c_str());
-        }
+        lastpos = currpos;
+        TrackPacket packet = _produce_packet();
+        this->broadcast(packet);
+        LOG_F(INFO, "Sent hearbeat packet: %s", packet.repr().c_str());
 
         std::this_thread::sleep_for(std::chrono::seconds(static_cast<int>(FP_AUTOPILOT_SPEED)));        
     }
@@ -114,12 +150,12 @@ void TrackingServer::_setup_usocket(){
     LOG_F(INFO, "Usocket setup");
 }
 
-void TrackingServer::_send_status_node_map(){
+void TrackingServer::_send_status_node_map(bool newpoly){
     _setup_usocket();
     std::string json_nodemap;
     {
         std::lock_guard<std::mutex> lock(_mutex_status_node_map);
-        json_nodemap = _get_json_nodemap(_status_node_map);
+        json_nodemap = _get_json_nodemap(_status_node_map, newpoly);
     }
     if (send(_usockfd, json_nodemap.c_str(), json_nodemap.length(), 0) < 0) {
         perror("Cannot send the node map");
@@ -162,13 +198,50 @@ void TrackingServer::_tr_check_node_map(){
 
         if (need_fp_recompute) {
             need_fp_recompute = false;  // reset for next iter
-            _send_status_node_map();    // Send to python flight server through unix socket
+
+            {
+            std::lock_guard<std::mutex> lock(mutex_new_poly);
+                if (_received_first_poly) {
+                    _send_status_node_map(false);
+
+                }
+            }
         }
         std::this_thread::sleep_for(std::chrono::seconds(3));
     }
     LOG_F(INFO, "Tracker checkNodeMap - process_stop=true; exiting");
+    // hack wakeup condvar wait
+    {
+        std::lock_guard<std::mutex> lock(mutex_new_poly);
+        new_poly=true;
+    }
+    cv_new_poly.notify_all();
 }
 
+
+void TrackingServer::_tr_update_poly() { 
+    std::unique_lock<std::mutex> lock(mutex_new_poly);
+
+    while (! process_stop) {
+        cv_new_poly.wait(lock, []{return new_poly;});
+        LOG_F(WARNING, "Received new polygon");
+        _received_first_poly = true;
+        new_poly = false;
+        if (! process_stop) {
+            std::vector<Position> globalpoly = read_global_poly(FP_GLOBAL_AREA_POLYGON_PATH);
+            {
+                std::lock_guard<std::mutex> lock(_mutex_json_global_poly);
+                std::string json_poly = get_json_of_poly(std::move(globalpoly));
+                _json_global_poly = std::move(
+                    string_to_chararray<TRACKING_GLOBALPOLY_MAXBUF>(std::move(json_poly))
+                );
+                ++_polyid;
+            }
+            _send_status_node_map(true);
+        }
+    }
+    LOG_F(INFO, "TrackingServer update_poly - process_stop=true; exiting");
+}
 
 
 void TrackingServer::start() {
@@ -177,19 +250,21 @@ void TrackingServer::start() {
 
     _thread_check_node_map = std::thread(&TrackingServer::_tr_check_node_map, this);
     _thread_heartbeat = std::thread(&TrackingServer::_tr_heartbeat, this);
+    _thread_update_poly = std::thread(&TrackingServer::_tr_update_poly, this);
 
     // send at least one status-nodemap anyway
-    std::async(std::launch::async,
+    /*std::async(std::launch::async,
             [this] {
                 std::this_thread::sleep_for(std::chrono::seconds(TRACKING_INITIAL_FP_SLEEP));
-                _send_status_node_map();
-                }
-        );
+                send_status_node_map();
+            }
+        );*/
 }
 
 void TrackingServer::join() {
     AbstractReliableBroadcastNode<TrackPacket>::join();
     _thread_heartbeat.join();
     _thread_check_node_map.join();
+    _thread_update_poly.join();
     LOG_F(WARNING, "TrServer: joined all threads");
 }

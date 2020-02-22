@@ -3,11 +3,9 @@ import numpy as np
 import cv2 as cv2
 from sympy import Polygon
 from operator import itemgetter
-from utils import Colors
-from utils import calcul_scope
+from utils import Colors, calcul_scope, parsePolygonFile
 from flight_planner import FlightPlanner
 from copy import deepcopy
-
 
 
 class MapGUI(object):
@@ -311,19 +309,19 @@ class MapGUI(object):
             drone = cv2.imread(self.drones_photo_path, -1)
             drone = cv2.resize(drone, (photo_width, photo_height))
             # draw drone
-            self.transparent_img[y_pos:y_pos + photo_height, x_pos:x_pos + photo_width] = drone
+            try:
+                self.transparent_img[y_pos:y_pos + photo_height, x_pos:x_pos + photo_width] = drone
+            except ValueError as e:
+                print("3!! valueerror")
 
         # draw flight plans
         self.transparent_img = self.draw_flight_plans(self.transparent_img)
         self.create_picture(self.reconstruct_filename, self.transparent_img)
 
     def get_polygon(self, file_path):
-        self.points = []
-        with open(file_path, "r") as global_polygon:
-            for line in global_polygon:
-                vertex = line.strip().split(',')
-                print(vertex)
-                self.points.append([int(vertex[0]), int(vertex[1])])
+        poly = parsePolygonFile(file_path)
+        self.points = [ [int(v.x), int(v.y)] for v in poly.vertices]
+
 
     def start_ui_test(self):
         self.crop_polygon()
