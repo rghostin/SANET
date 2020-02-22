@@ -3,11 +3,11 @@ import numpy as np
 from itertools import permutations
 import math
 from time import time
-from utils import parsePolygonFile, plotAllFlightPlans, print_red
+from utils import parsePolygonFile, plotAllFlightPlans, print_red, calcul_scope
 import json
 import sys
 from flight_plan import FlightPlan
-
+import global_settings as gs
 
 class FlightPlanner:
     """
@@ -29,6 +29,21 @@ class FlightPlanner:
         self.__global_area_polygon_ = parsePolygonFile(self._global_area_path)
         self.__global_area_vertices_ = [tuple(e) for e in
                                         self.__global_area_polygon_.vertices]
+        
+        xmax, xmin, ymax, ymin = 0, float('inf'), 0, float('inf')
+        for x,y in self.__global_area_vertices_:
+            if x > xmax:
+                xmax = x
+            if x < xmin:
+                xmin = x
+            if y > ymax:
+                ymax = y
+            if y < ymin:
+                ymin = y
+        longueur = xmax-xmin
+        largeur = ymax - ymin
+        self.__scope_ = calcul_scope(longueur=longueur, largeur=largeur, alpha=gs.ALPHA)
+        print_red("Setting scope to %d" % self.__scope_)
 
     @property
     def flight_plans(self):
