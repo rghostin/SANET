@@ -65,30 +65,42 @@ TrackPacket TrackingServer::_produce_packet() {
 void TrackingServer::_process_packet(const TrackPacket& packet) {
     AbstractReliableBroadcastNode<TrackPacket>::_process_packet(packet);    
     bool new_node=false;
+    bool have_to_send_map=false;
+
     { // TODO - need for queue to make asynchrone ?
         std::lock_guard<std::mutex> lock(_mutex_status_node_map);
         new_node = (_status_node_map.find(packet.nodeID) == _status_node_map.end());
         _status_node_map[packet.nodeID] = {packet.position, packet.timestamp};
         dbInsertOrUpdateNode(_db, packet.nodeID, packet.position, packet.timestamp);
     }
+    
     if (new_node) {
         LOG_F(WARNING, "New NodeID=%d", packet.nodeID);
         // on new node
         {
             std::lock_guard<std::mutex> lock(mutex_new_poly);
             if (_received_first_poly) {
-                _send_status_node_map();
-
+                have_to_send_map=true;
             }
         }
     }
+
     {
         std::lock_guard<std::mutex> lock(_mutex_json_global_poly);
         if (packet.polyid > _polyid) {
+            {
+                std::lock_guard<std::mutex> lock(mutex_new_poly);
+                _received_first_poly = true;
+                have_to_send_map=true;
+            }
             _polyid = packet.polyid;
             _json_global_poly = packet.globalpoly;
             json_write_poly_to_file(packet.globalpoly.data(), FP_GLOBAL_AREA_POLYGON_PATH);
         }   
+    }
+
+    if (have_to_send_map) {
+        _send_status_node_map();
     }
     
     LOG_F(INFO, "Updated NodeID : %s", packet.repr().c_str());
