@@ -25,10 +25,11 @@ std::string TrackingServer::_get_json_nodemap(const nodemap_t& map) {
 //=================================================
 
 
+
 TrackingServer::TrackingServer(unsigned short port, uint8_t nodeID) : 
     AbstractReliableBroadcastNode<TrackPacket>(nodeID, port, "TrackSrv"),
      _flight_server_addr(), _usockfd(), _mutex_status_node_map(),_status_node_map(),
-     _thread_check_node_map(),_thread_heartbeat() {}
+     _thread_check_node_map(),_thread_heartbeat(), _mutex_json_global_poly(), _json_global_poly() {}
 
  
 TrackingServer::~TrackingServer() {
@@ -50,6 +51,10 @@ TrackPacket TrackingServer::_produce_packet() {
     TrackPacket packet = AbstractReliableBroadcastNode<TrackPacket>::_produce_packet();
     packet.led_status = false;
     packet.position = _get_current_position();
+    {
+        std::lock_guard<std::mutex> lock(_mutex_json_global_poly);
+        packet.globalpoly = _json_global_poly;   // copy
+    }
     LOG_F(3, "Generated packet: %s", packet.repr().c_str());
     return packet;    
 }
@@ -75,6 +80,11 @@ void TrackingServer::_process_packet(const TrackPacket& packet) {
 
             }
         }
+    }
+    {
+        std::lock_guard<std::mutex> lock(_mutex_json_global_poly);
+        // if
+        json_write_poly_to_file(packet.globalpoly.data(), FP_GLOBAL_AREA_POLYGON_PATH);
     }
     
     LOG_F(INFO, "Updated NodeID : %s", packet.repr().c_str());
@@ -203,6 +213,14 @@ void TrackingServer::_tr_update_poly() {
         _received_first_poly = true;
         new_poly = false;
         if (! process_stop) {
+            std::vector<Position> globalpoly = read_global_poly(FP_GLOBAL_AREA_POLYGON_PATH);
+            {
+                std::lock_guard<std::mutex> lock(_mutex_json_global_poly);
+                std::string json_poly = get_json_of_poly(std::move(globalpoly));
+                _json_global_poly = std::move(
+                    string_to_chararray<TRACKING_GLOBALPOLY_MAXBUF>(std::move(json_poly))
+                );
+            }
             _send_status_node_map();
         }
     }

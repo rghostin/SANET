@@ -14,6 +14,7 @@
 #include <sys/un.h>
 #include <future>
 #include "loguru.hpp"
+#include "utils.hpp"
 #include "settings.hpp"
 #include "AbstractReliableBroadcast.hpp"
 #include "common.hpp"
@@ -51,6 +52,10 @@ private:
     bool _received_first_poly=false;
     std::thread _thread_update_poly;
     void _tr_update_poly();
+
+    std::mutex _mutex_json_global_poly;
+    std::array<char, TRACKING_GLOBALPOLY_MAXBUF> _json_global_poly;
+
 public:
     TrackingServer(unsigned short port, uint8_t nodeID);
     TrackingServer(const TrackingServer&) = delete;
