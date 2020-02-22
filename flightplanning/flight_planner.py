@@ -96,7 +96,7 @@ class FlightPlanner:
             print("Drone pos index", drone_pos_index)
             self.__individual_flight_plans_[i].nodeid = int(rev[tuple(drone_positions[drone_pos_index])])
             self.__individual_flight_plans_[i].start_waypoint = checkpoints[i][drone_pos_index]
-            print_red("# Assinging fp %d to nodeid=", i, self.__individual_flight_plans_[i].nodeid)
+            print_red("# Assinging fp %d to nodeid=%d" % ( i, self.__individual_flight_plans_[i].nodeid))
 
         
 
