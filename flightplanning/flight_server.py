@@ -45,13 +45,14 @@ class FlightServer:
         if not(status_node_map== self.__last_status_node_map_):
             self.__last_status_node_map_ = status_node_map
 
-
+            new_polygon = False
             if "255" in status_node_map:
+                new_polygon = True
                 self.__fplanner_.notifyNewPolygon()
                 del status_node_map["255"]
 
 
-            self.__fplanner_.recompute(status_node_map)
+            self.__fplanner_.recompute(status_node_map, new_polygon)
 
             if self.__display_:
                 plotAllFlightPlans(self.__fplanner_.flight_plans)

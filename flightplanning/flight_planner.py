@@ -118,10 +118,10 @@ class FlightPlanner:
 
         
 
-    def recompute(self, status_nodemap):
+    def recompute(self, status_nodemap, received_new_polygon=False):
         n = len(status_nodemap)
         assert n > 0
-        if n != self.__num_partitions_:
+        if n != self.__num_partitions_ or received_new_polygon:
             self.__individual_flight_plans_ = list()
             self.__encoded_structs_ = list()
             self.__num_partitions_ = n
