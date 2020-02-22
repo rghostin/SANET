@@ -228,6 +228,7 @@ class UserGUI(QWidget):
         print("calculing flight plans...")
         self.map_gui.flight_plans_calculating(gs.ALPHA, self.N)
         print("creating drones simulation...")
+        self.map_gui.reset_transparent_img()
         images = self.map_gui.simulate_drones_surveillance()
         order_images, lengths = self.map_gui.order_received_images(images=images)
         step = 0
@@ -238,7 +239,7 @@ class UserGUI(QWidget):
         print("starting simulation..")
         while (step < max(lengths) and not self.stop):
             for drone_id in order_images:
-                self.current_area[drone_id].append(order_images[drone_id][step % len(order_images[drone_id])])
+                self.current_area[drone_id] = order_images[drone_id][step]
             self.map_gui.area_reconstruction(images=self.current_area)
             if not self.stop:
                 self.update_picture_frame(gs.GLOBAL_AREA_IMG_PATH_RECONSTRUCTION)
@@ -302,6 +303,7 @@ class UserGUI(QWidget):
         # Show Confirm window
         confirmation = QMessageBox.question(self, 'Confirm', "Do you want to Exit?", QMessageBox.Yes | QMessageBox.No)
         if confirmation == QMessageBox.Yes:
+            print("simulation stoped")
             self.cclient.stop()
             self.stop = True
             event.accept()

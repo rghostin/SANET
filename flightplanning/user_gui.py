@@ -40,9 +40,6 @@ class UserGUI(QWidget):
         self.N = None
         self.new_nodes = None
 
-        # offline simulation variables
-        self.current_area = None
-
         # Select Area Window
         self.select_area_window = SelectMapWindow(self)
         self.select_area_window.setFixedSize(1000, 800)

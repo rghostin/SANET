@@ -42,6 +42,10 @@ class MapGUI(object):
         self.crop_with_fps = None  # selected area with flight plans(drones paths)
         self.transparent_img = None # transparent layer used in area reconstruction
         self.current_status = None  # save last nodes_status received
+        self.last_position_received = {}
+        self.last_photo_taken = {}
+        self.first_time = True
+        self.drone_photo = cv2.imread(self.drones_photo_path, -1)
         self.fplanner = None
         self.scope = None
 
@@ -154,6 +158,14 @@ class MapGUI(object):
         # apply mask
         self.crop_withblack[:, :, 3] = mask
 
+
+
+    def reset_transparent_img(self):
+        # create transparent image (for area_reconstruction)
+        img_height, img_width = self.crop_picture.shape[:2]
+        self.transparent_img = np.zeros((img_height, img_width, 4), dtype=np.uint8)
+
+
     def create_png_image(self, image, transparency):
         b, g, r = cv2.split(image)
         alpha = np.ones(b.shape, dtype=b.dtype) * transparency
@@ -239,32 +251,47 @@ class MapGUI(object):
 
     def area_reconstruction(self, images):
         # reconstruction of global area using drones photos
-        # create transparent picture
-        img_height, img_width = self.crop_picture.shape[:2]
-        self.transparent_img = np.zeros((img_height, img_width, 4), dtype=np.uint8)
         x_pos = y_pos = photo_height = photo_width = 0
         # reconstruction of pictures
         for drone_id in images:
-            for photo in images[drone_id]:
-                x_pos = max((photo[0][0]- self.scope), 0)
-                y_pos = max((photo[0][1]- self.scope), 0)
-                photo_height, photo_width = photo[1].shape[:2]
-                png_photo = self.create_png_image(image=photo[1], transparency=255)
-                self.transparent_img[y_pos:y_pos + photo_height, x_pos:x_pos + photo_width] = png_photo
-            # create transparent picture and add drone
-            drone = cv2.imread(self.drones_photo_path, -1)
-            drone = cv2.resize(drone, (photo_width, photo_height))
+            # draw drone in current position
+            x_pos = max((images[drone_id][0][0]- self.scope), 0)
+            y_pos = max((images[drone_id][0][1]- self.scope), 0)
+            png_photo = self.create_png_image(image=images[drone_id][1], transparency=255)
+            photo_height, photo_width = png_photo.shape[:2]
+            drone = cv2.resize(self.drone_photo, (photo_width, photo_height))
             try:
-                self.transparent_img[y_pos:y_pos + photo_height, x_pos:x_pos + photo_width] = deepcopy(drone)
+                self.transparent_img[y_pos:y_pos + photo_height, x_pos:x_pos + photo_width] = drone
             except ValueError as e:
                 print("3!! Error")
                 pass
+            # draw last photo taken by drone
+            if self.first_time:
+                pass
+            else:
+                x = self.last_position_received[drone_id][0]
+                y = self.last_position_received[drone_id][1]
+                width = self.last_position_received[drone_id][2]
+                height = self.last_position_received[drone_id][3]
+                try:
+                    self.transparent_img[y:y + height, x:x + width] = self.last_photo_taken[drone_id]
+                except ValueError as e:
+                    print("3!! Error")
+                    pass
+
+            # save positions and current photo
+            self.last_position_received[drone_id] = deepcopy([x_pos, y_pos, photo_width, photo_height])
+            self.last_photo_taken[drone_id] = deepcopy(png_photo)
+
+        self.first_time = False
 
         if self.display:
             # draw flight plans
-            self.transparent_img = self.draw_flight_plans(self.transparent_img)
+            picture_to_draw = self.draw_flight_plans(deepcopy(self.transparent_img))
+            self.create_picture(self.reconstruct_filename, picture_to_draw)
+        else:
+            self.create_picture(self.reconstruct_filename, self.transparent_img)
 
-        self.create_picture(self.reconstruct_filename, self.transparent_img)
 
     def order_received_images(self, images):
         order_images = {}
