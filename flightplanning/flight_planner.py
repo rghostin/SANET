@@ -3,7 +3,7 @@ import numpy as np
 from itertools import permutations
 import math
 from time import time
-from utils import parsePolygonFile, plotAllFlightPlans
+from utils import parsePolygonFile, plotAllFlightPlans, print_red
 import json
 import sys
 from flight_plan import FlightPlan
@@ -16,6 +16,7 @@ class FlightPlanner:
     """
     def __init__(self, global_area_path, scope):
         self.__num_partitions_ = None
+        self._global_area_path = global_area_path
         self.__global_area_polygon_ = parsePolygonFile(global_area_path)
         self.__global_area_vertices_ = [tuple(e) for e in
                                         self.__global_area_polygon_.vertices]
@@ -25,7 +26,7 @@ class FlightPlanner:
 
     def notifyNewPolygon(self):
         print("Reading new polygon file")
-        self.__global_area_polygon_ = parsePolygonFile(global_area_path)
+        self.__global_area_polygon_ = parsePolygonFile(self._global_area_path)
         self.__global_area_vertices_ = [tuple(e) for e in
                                         self.__global_area_polygon_.vertices]
 
@@ -53,8 +54,10 @@ class FlightPlanner:
     def __computeDistanceMatrix_(self, drone_positions):
         distance_matrix = np.full(
             (len(self.__individual_flight_plans_), len(drone_positions)), 10000)
+        print(47.5)
         checkpoints = np.full(
             (len(self.__individual_flight_plans_), len(drone_positions)), None)
+        print(48)
         for fp_index in range(len(self.__individual_flight_plans_)):
             route = self.__individual_flight_plans_[fp_index].route
             for dr_index in range(len(drone_positions)):
@@ -65,6 +68,8 @@ class FlightPlanner:
                     if dist_to_curr_point < distance_matrix[fp_index][dr_index]:
                         distance_matrix[fp_index][int(dr_index)] = dist_to_curr_point
                         checkpoints[fp_index][dr_index] = check_point
+        print(49)
+
         return distance_matrix, checkpoints
 
     def __computeBestAssignments_(self, drones_map):
@@ -73,20 +78,25 @@ class FlightPlanner:
         drone_positions = list(drones.values())
         rev = {tuple(v): k for k, v in drones.items()}
         print('reversed---->', rev)
+
+        print(drone_positions)
         distance_matrix, checkpoints = self.__computeDistanceMatrix_(drone_positions)
+        print("45", drone_positions)
         min_sum = (sys.maxsize, None)
         all_poss = list(permutations([i for i in range(len(distance_matrix[0]))]))
+        print(46)
         for poss in all_poss:
             s = sum(distance_matrix[fp][poss[fp]] for fp in
                     range(len(self.__individual_flight_plans_)))
             if s < min_sum[0]:
                 min_sum = (s, poss)
+        print(47)
         for i in range(len(drone_positions)):
             drone_pos_index = min_sum[1][i]
             print("Drone pos index", drone_pos_index)
             self.__individual_flight_plans_[i].nodeid = int(rev[tuple(drone_positions[drone_pos_index])])
             self.__individual_flight_plans_[i].start_waypoint = checkpoints[i][drone_pos_index]
-            print("#", self.__individual_flight_plans_[i])
+            print_red("# Assinging fp %d to nodeid=", i, self.__individual_flight_plans_[i].nodeid)
 
         
 

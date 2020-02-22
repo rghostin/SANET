@@ -33,8 +33,8 @@ private:
     struct sockaddr_un _flight_server_addr;
     int _usockfd;
     void _setup_usocket();
-    void _send_status_node_map();
-    std::string _get_json_nodemap(const nodemap_t& map);
+    void _send_status_node_map(bool);
+    std::string _get_json_nodemap(const nodemap_t& map, bool is_new_poly);
 
 
     std::mutex _mutex_status_node_map;

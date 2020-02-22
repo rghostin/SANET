@@ -2,7 +2,7 @@
 
 // JSON UTILS ===================================
 
-std::string TrackingServer::_get_json_nodemap(const nodemap_t& map) {
+std::string TrackingServer::_get_json_nodemap(const nodemap_t& map, bool is_new_poly=false) {
     char buffer[4096]="";
     std::string res = "{";
     
@@ -20,6 +20,12 @@ std::string TrackingServer::_get_json_nodemap(const nodemap_t& map) {
     // adding self
     snprintf(buffer, sizeof(buffer), "\"%u\": [%f, %f]", _nodeID, _mypos.longitude, _mypos.latitude);
     res += buffer;
+    if (is_new_poly) {
+        memset(buffer, 0, sizeof(buffer));
+        snprintf(buffer, sizeof(buffer), "\"255\": [0, 0]");
+        res += ",";
+        res += buffer;
+    }
     res += "}";
     return res;
 }
@@ -66,7 +72,6 @@ TrackPacket TrackingServer::_produce_packet() {
 void TrackingServer::_process_packet(const TrackPacket& packet) {
     AbstractReliableBroadcastNode<TrackPacket>::_process_packet(packet);    
     bool new_node=false;
-    bool have_to_send_map=false;
 
     { // TODO - need for queue to make asynchrone ?
         std::lock_guard<std::mutex> lock(_mutex_status_node_map);
@@ -74,14 +79,14 @@ void TrackingServer::_process_packet(const TrackPacket& packet) {
         _status_node_map[packet.nodeID] = {packet.position, packet.timestamp};
         dbInsertOrUpdateNode(_db, packet.nodeID, packet.position, packet.timestamp);
     }
-    
+
     if (new_node) {
         LOG_F(WARNING, "New NodeID=%d", packet.nodeID);
         // on new node
         {
             std::lock_guard<std::mutex> lock(mutex_new_poly);
             if (_received_first_poly) {
-                have_to_send_map=true;
+                _send_status_node_map(false);
             }
         }
     }
@@ -92,7 +97,7 @@ void TrackingServer::_process_packet(const TrackPacket& packet) {
             {
                 std::lock_guard<std::mutex> lock(mutex_new_poly);
                 _received_first_poly = true;
-                have_to_send_map=true;
+                _send_status_node_map(true);
             }
             _polyid = packet.polyid;
             _json_global_poly = packet.globalpoly;
@@ -100,10 +105,6 @@ void TrackingServer::_process_packet(const TrackPacket& packet) {
         }   
     }
 
-    if (have_to_send_map) {
-        _send_status_node_map();
-    }
-    
     LOG_F(INFO, "Updated NodeID : %s", packet.repr().c_str());
     LOG_F(7, "status_node_map:\n%s", print_log_map(_status_node_map).c_str());
 }
@@ -152,12 +153,12 @@ void TrackingServer::_setup_usocket(){
     LOG_F(INFO, "Usocket setup");
 }
 
-void TrackingServer::_send_status_node_map(){
+void TrackingServer::_send_status_node_map(bool newpoly){
     _setup_usocket();
     std::string json_nodemap;
     {
         std::lock_guard<std::mutex> lock(_mutex_status_node_map);
-        json_nodemap = _get_json_nodemap(_status_node_map);
+        json_nodemap = _get_json_nodemap(_status_node_map, newpoly);
     }
     if (send(_usockfd, json_nodemap.c_str(), json_nodemap.length(), 0) < 0) {
         perror("Cannot send the node map");
@@ -204,7 +205,7 @@ void TrackingServer::_tr_check_node_map(){
             {
             std::lock_guard<std::mutex> lock(mutex_new_poly);
                 if (_received_first_poly) {
-                    _send_status_node_map();
+                    _send_status_node_map(false);
 
                 }
             }
@@ -221,7 +222,7 @@ void TrackingServer::_tr_check_node_map(){
 }
 
 
-void TrackingServer::_tr_update_poly() {
+void TrackingServer::_tr_update_poly() { 
     std::unique_lock<std::mutex> lock(mutex_new_poly);
 
     while (! process_stop) {
@@ -239,7 +240,7 @@ void TrackingServer::_tr_update_poly() {
                 );
                 ++_polyid;
             }
-            _send_status_node_map();
+            _send_status_node_map(true);
         }
     }
     LOG_F(INFO, "TrackingServer update_poly - process_stop=true; exiting");
