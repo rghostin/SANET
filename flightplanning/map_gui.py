@@ -3,7 +3,7 @@ import numpy as np
 import cv2 as cv2
 from sympy import Polygon
 from operator import itemgetter
-from utils import Colors, calcul_scope, parsePolygonFile, 
+from utils import Colors, calcul_scope, parsePolygonFile
 from flight_planner import FlightPlanner
 from copy import deepcopy
 
