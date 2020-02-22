@@ -111,22 +111,4 @@ def create_dic_bidon(N):
     for i in range(N):
         dic[i]=(i+2, i+4)
     return dic
-
- 
-void json_write_poly_to_file(const std::string& json_poly, const char* fname) {
-    FILE* polygon_file(fopen(fname, "wb")); 
-
-    char buffer[2048];
-    memset(buffer, '\0', sizeof(buffer));
-
-    std::stringstream ss(json_poly);
-    std::string temp;
-
-    for (int i = 0; i < std::count(json_poly.begin(), json_poly.end(), '['); ++i) {
-        std::getline(ss, temp, '[');
-        std::getline(ss, temp, ']');
-        temp += "\n";
-        fwrite(temp.c_str(), sizeof(char), temp.size(), polygon_file);
-    }
-    fclose(polygon_file);
-}
+    
