@@ -27,7 +27,8 @@ class MapGUI(object):
         self.crop_withblack_filename = crop_withblack_filename
         self.crop_with_fps_filename = crop_withfps_filename
         self.reconstruct_filename = reconstruct_area_filename
-        self.drones_photo_path = drones_photo_path
+        self.drones_photo_path = drones_photo_path  #TODO verify not redundant
+        self.drone_photo = cv2.imread(self.drones_photo_path, -1)
         self.done = False  # Flag signalling user is done choosing area points
         self.cancel = False # Flag signalling user cancel area_selection
         self.current = (0, 0)  # current user choosing point
@@ -42,6 +43,9 @@ class MapGUI(object):
         self.current_status = None  # save last nodes_status received
         self.fplanner = None
         self.scope = None
+        self.first_time = True
+        self.last_position_received = {}
+        self.last_photo_taken ={}
 
 
     def start_ui(self):
@@ -193,7 +197,6 @@ class MapGUI(object):
             # draw route
             route = np.array(flight_plan.route, np.int32)
             picture = cv2.polylines(img=picture, pts=[route], isClosed=True, color=Colors.ORANGE_PNG, thickness=3)
-            cv2.imwrite("test.png", picture)
         return picture
 
     def set_display_flight_plans(self, flag):
@@ -205,26 +208,10 @@ class MapGUI(object):
     def destroy_window(self):
         cv2.destroyWindow(winname=self.window_name)
 
-    ############ TEST FONCTIONS ##################
 
-    #### OFFLINE SIMULATION ######
-    def simulate_drones_surveillance(self):
-        # Simulation of all drones flying and taking pictures
-        images = {}
-        drone_id = 0
-        for flight_plan in self.fplanner.flight_plans:
-            # route of each drone
-            age = 0
-            route = np.array(flight_plan.route, np.int32)
-            for points in route:
-                # drone taking picture at each point
-                photo = self.take_photo(points, self.scope,
-                                self.drones_photo_path +"/photo_" + str(points[0]) + "_" + str(points[1]) + ".jpg")
-                images[(points[0], points[1])]=(drone_id, photo, age)
-                age+=1
-            drone_id +=1
-        print("taking pictures: done")
-        return images
+
+
+    ###### ONLINE TEST #########
 
     def take_photo(self, position, scope, path=None):
         # Drone taking picture at given position
@@ -237,86 +224,48 @@ class MapGUI(object):
         # cv2.imwrite(path, photo) # we dont save the pictures (just for the test)
         return photo
 
-    def area_reconstruction(self, images):
+    def area_reconstruction_position(self, drones_positions):
         # reconstruction of global area using drones photos
-        # create transparent picture
-        img_height, img_width = self.crop_picture.shape[:2]
-        self.transparent_img = np.zeros((img_height, img_width, 4), dtype=np.uint8)
-        x_pos = y_pos = photo_height = photo_width = 0
-        # reconstruction of pictures
-        for drone_id in images:
-            for photo in images[drone_id]:
-                x_pos = max((photo[0][0]- self.scope), 0)
-                y_pos = max((photo[0][1]- self.scope), 0)
-                photo_height, photo_width = photo[1].shape[:2]
-                png_photo = self.create_png_image(image=photo[1], transparency=255)
-                self.transparent_img[y_pos:y_pos + photo_height, x_pos:x_pos + photo_width] = png_photo
-            # create transparent picture and add drone
-            drone = cv2.imread(self.drones_photo_path, -1)
-            drone = cv2.resize(drone, (photo_width, photo_height))
+        # draw path
+        for drone_id in drones_positions:
+            # take photos
+            position = [int(drones_positions[drone_id][0]), int(drones_positions[drone_id][1])]
+            photo = self.take_photo(position=position, scope=self.scope)
+            x_pos = int(max((position[0] - self.scope), 0))
+            y_pos = int(max((position[1] - self.scope), 0))
+            png_photo = self.create_png_image(image=photo, transparency=255)
+            photo_height, photo_width = png_photo.shape[:2]
+            # draw drones in current position
+            drone = cv2.resize(self.drone_photo, (photo_width, photo_height))
             try:
-                self.transparent_img[y_pos:y_pos + photo_height, x_pos:x_pos + photo_width] = deepcopy(drone)
+                self.transparent_img[y_pos:y_pos + photo_height, x_pos:x_pos + photo_width] = drone
             except ValueError as e:
                 print("3!! Error")
                 pass
-
-        if self.display:
-            # draw flight plans
-            self.transparent_img = self.draw_flight_plans(self.transparent_img)
-
-        self.create_picture(self.reconstruct_filename, self.transparent_img)
-
-    def order_received_images(self, images):
-        order_images = {}
-        # order_images[drone_id] = (points, photo, age)
-        for points in images:
-            if images[points][0]  in order_images:
-                order_images[images[points][0]].append((points, images[points][1], images[points][2]))
-            else:
-                order_images[images[points][0]] = []
-                order_images[images[points][0]].append((points, images[points][1], images[points][2]))
-        # order drones photos in age order
-        lengths = []
-        for drone_id in order_images:
-            order_images[drone_id].sort(key=itemgetter(2))
-            lengths.append(len(order_images[drone_id]))
-        return order_images, lengths
-
-    ###### ONLINE TEST #########
-    def area_reconstruction_position(self, drones_path):
-        # reconstruction of global area using drones photos
-        # create transparent picture
-        img_height, img_width = self.crop_picture.shape[:2]
-        self.transparent_img = np.zeros((img_height, img_width, 4), dtype=np.uint8)
-        # save last nodes_status
-        last_nodes_status = None
-        # draw path
-        for nodes_status in drones_path:
-            for node in nodes_status:
-                # take photo
-                position = [int(nodes_status[node][0]), int(nodes_status[node][1])]
-                photo = self.take_photo(position=position, scope=self.scope)
-                photo_height, photo_width = photo.shape[:2]
-                x_pos = int(max((position[0] - self.scope), 0))
-                y_pos = int(max((position[1] - self.scope), 0))
-                png_photo = self.create_png_image(image=photo, transparency=255)
                 self.transparent_img[y_pos:y_pos + photo_height, x_pos:x_pos + photo_width] = png_photo
-            last_nodes_status = nodes_status
-        # draw drones
-        for node in last_nodes_status:
-            x_pos = int(max((last_nodes_status[node][0] - self.scope), 0))
-            y_pos = int(max((last_nodes_status[node][1] - self.scope), 0))
-            photo_height = photo_width = 2*self.scope
-            # create transparent picture and add drone
-            drone = cv2.imread(self.drones_photo_path, -1)
-            drone = cv2.resize(drone, (photo_width, photo_height))
-            # draw drone
-            self.transparent_img[y_pos:y_pos + photo_height, x_pos:x_pos + photo_width] = drone
+            if not self.first_time:
+                # draw last photo taken by drone
+                x = self.last_position_received[drone_id][0]
+                y = self.last_position_received[drone_id][1]
+                width = self.last_position_received[drone_id][2]
+                height = self.last_position_received[drone_id][3]
+                try:
+                    self.transparent_img[y:y + height, x:x + width] = self.last_photo_taken[drone_id]
+                except ValueError as e:
+                    print("3!! Error")
+                    pass
+                # save positions and current photo
+            self.last_position_received[drone_id] = deepcopy([x_pos, y_pos, photo_width, photo_height])
+            self.last_photo_taken[drone_id] = deepcopy(png_photo)
 
+        self.first_time = False
         # draw flight plans
         if self.display:
-            self.transparent_img = self.draw_flight_plans(self.transparent_img)
-        self.create_picture(self.reconstruct_filename, self.transparent_img)
+            # draw flight plans
+            picture_to_draw = self.draw_flight_plans(deepcopy(self.transparent_img))
+            self.create_picture(self.reconstruct_filename, picture_to_draw)
+        else:
+            self.create_picture(self.reconstruct_filename, self.transparent_img)
 
     def get_polygon(self, file_path):
         self.points = []
@@ -326,14 +275,16 @@ class MapGUI(object):
                 print(vertex)
                 self.points.append([int(vertex[0]), int(vertex[1])])
 
+    def reset_transparent_img(self):
+        # create transparent image (for area_reconstruction)
+        img_height, img_width = self.crop_picture.shape[:2]
+        self.transparent_img = np.zeros((img_height, img_width, 4), dtype=np.uint8)
+
     def start_ui_test(self):
         self.crop_polygon()
         self.points = list()
         self.create_picture(filename=self.crop_filename, picture=self.crop_picture, to_png=False)
         self.create_picture(filename=self.crop_withblack_filename, picture=self.crop_withblack, to_png=True)
-
-
-
 
 
 

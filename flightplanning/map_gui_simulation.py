@@ -265,10 +265,10 @@ class MapGUI(object):
             except ValueError as e:
                 print("3!! Error")
                 pass
-            # draw last photo taken by drone
             if self.first_time:
                 pass
             else:
+                # draw last photo taken by drone
                 x = self.last_position_received[drone_id][0]
                 y = self.last_position_received[drone_id][1]
                 width = self.last_position_received[drone_id][2]

@@ -47,7 +47,6 @@ class UserGUI(QWidget):
 
         # Cclient objet
         self.cclient = CCClient(CCLIENT_IP, CCLIENT_PORT)
-        self.nodes_status = None
 
     def initUI(self):
         # Buttons
@@ -151,7 +150,8 @@ class UserGUI(QWidget):
     def connect_button_action(self):
         if not self.connected:
             try:
-                # self.cclient.start()
+                self.cclient.start()
+                self.cclient.sendGlobalPolygon(gs.GLOBAL_AREA_POLYGON_PATH)
                 self.connected = True
                 self.set_connect_button_properties(connected=True)
                 self.test_button.show()  # TEST
@@ -159,7 +159,7 @@ class UserGUI(QWidget):
                 raise e
         else:
             self.connected = False
-            # self.cclient.stop()
+            self.cclient.stop()
             self.stop = True
             self.set_connect_button_properties(connected=False)
 
@@ -238,18 +238,19 @@ class UserGUI(QWidget):
         QApplication.processEvents()
 
     def start_test(self):
-        self.nodes_status = []
         last_all_nodes = dict()
+        self.map_gui.reset_transparent_img()
         while (not self.stop):
             recv_allnodes = self.cclient.fetchAllNodes()
             if recv_allnodes != last_all_nodes:
                 if len(last_all_nodes) != len(recv_allnodes):
+                    # recalculate flight plans
+                    print("recalculating flight plans")
                     self.N = len(recv_allnodes)
                     self.new_nodes = deepcopy(recv_allnodes)
                     # calculating flight plans in a new thread
                     self.start_thread_calcul_flights()
-                self.nodes_status.append(deepcopy(recv_allnodes))
-                self.map_gui.area_reconstruction_position(drones_path=self.nodes_status)
+                self.map_gui.area_reconstruction_position(drones_path=recv_allnodes)
                 if not self.stop:
                     self.update_picture_frame(gs.GLOBAL_AREA_IMG_PATH_RECONSTRUCTION)
                 last_all_nodes = deepcopy(recv_allnodes)
