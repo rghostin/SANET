@@ -86,6 +86,7 @@ void TrackingServer::_process_packet(const TrackPacket& packet) {
         std::lock_guard<std::mutex> lock(_mutex_json_global_poly);
         if (packet.polyid > _polyid) {
             _polyid = packet.polyid;
+            _json_global_poly = packet.globalpoly;
             json_write_poly_to_file(packet.globalpoly.data(), FP_GLOBAL_AREA_POLYGON_PATH);
         }   
     }

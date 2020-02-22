@@ -24,7 +24,7 @@ MAP_1_PATH = "resource_images/image_set/map_1.jpg"
 MAP_3_PATH = "resource_images/image_set/map_3.jpg"
 MAP_5_PATH = "resource_images/image_set/map_5.jpg"
 MAP_7_PATH = "resource_images/image_set/map_7.jpg"
-CCLIENT_IP = "127.0.0.1" #"164.15.121.70"
+CCLIENT_IP = "164.15.121.68"
 CCLIENT_PORT = 6280
 
 threadLock = threading.Lock()

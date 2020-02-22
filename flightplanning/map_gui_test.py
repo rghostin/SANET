@@ -320,7 +320,7 @@ class MapGUI(object):
 
     def get_polygon(self, file_path):
         poly = parsePolygonFile(file_path)
-        self.points = [ list(v) for v in poly.vertices]
+        self.points = [ [int(v.x), int(v.y)] for v in poly.vertices]
         #self.points = []
         #with open(file_path, "r") as global_polygon:
         #    for line in global_polygon:
