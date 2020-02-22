@@ -11,7 +11,6 @@ from copy import deepcopy
 
 
 
-
 class MapGUI(object):
     """
     User interface that allows users:
@@ -189,6 +188,7 @@ class MapGUI(object):
         # draws flight plans in the selected area
         # calcul scope
         self.scope = calcul_scope(self.crop_picture, alpha)
+        print("SCOPE:",self.scope)
         # create object FlightPlanner
         self.fplanner = FlightPlanner(global_area_path=self.points_filename, scope=self.scope)
         self.fplanner.recompute(create_dic_bidon(N_drones))
@@ -294,7 +294,6 @@ class MapGUI(object):
             self.create_picture(self.reconstruct_filename, picture_to_draw)
         else:
             self.create_picture(self.reconstruct_filename, self.transparent_img)
-
 
     def order_received_images(self, images):
         order_images = {}

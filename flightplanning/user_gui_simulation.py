@@ -11,7 +11,7 @@ from copy import deepcopy
 import global_settings as gs
 
 WINDOW_TITLE = "CITY MAP"
-CCLIENT_IP = "10.93.197.168"
+CCLIENT_IP = "164.15.121.68"
 CCLIENT_PORT = 6280
 
 threadLock = threading.Lock()
@@ -160,6 +160,8 @@ class UserGUI(QWidget):
             self.stop = True
             self.set_connect_button_properties(connected=False)
 
+
+
     def set_connect_button_properties(self, connected):
         if not connected:
             led_path = gs.RED_DOT_PATH
@@ -252,23 +254,6 @@ class UserGUI(QWidget):
         self.map_gui.area_reconstruction(images=area)
         threadLock.release()
 
-    ########################################################################"
-
-    def stop_button_action(self):
-        print("stop simulation...")
-        self.stop = True
-        self.set_menu_window()
-
-    def show_hide_button_action(self):
-        if self.show_flight_plan:
-            self.show_flight_plan = False
-        else:
-            self.show_flight_plan = True
-        self.map_gui.set_display_flight_plans(self.show_flight_plan)
-        self.area_reconstruction(self.current_area)  # OFFLINE SIMULATION
-        self.update_picture_frame(gs.GLOBAL_AREA_IMG_PATH_RECONSTRUCTION)
-        QApplication.processEvents()
-
 
     def update_picture_frame(self, picture_filename):
         # update label pic in GUI
@@ -309,8 +294,6 @@ class UserGUI(QWidget):
             event.accept()
         else:
             event.ignore()
-
-
 
 ######### USEFUL CLASSES ######
 

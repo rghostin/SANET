@@ -13,7 +13,9 @@
 #include <net/if.h>
 #include <cstring> 
 #include <string>
+#include <sstream> 
 #include <future>
+#include <algorithm>
 #include "loguru.hpp"
 #include "common.hpp"
 #include "settings.hpp"
@@ -41,6 +43,7 @@ private:
     void _tr_receiver();
     void _dispatch(int, uint8_t);
     void _execute_fetch_all_pos(int);
+    void _update_global_polygon(int);
 
 public:
     CCServer(unsigned short port, uint8_t nodeID);

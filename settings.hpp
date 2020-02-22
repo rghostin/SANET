@@ -13,6 +13,7 @@
 #define TRACKING_SERVER_PORT 5820
 #define TRACKING_PEER_LOSS_TIMEOUT 30
 #define TRACKING_INITIAL_FP_SLEEP 1 // TRACKING_PEER_LOSS_TIMEOUT
+#define TRACKING_GLOBALPOLY_MAXBUF 1024
 
 // Imaging settings
 #define IMAGING_SERVER_PORT 5821
@@ -33,6 +34,7 @@
 #define FP_CURR_POS_FILE_PATH CFG_DIR "current.position"
 #define FP_CURR_POS_LOCK_PATH CFG_DIR "current.position.lock"
 #define FP_AUTOPILOT_SPEED 2
+#define FP_GLOBAL_AREA_POLYGON_PATH CFG_DIR "global_area.polygon"
 
 // Database settings
 #define DB_PATH "database_utils/sanet.db"
