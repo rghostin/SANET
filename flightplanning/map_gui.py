@@ -242,6 +242,7 @@ class MapGUI(object):
             # draw drones in current position
             drone = cv2.resize(self.drone_photo, (photo_width, photo_height))
             try:
+                self.transparent_img[y_pos:y_pos + photo_height, x_pos:x_pos + photo_width] = png_photo
                 self.transparent_img[y_pos:y_pos + photo_height, x_pos:x_pos + photo_width] = drone
             except ValueError as e:
                 print("3!! Error")

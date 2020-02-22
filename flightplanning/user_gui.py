@@ -11,7 +11,7 @@ from copy import deepcopy
 import global_settings as gs
 
 WINDOW_TITLE = "CITY MAP"
-CCLIENT_IP = "164.15.121.67"
+CCLIENT_IP = "164.15.121.65"
 CCLIENT_PORT = 6280
 
 threadLock = threading.Lock()
@@ -255,9 +255,9 @@ class UserGUI(QWidget):
                     self.N = len(recv_allnodes)
                     self.new_nodes = deepcopy(recv_allnodes)
                     # calculating flight plans in a new thread
-                    #self.map_gui.flight_plans_calculating(gs.ALPHA, self.new_nodes)
+                    self.map_gui.flight_plans_calculating(gs.ALPHA, self.new_nodes)
                     #self.start_thread_calcul_flights()
-                    threading.Thread(target=self.calcul_flight_plans).start()
+                    #threading.Thread(target=self.calcul_flight_plans).start()
                 self.map_gui.area_reconstruction_position(recv_allnodes)
                 if not self.stop:
                     self.update_picture_frame(gs.GLOBAL_AREA_IMG_PATH_RECONSTRUCTION)
