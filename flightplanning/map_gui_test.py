@@ -321,12 +321,7 @@ class MapGUI(object):
     def get_polygon(self, file_path):
         poly = parsePolygonFile(file_path)
         self.points = [ [int(v.x), int(v.y)] for v in poly.vertices]
-        #self.points = []
-        #with open(file_path, "r") as global_polygon:
-        #    for line in global_polygon:
-        #        vertex = line.strip().split(',')
-        #        print(vertex)
-        #        self.points.append([int(vertex[0]), int(vertex[1])])
+
 
     def start_ui_test(self):
         self.crop_polygon()

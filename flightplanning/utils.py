@@ -4,6 +4,7 @@ import operator
 import math
 from sympy import Polygon
 import global_settings
+from time import sleep
 
 # PARSING FUNCTIONS =============================================================
 
@@ -79,6 +80,7 @@ def parsePolygonFile(file_path):
         if file_path.split('.')[-1] != "polygon":
             raise InvalidPolygonFile
         else:
+            sleep(1)
             vertices = list()
             with open(file_path, "r") as global_polygon:
                 for line in global_polygon:
