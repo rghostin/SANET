@@ -267,6 +267,7 @@ class UserGUI(QWidget):
         self.map_gui.set_display_flight_plans(False)
         self.map_gui.flight_plans_calculating(gs.ALPHA, self.new_nodes)
         self.map_gui.set_display_flight_plans(True)
+        print("new flight plan ready")
 
     def start_test_button_action(self):
         self.map_gui.set_picture(gs.GLOBAL_AREA_IMAGE_TEST)
