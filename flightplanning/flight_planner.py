@@ -72,6 +72,7 @@ class FlightPlanner:
         print("drones->>>>", drones)
         drone_positions = list(drones.values())
         rev = {tuple(v): k for k, v in drones.items()}
+        print('reversed---->', rev)
         distance_matrix, checkpoints = self.__computeDistanceMatrix_(drone_positions)
         min_sum = (sys.maxsize, None)
         all_poss = list(permutations([i for i in range(len(distance_matrix[0]))]))
@@ -82,6 +83,7 @@ class FlightPlanner:
                 min_sum = (s, poss)
         for i in range(len(drone_positions)):
             drone_pos_index = min_sum[1][i]
+            print("Drone pos index", drone_pos_index)
             self.__individual_flight_plans_[i].nodeid = int(rev[tuple(drone_positions[drone_pos_index])])
             self.__individual_flight_plans_[i].start_waypoint = checkpoints[i][drone_pos_index]
             print("#", self.__individual_flight_plans_[i])
