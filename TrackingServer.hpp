@@ -55,6 +55,7 @@ private:
 
     std::mutex _mutex_json_global_poly;
     std::array<char, TRACKING_GLOBALPOLY_MAXBUF> _json_global_poly;
+    uint16_t _polyid=0;
 
 public:
     TrackingServer(unsigned short port, uint8_t nodeID);

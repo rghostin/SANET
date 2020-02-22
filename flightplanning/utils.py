@@ -82,11 +82,12 @@ def parsePolygonFile(file_path):
             vertices = list()
             with open(file_path, "r") as global_polygon:
                 for line in global_polygon:
-                    vertex = line.strip().split(',')
-                    try:
-                        vertices.append(tuple(int(float(v.strip())) for v in vertex))
-                    except ValueError:
-                        raise InvalidPolygonFile
+                    if line.strip():
+                        vertex = line.strip().split(',')
+                        try:
+                            vertices.append(tuple(int(float(v.strip())) for v in vertex))
+                        except ValueError:
+                            raise InvalidPolygonFile
             print(vertices)
             return Polygon(*vertices)
     except IOError:

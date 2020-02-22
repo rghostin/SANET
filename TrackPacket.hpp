@@ -12,6 +12,7 @@ struct TrackPacket  {
     uint32_t timestamp;
     Position position;
     bool led_status=false;
+    uint16_t polyid;
     std::array<char, TRACKING_GLOBALPOLY_MAXBUF> globalpoly;
 
 
