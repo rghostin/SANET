@@ -194,7 +194,6 @@ class MapGUI(object):
             # draw route
             route = np.array(flight_plan.route, np.int32)
             picture = cv2.polylines(img=picture, pts=[route], isClosed=True, color=Colors.ORANGE_PNG, thickness=3)
-            cv2.imwrite("test.png", picture)
         return picture
 
     def set_display_flight_plans(self, flag):
