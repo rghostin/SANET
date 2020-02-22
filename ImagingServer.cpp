@@ -55,17 +55,16 @@ void ImagingServer::_tr_check_new_global_img() {
 
     while (! process_stop) {
         {
-            thread_cond_var.wait(lock, std::bind(&ImagingServer::has_global_img_changed, this));
+            thread_cond_var.wait(lock, []{ return img_has_changed;});
+            LOG_F(INFO, "Sending global image");
             _send_image(true);
+            img_has_changed = false;
         }
+
+        LOG_F(WARNING, "Extern flag img_has_changed set on false ");
         std::this_thread::sleep_for(std::chrono::seconds(_new_complete_image_check));
     }
     LOG_F(INFO, "ImagingSrv check_new_global_img - process_stop=true; exiting");
-}
-
-
-bool ImagingServer::has_global_img_changed() {
-    return img_has_changed;
 }
 
 
@@ -118,7 +117,7 @@ void ImagingServer::_send_image(bool is_global) {
 
     // TODO rm -hardcoded 
     FILE* image_file;
-    char path_img[](INPUT_FILE(_nodeID));
+    char path_img[]("img/complete.png");
 
     memset(&packet.chunk_content, '\0', IMG_CHUNK_SIZE);
     packet.sizeImage = get_size(path_img);

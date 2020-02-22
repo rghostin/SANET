@@ -179,7 +179,7 @@ void CCServer::_dispatch(int socket, uint8_t command){
         case NEW_IMAGE:  // Get new image
             _treat_new_global_img(socket);
             break;
-        case UPDATE_GLOBAL_AREA_POLYGON:  // Get updated area polygon
+        case UPDATE_GLOBAL_AREA_POLYGON:  // Get updated area polygon  // TODO fix double receive -> si switch alors tout bugué
             _update_global_polygon(socket);
             break;
         default:
@@ -202,14 +202,15 @@ void CCServer::_execute_fetch_all_pos(int socket) {
 
 
 void CCServer::_treat_new_global_img(int socket) {
-    FILE* image_file(fopen(PATH_IMG_COMPLETE, "wb"));
+    FILE* image_file(fopen("img/test22.png", "wb"));
 
-    unsigned long size_image;
-    unsigned long size_image_remaining;
-    unsigned long bytes_to_treat(CC_IMAGE_CHUNK);
+    uint32_t size_image;
+    uint32_t size_image_remaining;
+    uint32_t bytes_to_treat(CC_IMAGE_CHUNK);
 
-    if (recv(socket, &size_image, sizeof(int), 0) < 0) {
+    if (recv(socket, &size_image, sizeof(uint32_t), 0) < 0) {
         perror("Cannot recv size img");
+        throw ;
     }
 
     size_image_remaining = size_image;
@@ -218,9 +219,6 @@ void CCServer::_treat_new_global_img(int socket) {
 
     if (CC_IMAGE_CHUNK > size_image_remaining) {
         bytes_to_treat = size_image_remaining;
-    }
-    else {
-        bytes_to_treat = IMG_CHUNK_SIZE;
     }
 
     while (size_image_remaining > 0) {
@@ -248,6 +246,7 @@ void CCServer::_treat_new_global_img(int socket) {
         img_has_changed = true;
     }
 
+    LOG_F(WARNING, "Extern flag img_has_changed set on True !");
     thread_cond_var.notify_one();
 }
 
@@ -255,16 +254,10 @@ void CCServer::_treat_new_global_img(int socket) {
 void CCServer::_update_global_polygon(int socket) {
     FILE* polygon_file(fopen(PATH_GLOBAL_AREA_POLYGON, "wb"));
 
-    unsigned long size_json_global_polygon;
+    char buffer[CC_IMAGE_CHUNK];
+    memset(buffer, '\0', CC_IMAGE_CHUNK);
 
-    if (recv(socket, &size_json_global_polygon, sizeof(int), 0) < 0) {
-        perror("Cannot recv size img");
-    }
-
-    char buffer[size_json_global_polygon];
-    memset(buffer, '\0', size_json_global_polygon);
-
-    if (recv(socket, &buffer, size_json_global_polygon, 0) < 0) {
+    if (recv(socket, &buffer, CC_IMAGE_CHUNK, 0) < 0) {
         perror("Cannot recv part of img");
     }
 

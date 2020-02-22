@@ -80,6 +80,13 @@ int main(int argc, char const *argv[])
             size_file_remaining = get_size(PATH_IMG_COMPLETE);
             image_file = fopen(PATH_IMG_COMPLETE, "rb");
 
+            if (send(sockfd, &size_file_remaining, sizeof(uint32_t), 0) < 0) {
+                perror("Cannot send the node map");
+                throw;
+            }
+
+            std::cout << "Size : " << std::to_string(size_file_remaining) << std::endl;
+
             if (IMG_CHUNK_SIZE > size_file_remaining) {
                 bytes_to_treat = size_file_remaining;
             }
@@ -88,7 +95,12 @@ int main(int argc, char const *argv[])
             }
 
             while(size_file_remaining > 0 and !feof(image_file)) {
-                fread(&buffer, sizeof(char), bytes_to_treat, image_file);  // TODO send
+                fread(&buffer, sizeof(char), bytes_to_treat, image_file);
+
+                if (send(sockfd, &buffer, bytes_to_treat, 0) < 0) {
+                    perror("Cannot send the Global img");
+                    throw;
+                }
 
                 size_file_remaining -= bytes_to_treat;
 
