@@ -50,6 +50,7 @@ def plotFlightPlan(vertices, route):
 
 
 def plotAllFlightPlans(flight_plans):
+    plt.clf()
     for fp in flight_plans:
         vertices = fp.polygon_vertices
         route = fp.route

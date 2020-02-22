@@ -26,6 +26,8 @@ class FlightPlanner:
 
     def notifyNewPolygon(self):
         print("Reading new polygon file")
+        self.__global_area_polygon_ = None
+        
         self.__global_area_polygon_ = parsePolygonFile(self._global_area_path)
         self.__global_area_vertices_ = [tuple(e) for e in
                                         self.__global_area_polygon_.vertices]
@@ -54,6 +56,7 @@ class FlightPlanner:
         Create flight plans with loaded subpoly and add to list
         FlightPlan is able to autonomously deduct route and encodage from subpoly
         """
+        print_red("--> COMPUTING SUBPOLYGONS WITH GLOBAL=%s"%str(self.__global_area_polygon_))
         assert self.__num_partitions_
         sub_polygons = getFairPartitioning(self.__global_area_polygon_,
                                            self.__num_partitions_)
