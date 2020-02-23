@@ -50,6 +50,6 @@ fi
 
 tmux_start &
 
-mate-terminal --command "tmux attach-session;"  # Only works on NO PC
+mate-terminal --tab --command "tmux attach-session;"  # Only works on NO PC
 
 cat
