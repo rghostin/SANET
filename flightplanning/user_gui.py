@@ -255,6 +255,7 @@ class UserGUI(QWidget):
                     self.N = len(recv_allnodes)
                     self.new_nodes = deepcopy(recv_allnodes)
                     # calculating flight plans in a new thread
+                    print("CALCULATING NEW FLIGHT PLANS")
                     self.map_gui.flight_plans_calculating(gs.ALPHA, self.new_nodes)
                     #self.start_thread_calcul_flights()
                     #threading.Thread(target=self.calcul_flight_plans).start()

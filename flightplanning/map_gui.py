@@ -229,7 +229,9 @@ class MapGUI(object):
     def area_reconstruction_position(self, drones_positions):
         # reconstruction of global area using drones photos
         # draw path
+        print("DRONE POSITIONS: ", drones_positions)
         for drone_id in drones_positions:
+            # drone_id = int(drone_id)
             # take photos
             position = [int(drones_positions[drone_id][0]), int(drones_positions[drone_id][1])]
             print("positions", position)
@@ -248,8 +250,9 @@ class MapGUI(object):
                 print("3!! Error")
                 pass
                 self.transparent_img[y_pos:y_pos + photo_height, x_pos:x_pos + photo_width] = png_photo
-            if not self.first_time:
+            if not self.first_time and (drone_id in self.last_position_received):
                 # draw last photo taken by drone
+                print(self.last_position_received)
                 x = self.last_position_received[drone_id][0]
                 y = self.last_position_received[drone_id][1]
                 width = self.last_position_received[drone_id][2]
