@@ -18,9 +18,12 @@ sqlite3 "$DB_PATH" "$query"
 
 
 # tmux
+tmuxproc="$(pgrep tmux)"
+echo "Tmux running with PID : $tmuxproc"
 pkill -f tmux
-tmuxproc="$(grep tmux)"
-if [ -z "$tmuxproc" ] ; then 
+tmuxproc="$(pgrep tmux)"
+if [ -n "$tmuxproc" ] ; then 
+    echo "Killing last tmux with PID : $tmuxproc"
     kill "$tmuxproc"
 fi
 tmux new-session -d bash
