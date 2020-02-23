@@ -1,5 +1,5 @@
 from sympy import Point2D, Line2D, Polygon, Triangle, intersection
-from utils import plotPoly, orderCoords
+from utils import plotPoly, orderCoords, parsePolygonFile
 import matplotlib.pyplot as plt
 
 colors = ['black', 'green', 'blue', 'yellow', 'red']
@@ -51,8 +51,7 @@ def fin_sub_poly(inverse, polyg_coords, chosen_vertex, target_area):
     sub_polygon, other = None, None
     i = 0
     temp_target_area = target_area
-    previous_tringle, curr_triangle = None, find_triangle(polyg_coords, chosen_vertex,
-                                                          inverse, 0)
+    curr_triangle = find_triangle(polyg_coords, chosen_vertex, inverse, 0)
     while sub_polygon is None:
         curr_triangle_area = abs(curr_triangle.area)
         if curr_triangle_area > temp_target_area:
@@ -65,10 +64,14 @@ def fin_sub_poly(inverse, polyg_coords, chosen_vertex, target_area):
                                         c_)
             key_point = Point2D(x_c, y_c)
             if temp_target_area < target_area:
-                sub_poly_coords = [p for p in previous_tringle.vertices] + [key_point]
-                previous_vertices = [tuple(v) for v in previous_tringle.vertices]
+                previous_vertices_ = set()
+                for t in range(i):
+                    previous_triangle = find_triangle(polyg_coords, chosen_vertex, inverse, t)
+                    for vertex in previous_triangle.vertices:
+                        previous_vertices_.add(tuple(vertex))
+                sub_poly_coords = orderCoords(list(previous_vertices_)+[key_point])
                 poly_except_triangle = [v for v in polyg_coords if
-                                        v not in previous_vertices]
+                                        v not in sub_poly_coords]
             else:
                 sub_poly_coords = [p for p in curr_triangle.vertices][:-1] + [key_point]
                 sub_poly_to_tuple = [tuple(e) for e in sub_poly_coords]
@@ -88,15 +91,12 @@ def fin_sub_poly(inverse, polyg_coords, chosen_vertex, target_area):
             new_curr_triangle[1] = key_point
             curr_triangle = Triangle(*new_curr_triangle)
             temp_target_area = target_area
-            previous_tringle = curr_triangle
         elif curr_triangle_area < temp_target_area:
             temp_target_area -= curr_triangle_area
-            previous_tringle = curr_triangle
             i += 1
             curr_triangle = find_triangle(polyg_coords, chosen_vertex, inverse, i)
         else:
             sub_polygon = curr_triangle
-            previous_tringle = curr_triangle
             i += 1
             curr_triangle = find_triangle(polyg_coords, chosen_vertex, inverse, i)
             intersec = intersection(Polygon(*polyg_coords), sub_polygon)
@@ -130,6 +130,7 @@ def getFairPartitioning(poly, n_partitions, display=False):
             sub_polygon, other = fin_sub_poly(not (i % 2 == 0), polyg_coords,
                                               chosen_vertex, target_area)
             final_polygons.append(sub_polygon)
+
             if i == original_n_parition - 2:
                 other = Polygon(*orderCoords([tuple(v) for v in other.vertices]))
                 final_polygons.append(other)
@@ -155,7 +156,8 @@ if __name__ == "__main__":
     # concave = [(2,1), (9,1), (10, 3), (6,5), (5,3), (4,5), (1,3)]
 
     poly = Polygon(*[(202, 84), (0, 1660), (1084, 1706), (1227, 0)])
-
+    # poly = parsePolygonFile("/Users/mdc/PycharmProjects/sanet/conf/global_area.polygon")
+    # getFairPartitioning(poly, 2, True)
     for i in range(3, 6):
         t = getFairPartitioning(poly, i, True)
         print(t)
