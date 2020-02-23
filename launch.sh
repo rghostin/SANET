@@ -12,13 +12,17 @@ echo $mynodeid
 
 # database setup
 rm -rf "$DB_PATH"
-query="INSERT INTO node_status_map (nodeID, latitude, longitude, timestamp) VALUES ($mynodeid,0,$mynodeid, strftime('%s', 'now'));"
+query="INSERT INTO node_status_map (nodeID, latitude, longitude, timestamp) VALUES ($mynodeid,0,0, strftime('%s', 'now'));"
 sqlite3 "$DB_PATH" < "$DB_INIT_SCRIPT"
 sqlite3 "$DB_PATH" "$query"
 
 
 # tmux
 pkill -f tmux
+tmuxproc="$(grep tmux)"
+if [ -z "$tmuxproc" ] ; then 
+    kill "$tmuxproc"
+fi
 tmux new-session -d bash
 tmux split-window -h bash
 #sends keys to first and second terminals
