@@ -71,7 +71,7 @@ inline std::vector<Position> read_global_poly(const char* global_poly_path) {
             break;
         }
         globalpoly.push_back(position);
-        memset(&position, 0x0, sizeof(position));
+        position = Position();
     }
     ifs.close();
     return globalpoly;

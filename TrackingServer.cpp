@@ -8,9 +8,9 @@ std::string TrackingServer::_get_json_nodemap(const nodemap_t& map, bool is_new_
     
     Position _mypos =  _get_current_position();
 
-    for (auto it=map.cbegin(); it!=map.cend(); ++it) {
-        uint32_t nodeid = it->first;
-        Position pos = std::get<0>(it->second);
+    for (const auto & it : map) {
+        uint32_t nodeid = it.first;
+        Position pos = std::get<0>(it.second);
 
         snprintf(buffer, sizeof(buffer), "\"%u\": [%f, %f]", nodeid, pos.longitude, pos.latitude);
         res += buffer;
@@ -35,7 +35,7 @@ std::string TrackingServer::_get_json_nodemap(const nodemap_t& map, bool is_new_
 TrackingServer::TrackingServer(unsigned short port, uint8_t nodeID) : 
     AbstractReliableBroadcastNode<TrackPacket>(nodeID, port, "TrackSrv"),
      _flight_server_addr(), _usockfd(), _mutex_status_node_map(),_status_node_map(),
-     _thread_check_node_map(),_thread_heartbeat(), _mutex_json_global_poly(), _json_global_poly() {}
+     _thread_check_node_map(),_thread_heartbeat(), _thread_update_poly(), _mutex_json_global_poly(), _json_global_poly() {}
 
  
 TrackingServer::~TrackingServer() {
@@ -70,7 +70,7 @@ TrackPacket TrackingServer::_produce_packet() {
 
 void TrackingServer::_process_packet(const TrackPacket& packet) {
     AbstractReliableBroadcastNode<TrackPacket>::_process_packet(packet);    
-    bool new_node=false;
+    bool new_node(false);
 
     { // TODO - need for queue to make asynchrone ?
         std::lock_guard<std::mutex> lock(_mutex_status_node_map);
@@ -110,14 +110,11 @@ void TrackingServer::_process_packet(const TrackPacket& packet) {
 
 
 void TrackingServer::_tr_heartbeat() {
-    Position lastpos;
 
     loguru::set_thread_name( this->threadname("heartbeat").c_str()); 
     LOG_F(INFO, "Starting heartbeat");
 
     while (! process_stop) {
-        Position currpos = _get_current_position();
-        lastpos = currpos;
         TrackPacket packet = _produce_packet();
         this->broadcast(packet);
         LOG_F(INFO, "Sent hearbeat packet: %s", packet.repr().c_str());
@@ -230,11 +227,10 @@ void TrackingServer::_tr_update_poly() {
         if (! process_stop) {
             std::vector<Position> globalpoly = read_global_poly(FP_GLOBAL_AREA_POLYGON_PATH);
             {
-                std::lock_guard<std::mutex> lock(_mutex_json_global_poly);
+                std::lock_guard<std::mutex> lock2(_mutex_json_global_poly);
                 std::string json_poly = get_json_of_poly(std::move(globalpoly));
-                _json_global_poly = std::move(
-                    string_to_chararray<TRACKING_GLOBALPOLY_MAXBUF>(std::move(json_poly))
-                );
+                _json_global_poly =
+                    string_to_chararray<TRACKING_GLOBALPOLY_MAXBUF>(json_poly);
                 ++_polyid;
             }
             _send_status_node_map(true);
