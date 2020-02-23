@@ -55,7 +55,9 @@ def plotAllFlightPlans(flight_plans):
         vertices = fp.polygon_vertices
         route = fp.route
         plotFlightPlan(vertices, route)
-    plt.show()
+    plt.show(block=False)
+    plt.pause(5)
+    plt.close()
 
 
 def print_red(s):

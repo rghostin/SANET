@@ -11,7 +11,7 @@ from copy import deepcopy
 import global_settings as gs
 
 WINDOW_TITLE = "CITY MAP"
-CCLIENT_IP = "164.15.121.66"
+CCLIENT_IP = "164.15.121.65"
 CCLIENT_PORT = 6280
 
 threadLock = threading.Lock()
