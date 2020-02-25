@@ -2,6 +2,7 @@ import numpy as np
 import socket
 import json
 from utils import parsePolygonFile
+import global_settings as gs
 
 
 def parseHppSettings(settings_path):
@@ -20,7 +21,7 @@ def positionsToJSON(vec_of_positions):
 
 
 class CCClient:
-    CCCommands = parseHppSettings("CCCommands.hpp")  
+    CCCommands = parseHppSettings(gs.CCCOMMANDS_PATH)  
 
     def __init__(self, ip_addr, port):
         self.__socket_ = None
@@ -33,6 +34,7 @@ class CCClient:
         if self.__socket_ is not None:
             raise Exception("socket already connected")
         self.__socket_ = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.__socket_.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.__socket_.connect((self.__ip_addr_, self.__port_))
 
     def _send_uint8(self, to_send):
@@ -66,8 +68,11 @@ class CCClient:
         self.__setUpSocket_()
 
     def stop(self):
+        print("trying to close socket..")
         if self.__socket_ is not None:
+            self.__socket_.shutdown(socket.SHUT_RDWR)
             self.__socket_.close()
+            self.__socket_ = None
             print("Closing CCClient")
 
  

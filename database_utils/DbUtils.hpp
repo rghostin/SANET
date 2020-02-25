@@ -4,7 +4,7 @@
 #include <sqlite3.h>
 #include <iostream>
 #include <sstream>
-#include <string.h>
+#include <cstring>
 #include <vector>
 #include "../loguru.hpp"
 #include "../Position.hpp"
@@ -43,11 +43,11 @@ inline void dbExecute(sqlite3 *db, const char *pSQL, int (*callback)(void *, int
 }
 
 struct data_display {
-    std::vector<std::string> res;
+    std::vector<std::string> res{};
 };
 
 static int dbCallback_display(void *data, int argc, char **argv, char **szColName) {
-    data_display *datax = static_cast<data_display *>(data);
+    auto *datax = static_cast<data_display *>(data);
     for (unsigned short i = 0; i < argc; ++i) {
         std::string datap = argv[i];
         datax->res.push_back(datap);
@@ -64,13 +64,13 @@ inline void dbInstanciateTables(sqlite3 *db) {
     std::string SQL = "CREATE TABLE IF NOT EXISTS node_status_map (nodeID INTEGER PRIMARY KEY, latitude INTEGER, longitude INTEGER, timestamp INTEGER);";
     const char *pSQL = SQL.c_str();
     data_display mydata1;
-    dbExecute(db, pSQL, dbCallback_display, (void *) &mydata1);
+    dbExecute(db, pSQL, dbCallback_display, static_cast<void *>(&mydata1));
 
     // Create Image Table
     SQL = "CREATE TABLE IF NOT EXISTS image_map (latitude INTEGER, longitude INTEGER, nodeID INTEGER, timestamp INTEGER, content TEXT, PRIMARY KEY (latitude, longitude));";
     pSQL = SQL.c_str();
     data_display mydata2;
-    dbExecute(db, pSQL, dbCallback_display, (void *) &mydata2);
+    dbExecute(db, pSQL, dbCallback_display, static_cast<void *>(&mydata2));
 }
 
 
@@ -92,7 +92,7 @@ inline void dbInsertOrUpdateNode(sqlite3 *db, uint8_t nodeId, const Position &po
     pSQL = SQL_insertion_in_ode_status_map.c_str();
     LOG_F(INFO, "Asking for the following SQL query: '%s'", pSQL);
     data_display mydata;
-    dbExecute(db, pSQL, dbCallback_display, (void *) &mydata);
+    dbExecute(db, pSQL, dbCallback_display, static_cast<void *>(&mydata));
     LOG_F(INFO, "Added nodeId %d to table 'node_status_map'", nodeId);
 }
 
@@ -112,7 +112,7 @@ dbInsertOrUpdateImage(sqlite3 *db, uint8_t nodeId, uint32_t timestamp, const Pos
     pSQL = SQL_insertion_in_image_map.c_str();
     LOG_F(INFO, "Asking for the following SQL query: '%s'", pSQL);
     data_display mydata;
-    dbExecute(db, pSQL, dbCallback_display, (void *) &mydata);
+    dbExecute(db, pSQL, dbCallback_display, static_cast<void *>(&mydata));
     LOG_F(INFO, "Added image for nodeId %d to table 'image_map'", nodeId);
 }
 
@@ -127,7 +127,7 @@ inline void dbRemoveNode(sqlite3 *db, uint8_t nodeId) {
     pSQL = SQL_verification.c_str();
     LOG_F(INFO, "Asking for the following SQL query: '%s'", pSQL);
     data_display delete_node;
-    dbExecute(db, pSQL, dbCallback_display, (void *) &delete_node);
+    dbExecute(db, pSQL, dbCallback_display, static_cast<void *>(&delete_node));
 }
 
 
@@ -141,7 +141,7 @@ inline void dbRemoveImage(sqlite3 *db, const Position &pos) {
     pSQL = SQL_verification.c_str();
     LOG_F(INFO, "Asking for the following SQL query: '%s'", pSQL);
     data_display delete_image;
-    dbExecute(db, pSQL, dbCallback_display, (void *) &delete_image);
+    dbExecute(db, pSQL, dbCallback_display, static_cast<void *>(&delete_image));
 }
 
 // DB GETTER UTILS ================================================================
@@ -158,8 +158,8 @@ inline const std::pair<Position, uint32_t> dbGetNodeStatus(sqlite3 *db, uint8_t 
     pSQL = SQL_verification.c_str();
     LOG_F(INFO, "Asking for the following SQL query: '%s'", pSQL);
     data_display mydata;
-    dbExecute(db, pSQL, dbCallback_display, (void *) &mydata);
-    if (mydata.res.size() == 0) {
+    dbExecute(db, pSQL, dbCallback_display, static_cast<void *>(&mydata));
+    if (mydata.res.empty()) {
         LOG_F(INFO, "Tried to retrieve information, but nothing found");
         throw;
     }
@@ -183,13 +183,13 @@ inline std::string dbFetchAllNodesPositions(sqlite3 *db){
     std::string SQL = "SELECT nodeID, latitude, longitude FROM node_status_map";
     pSQL = SQL.c_str();
     LOG_F(INFO, "Asking for the following SQL query: '%s'", pSQL);
-    dbExecute(db, pSQL, dbCallback_display, (void *) &mydata);
+    dbExecute(db, pSQL, dbCallback_display, static_cast<void *>(&mydata));
 
     char buffer[4096]="";
     std::string node_pos_json = "{";
 
     for (size_t i=0; i < mydata.res.size(); i += 3) {
-        uint8_t nodeID = static_cast<uint8_t>(std::stoi(mydata.res[i]));
+        auto nodeID = static_cast<uint8_t>(std::stoi(mydata.res[i]));
         double latitude = std::stoi(mydata.res[i+1]);
         double longitude = std::stoi(mydata.res[i+2]);
 
@@ -218,14 +218,14 @@ inline const Image dbGetImage(sqlite3 *db, const Position &pos) {
     pSQL = SQL_verification.c_str();
     LOG_F(INFO, "Asking for the following SQL query: '%s'", pSQL);
     data_display mydata;
-    dbExecute(db, pSQL, dbCallback_display, (void *) &mydata);
-    if (mydata.res.size() == 0) {
+    dbExecute(db, pSQL, dbCallback_display, static_cast<void *>(&mydata));
+    if (mydata.res.empty()) {
         LOG_F(INFO, "Tried to retrieve information, but nothing found");
         throw;
     }
     // Retrieve (nodeID,timestamp,content) from result
-    uint8_t nodeId = static_cast<uint8_t>(std::stoi(mydata.res[2]));
-    uint32_t timestamp = static_cast<uint32_t>(std::stoi(mydata.res[3]));
+    auto nodeId = static_cast<uint8_t>(std::stoi(mydata.res[2]));
+    auto timestamp = static_cast<uint32_t>(std::stoi(mydata.res[3]));
     std::vector<char> content(mydata.res[4].begin(), mydata.res[4].end());
     LOG_F(INFO, "NodeId=%d, Timestamp=%d, Content=%s",
           nodeId,
@@ -243,7 +243,7 @@ inline std::string dbFetchAllImages(sqlite3 *db){
     std::string SQL = "SELECT * FROM image_map";
     pSQL = SQL.c_str();
     LOG_F(INFO, "Asking for the following SQL query: '%s'", pSQL);
-    dbExecute(db, pSQL, dbCallback_display, (void *) &mydata);
+    dbExecute(db, pSQL, dbCallback_display, static_cast<void *>(&mydata));
 
     char buffer[4096]="";
     std::string node_pos_json = "{";
@@ -251,8 +251,8 @@ inline std::string dbFetchAllImages(sqlite3 *db){
     for (size_t i=0; i < mydata.res.size(); i += 5) {
         double latitude = std::stoi(mydata.res[i]);
         double longitude = std::stoi(mydata.res[i+1]);
-        uint8_t nodeID = static_cast<uint8_t>(std::stoi(mydata.res[i+2]));
-        uint32_t timestamp = static_cast<uint32_t>(std::stoi(mydata.res[i+3]));
+        auto nodeID = static_cast<uint8_t>(std::stoi(mydata.res[i+2]));
+        auto timestamp = static_cast<uint32_t>(std::stoi(mydata.res[i+3]));
         std::vector<char> content(mydata.res[i+4].begin(), mydata.res[i+4].end());
         std::string image(mydata.res[i+4].begin(), mydata.res[i+4].end());
 

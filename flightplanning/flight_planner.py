@@ -3,11 +3,11 @@ import numpy as np
 from itertools import permutations
 import math
 from time import time
-from utils import parsePolygonFile, plotAllFlightPlans, print_red
+from utils import parsePolygonFile, plotAllFlightPlans, print_red, calcul_scope
 import json
 import sys
 from flight_plan import FlightPlan
-
+import global_settings as gs
 
 class FlightPlanner:
     """
@@ -26,9 +26,26 @@ class FlightPlanner:
 
     def notifyNewPolygon(self):
         print("Reading new polygon file")
+        self.__global_area_polygon_ = None
+        
         self.__global_area_polygon_ = parsePolygonFile(self._global_area_path)
         self.__global_area_vertices_ = [tuple(e) for e in
                                         self.__global_area_polygon_.vertices]
+        
+        xmax, xmin, ymax, ymin = 0, float('inf'), 0, float('inf')
+        for x,y in self.__global_area_vertices_:
+            if x > xmax:
+                xmax = x
+            if x < xmin:
+                xmin = x
+            if y > ymax:
+                ymax = y
+            if y < ymin:
+                ymin = y
+        longueur = xmax-xmin
+        largeur = ymax - ymin
+        self.__scope_ = calcul_scope(longueur=longueur, largeur=largeur, alpha=gs.ALPHA)
+        print_red("Setting scope to %d" % self.__scope_)
 
     @property
     def flight_plans(self):
@@ -39,6 +56,7 @@ class FlightPlanner:
         Create flight plans with loaded subpoly and add to list
         FlightPlan is able to autonomously deduct route and encodage from subpoly
         """
+        print_red("--> COMPUTING SUBPOLYGONS WITH GLOBAL=%s"%str(self.__global_area_polygon_))
         assert self.__num_partitions_
         sub_polygons = getFairPartitioning(self.__global_area_polygon_,
                                            self.__num_partitions_)
@@ -100,10 +118,10 @@ class FlightPlanner:
 
         
 
-    def recompute(self, status_nodemap):
+    def recompute(self, status_nodemap, received_new_polygon=False):
         n = len(status_nodemap)
         assert n > 0
-        if n != self.__num_partitions_:
+        if n != self.__num_partitions_ or received_new_polygon:
             self.__individual_flight_plans_ = list()
             self.__encoded_structs_ = list()
             self.__num_partitions_ = n

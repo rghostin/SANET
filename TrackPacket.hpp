@@ -16,10 +16,10 @@ struct TrackPacket  {
     std::array<char, TRACKING_GLOBALPOLY_MAXBUF> globalpoly;
 
 
-    TrackPacket(uint8_t nodeID, uint32_t seqnum, uint32_t timestamp, Position pos, bool led_status) :
-        nodeID(nodeID), seqnum(seqnum), timestamp(timestamp), position(pos), led_status(led_status) {}
+    TrackPacket(uint8_t nodeID, uint32_t seqnum, uint32_t timestamp, Position pos, bool led_status, uint16_t polyid, std::array<char, TRACKING_GLOBALPOLY_MAXBUF> globalpoly) :
+        nodeID(nodeID), seqnum(seqnum), timestamp(timestamp), position(pos), led_status(led_status), polyid(polyid), globalpoly(globalpoly) {}
     TrackPacket() :
-        nodeID(0), seqnum(0), timestamp(0), position(0,0), led_status(false) {}
+        nodeID(0), seqnum(0), timestamp(0), position(0,0), led_status(false), polyid(), globalpoly() {}
     
 
     std::string repr() const {
