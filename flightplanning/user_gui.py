@@ -155,13 +155,16 @@ class UserGUI(QWidget):
                 self.connected = True
                 self.set_connect_button_properties(connected=True)
                 self.test_button.show()  # TEST
+                print("connected")
             except Exception as e:
                 raise e
         else:
+            self.stop = True
+            self.set_menu_window()
             self.connected = False
             self.cclient.stop()
-            self.stop = True
             self.set_connect_button_properties(connected=False)
+            print("disconnected")
 
     def set_connect_button_properties(self, connected):
         if not connected:
@@ -215,6 +218,7 @@ class UserGUI(QWidget):
             print("picture sent!")
             self.stop_button.show()
             self.show_hide_button.show()
+            self.connect_button.hide()
             # self.start_thread_simulation()  # offline simulation
             self.start_test()
         else:
@@ -225,7 +229,8 @@ class UserGUI(QWidget):
 
     def stop_button_action(self):
         self.stop = True
-        self.set_menu_window()
+        print("stop...")
+        
 
     def show_hide_button_action(self):
         if self.show_flight_plan:
@@ -266,6 +271,10 @@ class UserGUI(QWidget):
             else:
                 print("discarding")
             sleep(self.UPDATE_SLEEP_RATIO * gs.AUTOPILOT_SPEED)
+        print("boucle out")
+        if self.connected:
+            print("disconnecting..")
+            self.connect_button_action()
 
     def start_thread_calcul_flights(self):
         print("starting calcul flights thread...")
@@ -296,6 +305,7 @@ class UserGUI(QWidget):
         threadLock.release()
 
     def set_welcome_window(self):
+        self.connect_button.show()
         self.select_map_button.show()
         self.select_area_button.show()
         self.select_map_button.setDisabled(True)
