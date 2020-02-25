@@ -21,7 +21,8 @@
 #include "settings.hpp"
 #include "database_utils/DbUtils.hpp"
 #include "CCCommands.hpp"
-
+#include "utils.hpp"
+#include "json_utils.hpp"
 
 class CCServer final {
 private:
@@ -44,6 +45,8 @@ private:
     void _dispatch(int, uint8_t);
     void _execute_fetch_all_pos(int);
     void _update_global_polygon(int);
+    void _execute_fetch_map_number(int);
+    void _execute_fetch_polygon(int);
 
 public:
     CCServer(unsigned short port, uint8_t nodeID);

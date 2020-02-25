@@ -19,6 +19,7 @@
 #include "AbstractReliableBroadcast.hpp"
 #include "common.hpp"
 #include "TrackPacket.hpp"
+#include "json_utils.hpp"
 
 typedef std::map<uint8_t, std::pair<Position, uint32_t>> nodemap_t;
 

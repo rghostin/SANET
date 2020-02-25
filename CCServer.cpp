@@ -179,6 +179,12 @@ void CCServer::_dispatch(int socket, uint8_t command){
         case UPDATE_GLOBAL_AREA_POLYGON:  // Get updated area polygon
             _update_global_polygon(socket);
             break;
+        case FETCH_MAP_NUMBER:  // Fetch Map_info
+            _execute_fetch_map_number(socket);
+            break;
+        case FETCH_GLOBAL_POLYGON:  // Fetch Global_area_polygon
+            _execute_fetch_polygon(socket);
+            break;
         default:
             LOG_F(WARNING, "Unknow command=%d", command);
             break;
@@ -199,8 +205,6 @@ void CCServer::_execute_fetch_all_pos(int socket) {
 
 
 void CCServer::_update_global_polygon(int socket) {
-    FILE* polygon_file(fopen(FP_GLOBAL_AREA_POLYGON_PATH, "wb")); 
-
     char buffer[2048];
     memset(buffer, '\0', sizeof(buffer));
 
@@ -209,24 +213,35 @@ void CCServer::_update_global_polygon(int socket) {
         throw;
     }
 
-    std::string json_encoded(buffer);
-    std::stringstream ss(json_encoded);
-    std::string temp;
-
-    for (int i = 0; i < std::count(json_encoded.begin(), json_encoded.end(), '['); ++i) {
-        std::getline(ss, temp, '[');
-        std::getline(ss, temp, ']');
-        temp += "\n";
-        fwrite(temp.c_str(), sizeof(char), temp.size(), polygon_file);
-    }
-
-    fclose(polygon_file);
+    json_write_poly_to_file(buffer, FP_GLOBAL_AREA_POLYGON_PATH);
     {
         std::lock_guard<std::mutex> lock(mutex_new_poly);
         new_poly=true;
     }
     cv_new_poly.notify_one();
-    LOG_F(WARNING, "Global area polygon file updated : %s", json_encoded.c_str());
+    LOG_F(WARNING, "Global area polygon file updated : %s", buffer);
+}
+
+void CCServer::_execute_fetch_map_number(int socket) {
+    uint8_t map_number(6);
+
+    if (send(socket, &map_number, sizeof(uint8_t), 0) < 0) {
+        perror("Cannot send map number");
+    }
+ 
+    LOG_F(INFO, "Sent map number : =%d", map_number);
+}
+
+
+void CCServer::_execute_fetch_polygon(int socket) {
+    std::vector<Position> vec_polygon_area(read_global_poly(FP_GLOBAL_AREA_POLYGON_PATH));
+    std::string global_area_polygon(json_getPolygon(vec_polygon_area));
+
+    if (send(socket, global_area_polygon.c_str(), global_area_polygon.size(), 0) < 0) {
+        perror("Cannot send the Global Area Polygon");
+    }
+ 
+    LOG_F(INFO, "Sent Global Area Polygon : =%s", global_area_polygon.c_str());
 }
 
 
