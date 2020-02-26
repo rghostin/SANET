@@ -52,6 +52,10 @@ class CCClient:
         print(status_node_map)
         return status_node_map
 
+    def sendMapNumber(self, map_number):
+        self._send_uint8(self.CCCommands["UPDATE_MAP_NUMBER"])
+        self._send_uint8(map_number)
+
     def sendGlobalPolygon(self, global_area_polygon_path):
         global_polygon = parsePolygonFile(global_area_polygon_path)
         global_polyg_vertices = []
