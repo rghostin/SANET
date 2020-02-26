@@ -289,7 +289,7 @@ class UserGUI(QWidget):
     def start_test_button_action(self):
         self.stop_button.show()
         #TODO cclient get polygon and map number
-        mapnumber = 6  ## ccclinet mapnum
+        mapnumber = self.cclient.fetchMapNumber()
         polygon = self.cclient.fetchGlobalPolygon()
         write_polygon_file(vertices_list=polygon, filename=gs.GLOBAL_AREA_POLYGON_PATH)
         self.map_gui.set_picture(gs.MAP_PATH[mapnumber])

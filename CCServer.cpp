@@ -206,10 +206,11 @@ void CCServer::_execute_fetch_all_pos(int socket) {
 
 void CCServer::_update_global_polygon(int socket) {
     char buffer[2048];
+    uint8_t mapid;
     memset(buffer, '\0', sizeof(buffer));
 
     if (recv(socket, &buffer, sizeof(buffer), 0) < 0) {
-        perror("Cannot recv part of img");
+        perror("Cannot recv polygon");
         throw;
     }
 
@@ -218,18 +219,22 @@ void CCServer::_update_global_polygon(int socket) {
         std::lock_guard<std::mutex> lock(mutex_new_poly);
         new_poly=true;
     }
+
+    /*memset(buffer, 0x00, sizeof(buffer));
+    if (recv(socket, &mapid, sizeof(uint8_t),0) < 0) {}*/
     cv_new_poly.notify_one();
     LOG_F(WARNING, "Global area polygon file updated : %s", buffer);
 }
 
-void CCServer::_execute_fetch_map_number(int socket) {
-    uint8_t map_number(6);
 
-    if (send(socket, &map_number, sizeof(uint8_t), 0) < 0) {
+void CCServer::_execute_fetch_map_number(int socket) {
+    std::string map_number("6");
+
+    if (send(socket, map_number.c_str(), map_number.size(), 0) < 0) {
         perror("Cannot send map number");
     }
  
-    LOG_F(INFO, "Sent map number : =%d", map_number);
+    LOG_F(INFO, "Sent map number : =%s", map_number.c_str());
 }
 
 
