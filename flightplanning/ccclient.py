@@ -1,6 +1,7 @@
 import json
 import socket
 
+
 import global_settings as gs
 import numpy as np
 from json_utils import json_positionsFromList
@@ -78,14 +79,19 @@ class CCClient:
         self._send_uint8(self.CCCommands["FETCH_MAP_NUMBER"])
         map_number = self.__socket_.recv(1024).decode()
         print(map_number)
-        return map_number
+        return int(map_number)
 
 
     def fetchGlobalPolygon(self):
         self._send_uint8(self.CCCommands["FETCH_GLOBAL_POLYGON"])
         global_area_polygon = self._receive_json()
         print(global_area_polygon)
-        return global_area_polygon
+
+        vertices_list = [None for _ in range(len(global_area_polygon))]
+        for k, pos in global_area_polygon.items():
+            vertices_list[int(k)] = tuple(pos)
+        print(vertices_list)
+        return vertices_list
 
 
     def start(self):
@@ -99,6 +105,7 @@ class CCClient:
             self.__socket_.close()
             self.__socket_ = None
             print("Closing CCClient")
+
             
  
 
