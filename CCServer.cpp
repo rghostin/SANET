@@ -222,14 +222,15 @@ void CCServer::_update_global_polygon(int socket) {
     LOG_F(WARNING, "Global area polygon file updated : %s", buffer);
 }
 
-void CCServer::_execute_fetch_map_number(int socket) {
-    uint8_t map_number(6);
 
-    if (send(socket, &map_number, sizeof(uint8_t), 0) < 0) {
+void CCServer::_execute_fetch_map_number(int socket) {
+    std::string map_number("6");
+
+    if (send(socket, map_number.c_str(), map_number.size(), 0) < 0) {
         perror("Cannot send map number");
     }
  
-    LOG_F(INFO, "Sent map number : =%d", map_number);
+    LOG_F(INFO, "Sent map number : =%s", map_number.c_str());
 }
 
 

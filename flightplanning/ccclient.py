@@ -1,6 +1,5 @@
 import json
 import socket
-from ctypes import c_uint8
 
 import global_settings as gs
 import numpy as np
@@ -73,7 +72,7 @@ class CCClient:
 
     def fetchMapNumber(self):
         self._send_uint8(self.CCCommands["FETCH_MAP_NUMBER"])
-        map_number = c_uint8(self.__socket_.recv(1))
+        map_number = self.__socket_.recv(1024).decode()
         print(map_number)
         return map_number
 
@@ -103,7 +102,6 @@ class CCClient:
 
 if __name__ == "__main__":
     cc_port = 6280
-    # client = CCClient('10.93.210.132', cc_port)
-    client = CCClient('127.0.0.1', cc_port)
+    client = CCClient('10.93.210.132', cc_port)
     client.start()
     client.stop()
