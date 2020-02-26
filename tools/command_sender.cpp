@@ -71,6 +71,19 @@ int main(int argc, char const *argv[])
             printf("String received : %s \n", buffer);
 
         }
+        else if (command == FETCH_GLOBAL_POLYGON) {
+            if (recv(sockfd, &buffer, 4096, 0) < 0) {
+                perror("Cannot recv the global area polygon");
+            }
+            printf("String received : %s \n", buffer);
+        }
+        else if (command == FETCH_MAP_NUMBER) {
+            uint8_t buffer_number;
+            if (recv(sockfd, &buffer_number, sizeof(uint8_t), 0) < 0) {
+                perror("Cannot recv number of map");
+            }
+            printf("Number received : %d \n", buffer_number);
+        }
         memset(buffer, '\0', 4096);
     }
 

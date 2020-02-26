@@ -1,8 +1,11 @@
-import numpy as np
-import socket
 import json
-from utils import parsePolygonFile
+import socket
+from ctypes import c_uint8
+
 import global_settings as gs
+import numpy as np
+from json_utils import json_positionsFromList
+from utils import parsePolygonFile
 
 
 def parseHppSettings(settings_path):
@@ -14,10 +17,6 @@ def parseHppSettings(settings_path):
                 lines.append(stripped_splitted_line)
     settings_map = {lines[i][1]: int(lines[i][2]) for i in range(len(lines))}
     return settings_map
-
-
-def positionsToJSON(vec_of_positions):
-    return json.dumps({i:vec_of_positions[i] for i in range(len(vec_of_positions))})
 
 
 class CCClient:
@@ -59,13 +58,42 @@ class CCClient:
         global_polyg_vertices = []
         for point in global_polygon.vertices:
             global_polyg_vertices.append((int(point[0]), int(point[1])))
-        json_to_send = positionsToJSON(global_polyg_vertices)
+        json_to_send = json_positionsFromList(global_polyg_vertices)
         print("Sending polygon:", json_to_send)
         self._send_uint8(self.CCCommands["UPDATE_GLOBAL_AREA_POLYGON"])
         self.__socket_.send(json_to_send.encode())                   # senidng json
 
+
+    def fetchMapInfo(self):
+        self._send_uint8(self.CCCommands["FETCH_NODES_POS"])
+        global_area_polygon = self._receive_json()
+        print(global_area_polygon)
+        return global_area_polygon
+
+
+    def fetchMapNumber(self):
+        self._send_uint8(self.CCCommands["FETCH_MAP_NUMBER"])
+        map_number = c_uint8(self.__socket_.recv(1))
+        print(map_number)
+        return map_number
+
+
+    def fetchGlobalPolygon(self):
+        self._send_uint8(self.CCCommands["FETCH_GLOBAL_POLYGON"])
+        global_area_polygon = self._receive_json()
+        print(global_area_polygon)
+
+        vertices_list = [None for _ in range(len(global_area_polygon))]
+        for k, pos in global_area_polygon.items():
+            vertices_list[int(k)] = tuple(pos)
+        print(vertices_list)
+        return vertices_list
+
+
     def start(self):
         self.__setUpSocket_()
+        #self.fetchMapNumber()
+        #self.fetchGlobalPolygon()
 
     def stop(self):
         print("trying to close socket..")
@@ -80,6 +108,7 @@ class CCClient:
 
 if __name__ == "__main__":
     cc_port = 6280
-    client = CCClient('10.93.210.132', cc_port)
+    # client = CCClient('10.93.210.132', cc_port)
+    client = CCClient('127.0.0.1', cc_port)
     client.start()
     client.stop()

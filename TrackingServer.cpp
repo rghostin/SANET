@@ -228,7 +228,7 @@ void TrackingServer::_tr_update_poly() {
             std::vector<Position> globalpoly = read_global_poly(FP_GLOBAL_AREA_POLYGON_PATH);
             {
                 std::lock_guard<std::mutex> lock2(_mutex_json_global_poly);
-                std::string json_poly = get_json_of_poly(std::move(globalpoly));
+                std::string json_poly = json_getPolygon(std::move(globalpoly));
                 _json_global_poly =
                     string_to_chararray<TRACKING_GLOBALPOLY_MAXBUF>(json_poly);
                 ++_polyid;
