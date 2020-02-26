@@ -25,7 +25,7 @@ struct TrackPacket  {
     std::string repr() const {
         const size_t len=256;
         char buffer[len];
-        snprintf(buffer, len, "{nodeID=%d|seqnum=%d|timestamp=%d|Pos=(%f,%f)|led_status=%d|poly=%s", nodeID, seqnum, timestamp, position.longitude, position.latitude, led_status, globalpoly.data());
+        snprintf(buffer, len, "{nodeID=%d|seqnum=%d|timestamp=%d|Pos=(%f,%f)|led_status=%d|poly=%s, mapid=%d", nodeID, seqnum, timestamp, position.longitude, position.latitude, led_status, globalpoly.data(), mapid);
         return buffer;
     }    
 };

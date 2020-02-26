@@ -61,6 +61,7 @@ TrackPacket TrackingServer::_produce_packet() {
         std::lock_guard<std::mutex> lock(_mutex_json_global_poly);
         packet.globalpoly = _json_global_poly;   // copy
         packet.polyid = _polyid;
+        packet.mapid = _mapid;
     }
     LOG_F(3, "Generated packet: %s", packet.repr().c_str());
     return packet;    
@@ -99,6 +100,7 @@ void TrackingServer::_process_packet(const TrackPacket& packet) {
                 _send_status_node_map(true);
             }
             _polyid = packet.polyid;
+            _mapid = packet.mapid;
             _json_global_poly = packet.globalpoly;
             json_write_poly_to_file(packet.globalpoly.data(), FP_GLOBAL_AREA_POLYGON_PATH);
         }   
@@ -229,8 +231,8 @@ void TrackingServer::_tr_update_poly() {
             {
                 std::lock_guard<std::mutex> lock2(_mutex_json_global_poly);
                 std::string json_poly = json_getPolygon(std::move(globalpoly));
-                _json_global_poly =
-                    string_to_chararray<TRACKING_GLOBALPOLY_MAXBUF>(json_poly);
+                _json_global_poly = string_to_chararray<TRACKING_GLOBALPOLY_MAXBUF>(json_poly);
+                _mapid = static_cast<uint8_t>(read_int_from_file(FP_GLOBAL_MAPID_PATH));
                 ++_polyid;
             }
             _send_status_node_map(true);

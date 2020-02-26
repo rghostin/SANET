@@ -209,6 +209,7 @@ void CCServer::_update_global_polygon(int socket) {
     uint8_t mapid;
     memset(buffer, '\0', sizeof(buffer));
 
+    // recv poly
     if (recv(socket, &buffer, sizeof(buffer), 0) < 0) {
         perror("Cannot recv polygon");
         throw;
@@ -220,15 +221,25 @@ void CCServer::_update_global_polygon(int socket) {
         new_poly=true;
     }
 
-    /*memset(buffer, 0x00, sizeof(buffer));
-    if (recv(socket, &mapid, sizeof(uint8_t),0) < 0) {}*/
+    // recv mapid
+    if (recv(socket, &mapid, sizeof(uint8_t),0) < 0) {
+        perror("Cannot receive mapid");
+        throw;
+    }
+
+    // write new mapid to conf/mapid.conf
+    std::ofstream outfile(FP_GLOBAL_MAPID_PATH);
+    outfile << static_cast<int>(mapid) << std::endl;
+    outfile.close();
+
     cv_new_poly.notify_one();
     LOG_F(WARNING, "Global area polygon file updated : %s", buffer);
 }
 
 
 void CCServer::_execute_fetch_map_number(int socket) {
-    std::string map_number("6");
+    int mapid = read_int_from_file(FP_GLOBAL_MAPID_PATH);
+    std::string map_number = std::to_string(mapid);
 
     if (send(socket, map_number.c_str(), map_number.size(), 0) < 0) {
         perror("Cannot send map number");
