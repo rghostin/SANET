@@ -3,7 +3,7 @@ import numpy as np
 import cv2 as cv2
 from sympy import Polygon
 from operator import itemgetter
-from utils import Colors, calcul_scope, parsePolygonFile 
+from utils import Colors, calcul_scope, parsePolygonFile, write_polygon_file
 from flight_planner import FlightPlanner
 from copy import deepcopy
 
@@ -45,6 +45,7 @@ class MapGUI(object):
         self.first_time = True
         self.last_position_received = {}
         self.last_photo_taken ={}
+        self.drones_path = {}
 
 
     def start_ui(self):
@@ -163,9 +164,8 @@ class MapGUI(object):
 
     def create_polygon_file(self):
         # create a text file with the polygon's coordinates
-        with open(file=self.points_filename, mode="w") as file:
-            for pair in self.croped_polygon:
-                file.write(str(pair[0]) + ", " + str(pair[1]) + "\n")
+        write_polygon_file(vertices_list=self.croped_polygon, filename=self.points_filename)
+        
 
     def create_picture(self, filename, picture, to_png=True):
         # create an image
@@ -182,6 +182,8 @@ class MapGUI(object):
         # create object FlightPlanner
         self.fplanner = FlightPlanner(global_area_path=self.points_filename, scope=self.scope)
         self.fplanner.recompute(status_node_map)
+        # create dic drones_path
+        self.create_drones_path()
         # draw flight plans
         png_crop_picture = self.create_png_image(image=self.crop_picture, transparency=255)
         self.crop_with_fps = self.draw_flight_plans(png_crop_picture)
@@ -289,6 +291,26 @@ class MapGUI(object):
         self.points = list()
         self.create_picture(filename=self.crop_filename, picture=self.crop_picture, to_png=False)
         self.create_picture(filename=self.crop_withblack_filename, picture=self.crop_withblack, to_png=True)
+
+    def create_drones_path(self):
+        self.drones_path = dict()
+        for flight_plan in self.fplanner.flight_plans:
+            self.drones_path[flight_plan.nodeid] = flight_plan.route
+
+    def position_in_path(self, drones_position):
+        """
+        If we receive new 'drone_position'(s) that are not
+        in the before calculated paths
+        """
+        in_path = True
+        for drone_id in drones_position:
+            if drone_id in self.drones_path:
+                curr_drone_waypoint = list(drones_position[drone_id])
+                if not(curr_drone_waypoint in list(self.drones_path[drone_id])):
+                    in_path = False
+                    break
+        return in_path
+        
 
 
 

@@ -35,4 +35,3 @@ class FlightPlan:
 
             self.__encoded_json_ = json.dumps(to_send)
         return self.__encoded_json_
-

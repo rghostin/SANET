@@ -7,11 +7,12 @@ from time import sleep
 import threading
 from ccclient import CCClient
 from copy import deepcopy
+from utils import write_polygon_file
 
 import global_settings as gs
 
 WINDOW_TITLE = "CITY MAP"
-CCLIENT_IP = "164.15.121.65"
+CCLIENT_IP = "164.15.121.146"
 CCLIENT_PORT = 6280
 
 threadLock = threading.Lock()
@@ -34,11 +35,11 @@ class UserGUI(QWidget):
                               drones_photo_path=gs.DRONE_PHOTO_PATH,
                               display=True)
         self.connected = False  # flag that shows connexion status
-        self.chosen_map_path = None
-        self.stop = False
-        self.show_flight_plan = False
-        self.N = None
-        self.new_nodes = None
+        self.chosen_map_path = None # path to the desired map
+        self.stop = False # flag that stop main while
+        self.show_flight_plan = False # flag that set value show/hide
+        self.N = None # number of active drones
+        self.new_nodes = None # current drones position received
 
         # Select Area Window
         self.select_area_window = SelectMapWindow(self)
@@ -86,7 +87,7 @@ class UserGUI(QWidget):
         self.show_hide_button.hide()
 
         # real time button
-        self.test_button = QPushButton("Execute Test")
+        self.test_button = QPushButton("Visualize")
         self.test_button.setFixedSize(200, 50)
         self.test_button.clicked.connect(self.start_test_button_action)
         self.test_button.hide()
@@ -151,10 +152,9 @@ class UserGUI(QWidget):
         if not self.connected:
             try:
                 self.cclient.start()
-                #self.cclient.sendGlobalPolygon(gs.GLOBAL_AREA_POLYGON_PATH)
                 self.connected = True
                 self.set_connect_button_properties(connected=True)
-                self.test_button.show()  # TEST
+                self.test_button.show()
                 print("connected")
             except Exception as e:
                 raise e
@@ -214,6 +214,7 @@ class UserGUI(QWidget):
             self.send_area_button.hide()
             self.select_area_button.hide()
             self.select_map_button.hide()
+            self.connect_button.hide()
             self.cclient.sendGlobalPolygon(gs.GLOBAL_AREA_POLYGON_PATH)
             print("picture sent!")
             self.stop_button.show()
@@ -238,8 +239,6 @@ class UserGUI(QWidget):
         else:
             self.show_flight_plan = True
         self.map_gui.set_display_flight_plans(self.show_flight_plan)
-        # self.area_reconstruction_position() # TEST
-        self.area_reconstruction(self.current_area)  # OFFLINE SIMULATION
         self.update_picture_frame(gs.GLOBAL_AREA_IMG_PATH_RECONSTRUCTION)
         QApplication.processEvents()
 
@@ -253,7 +252,7 @@ class UserGUI(QWidget):
             print("enter while")
             recv_allnodes = self.cclient.fetchAllNodes()
             print("pass fetch")
-            if recv_allnodes != last_all_nodes:
+            if recv_allnodes != last_all_nodes or self.map_gui.position_in_path(recv_allnodes):
                 if len(last_all_nodes) != len(recv_allnodes):
                     # recalculate flight plans
                     print("recalculating flight plans")
@@ -288,10 +287,14 @@ class UserGUI(QWidget):
         print("new flight plan ready")
 
     def start_test_button_action(self):
-        self.map_gui.set_picture(gs.GLOBAL_AREA_IMAGE_TEST)
+        self.stop_button.show()
+        #TODO cclient get polygon and map number
+        mapnumber = 6  ## ccclinet mapnum
+        polygon = [(163,0), (0,1748), (2496,1873), (2548, 263)]
+        write_polygon_file(vertices_list=polygon, filename=gs.GLOBAL_AREA_POLYGON_PATH)
+        self.map_gui.set_picture(gs.MAP_PATH[mapnumber])
         self.map_gui.get_polygon(file_path=gs.GLOBAL_AREA_POLYGON_PATH)
         self.map_gui.start_ui_test()
-        self.cclient.sendGlobalPolygon(gs.GLOBAL_AREA_POLYGON_PATH)
         self.start_test()
 
     def update_picture_frame(self, picture_filename):
@@ -308,6 +311,7 @@ class UserGUI(QWidget):
         self.connect_button.show()
         self.select_map_button.show()
         self.select_area_button.show()
+        self.connect_button.show()
         self.select_map_button.setDisabled(True)
         self.select_area_button.setDisabled(True)
         self.send_area_button.hide()

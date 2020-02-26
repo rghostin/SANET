@@ -118,3 +118,9 @@ def create_dic_bidon(N):
         dic[i]=(i+2, i+4)
     return dic
     
+
+def write_polygon_file(vertices_list, filename):
+    # create a text file with the polygon's coordinates
+    with open(file=filename, mode="w") as file:
+        for pair in vertices_list:
+            file.write(str(pair[0]) + ", " + str(pair[1]) + "\n")
