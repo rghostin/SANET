@@ -55,7 +55,8 @@ class CCClient:
         return status_node_map
 
 
-    def sendGlobalPolygonAndMapNumber(self, global_area_polygon_path, mapid_conf_path):
+    def sendGlobalPolygonAndMapNumber(self, global_area_polygon_path, mapid):
+        assert mapid
         global_polygon = parsePolygonFile(global_area_polygon_path)
         global_polyg_vertices = []
         for point in global_polygon.vertices:
@@ -64,8 +65,7 @@ class CCClient:
         print("Sending polygon:", json_to_send)
         self._send_uint8(self.CCCommands["UPDATE_GLOBAL_AREA_POLYGON"])
         self.__socket_.send(json_to_send.encode())                   # senidng json
-        assert gs.GLOBAL_MAP_ID
-        self._send_uint8(gs.GLOBAL_MAP_ID)
+        self._send_uint8(mapid)
 
 
     def fetchMapInfo(self):

@@ -216,7 +216,7 @@ class UserGUI(QWidget):
             self.select_map_button.hide()
             self.connect_button.hide()
             print("Sending global area polygon")
-            self.cclient.sendGlobalPolygonAndMapNumber(gs.GLOBAL_AREA_POLYGON_PATH)
+            self.cclient.sendGlobalPolygonAndMapNumber(gs.GLOBAL_AREA_POLYGON_PATH, gs.GLOBAL_MAP_ID)
             print("picture sent!")
             self.stop_button.show()
             self.show_hide_button.show()
