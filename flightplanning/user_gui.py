@@ -87,10 +87,10 @@ class UserGUI(QWidget):
         self.show_hide_button.hide()
 
         # real time button
-        self.test_button = QPushButton("Visualize")
-        self.test_button.setFixedSize(200, 50)
-        self.test_button.clicked.connect(self.start_test_button_action)
-        self.test_button.hide()
+        self.visualize_button = QPushButton("Visualize")
+        self.visualize_button.setFixedSize(200, 50)
+        self.visualize_button.clicked.connect(self.visualize_button_action)
+        self.visualize_button.hide()
 
         # Labels
         image = QtGui.QPixmap(gs.MENU_WELCOME_PICTURE_PATH)
@@ -123,7 +123,7 @@ class UserGUI(QWidget):
         hbox_buttons.addWidget(self.send_area_button)
         hbox_buttons.addWidget(self.stop_button)
         hbox_buttons.addWidget(self.show_hide_button)
-        hbox_buttons.addWidget(self.test_button)
+        hbox_buttons.addWidget(self.visualize_button)
         # picture layout
         self.hbox_picture = QVBoxLayout()
         self.hbox_picture.addWidget(self.pic)
@@ -154,7 +154,7 @@ class UserGUI(QWidget):
                 self.cclient.start()
                 self.connected = True
                 self.set_connect_button_properties(connected=True)
-                self.test_button.show()
+                self.visualize_button.show()
                 print("connected")
             except Exception as e:
                 raise e
@@ -215,6 +215,7 @@ class UserGUI(QWidget):
             self.select_area_button.hide()
             self.select_map_button.hide()
             self.connect_button.hide()
+            self.visualize_button.hide()
             print("Sending global area polygon")
             self.cclient.sendGlobalPolygonAndMapNumber(gs.GLOBAL_AREA_POLYGON_PATH, gs.GLOBAL_MAP_ID)
             print("picture sent!")
@@ -222,7 +223,7 @@ class UserGUI(QWidget):
             self.show_hide_button.show()
             self.connect_button.hide()
             # self.start_thread_simulation()  # offline simulation
-            self.start_test()
+            self.start_surveillance()
         else:
             # comeback to select area menu
             self.update_picture_frame(self.chosen_map_path)
@@ -231,6 +232,8 @@ class UserGUI(QWidget):
 
     def stop_button_action(self):
         self.stop = True
+        self.stop_button.setText("STOPPING...")
+        self.stop_button.setDisabled(True)
         print("stop...")
         
 
@@ -243,7 +246,7 @@ class UserGUI(QWidget):
         self.update_picture_frame(gs.GLOBAL_AREA_IMG_PATH_RECONSTRUCTION)
         QApplication.processEvents()
 
-    def start_test(self):
+    def start_surveillance(self):
         self.stop=False
         print("starting test")
         last_all_nodes = dict()
@@ -286,8 +289,12 @@ class UserGUI(QWidget):
         self.map_gui.set_display_flight_plans(True)
         print("new flight plan ready")
 
-    def start_test_button_action(self):
+    def visualize_button_action(self):
         self.stop_button.show()
+        self.select_area_button.hide()
+        self.select_map_button.hide()
+        self.connect_button.hide()
+        self.visualize_button.hide()
         #TODO cclient get polygon and map number
         mapnumber = self.cclient.fetchMapNumber()
         polygon = self.cclient.fetchGlobalPolygon()
@@ -295,7 +302,7 @@ class UserGUI(QWidget):
         self.map_gui.set_picture(gs.MAP_PATH[mapnumber])
         self.map_gui.get_polygon(file_path=gs.GLOBAL_AREA_POLYGON_PATH)
         self.map_gui.start_ui_test()
-        self.start_test()
+        self.start_surveillance()
 
     def update_picture_frame(self, picture_filename):
         # update label pic in GUI
@@ -316,6 +323,8 @@ class UserGUI(QWidget):
         self.select_area_button.setDisabled(True)
         self.send_area_button.hide()
         self.stop_button.hide()
+        self.stop_button.setText("STOP")
+        self.stop_button.setEnabled(True)
         self.show_hide_button.hide()
         self.update_picture_frame(picture_filename=gs.MENU_WELCOME_PICTURE_PATH)
 
