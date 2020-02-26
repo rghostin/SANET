@@ -10,7 +10,7 @@ CMakeLists.txt
 **/*.log
 **/*.o
 **/*.png
-**/*.jpg
+#**/*.jpg
 **/*.jpeg
 **/*.orig
 **/*.lock
