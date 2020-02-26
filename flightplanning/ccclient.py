@@ -1,9 +1,12 @@
-import numpy as np
-import socket
-from utils import parsePolygonFile
-import global_settings as gs
-from json_utils import json_positionsFromList
 import json
+import socket
+from ctypes import c_uint8
+
+import global_settings as gs
+import numpy as np
+from json_utils import json_positionsFromList
+from utils import parsePolygonFile
+
 
 def parseHppSettings(settings_path):
     lines = list()
@@ -66,10 +69,26 @@ class CCClient:
         global_area_polygon = self._receive_json()
         print(global_area_polygon)
         return global_area_polygon
-        
+
+
+    def fetchMapNumber(self):
+        self._send_uint8(self.CCCommands["FETCH_MAP_NUMBER"])
+        map_number = c_uint8(self.__socket_.recv(1))
+        print(map_number)
+        return map_number
+
+
+    def fetchGlobalPolygon(self):
+        self._send_uint8(self.CCCommands["FETCH_GLOBAL_POLYGON"])
+        global_area_polygon = self._receive_json()
+        print(global_area_polygon)
+        return global_area_polygon
+
 
     def start(self):
         self.__setUpSocket_()
+        self.fetchMapNumber()
+        self.fetchGlobalPolygon()
 
     def stop(self):
         print("trying to close socket..")
@@ -84,6 +103,7 @@ class CCClient:
 
 if __name__ == "__main__":
     cc_port = 6280
-    client = CCClient('10.93.210.132', cc_port)
+    # client = CCClient('10.93.210.132', cc_port)
+    client = CCClient('127.0.0.1', cc_port)
     client.start()
     client.stop()
