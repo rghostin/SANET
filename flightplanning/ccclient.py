@@ -1,6 +1,6 @@
 import json
 import socket
-
+from time import sleep
 
 import global_settings as gs
 import numpy as np
@@ -56,7 +56,7 @@ class CCClient:
 
 
     def sendGlobalPolygonAndMapNumber(self, global_area_polygon_path, mapid):
-        assert mapid
+        assert mapid is not None
         global_polygon = parsePolygonFile(global_area_polygon_path)
         global_polyg_vertices = []
         for point in global_polygon.vertices:
@@ -65,7 +65,11 @@ class CCClient:
         print("Sending polygon:", json_to_send)
         self._send_uint8(self.CCCommands["UPDATE_GLOBAL_AREA_POLYGON"])
         self.__socket_.send(json_to_send.encode())                   # senidng json
+        print("sent polygon", global_polyg_vertices)
+        sleep(1)
         self._send_uint8(mapid)
+        print("sent mapid", mapid)
+
 
 
     def fetchMapInfo(self):
@@ -92,9 +96,6 @@ class CCClient:
             vertices_list[int(k)] = tuple(pos)
         print(vertices_list)
         return vertices_list
-
-    def recv_bidon(self):
-        self.__socket.recv(1024)
 
 
     def start(self):

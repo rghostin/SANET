@@ -248,10 +248,8 @@ class UserGUI(QWidget):
         print("starting test")
         last_all_nodes = dict()
         self.map_gui.reset_transparent_img()
-        #self.cclient.recv_bidon()
         while (not self.stop):
             print("enter while")
-            input("fetch all nodes.....")
             recv_allnodes = self.cclient.fetchAllNodes()
             print("pass fetch")
             if recv_allnodes != last_all_nodes or self.map_gui.position_in_path(recv_allnodes):
