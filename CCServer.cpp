@@ -241,6 +241,7 @@ void CCServer::_execute_fetch_map_number(int socket) {
     int mapid = read_int_from_file(FP_GLOBAL_MAPID_PATH);
     std::string map_number = std::to_string(mapid);
 
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
     if (send(socket, map_number.c_str(), map_number.size(), 0) < 0) {
         perror("Cannot send map number");
     }
