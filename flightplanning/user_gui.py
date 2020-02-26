@@ -215,7 +215,8 @@ class UserGUI(QWidget):
             self.select_area_button.hide()
             self.select_map_button.hide()
             self.connect_button.hide()
-            self.cclient.sendGlobalPolygon(gs.GLOBAL_AREA_POLYGON_PATH)
+            print("Sending global area polygon")
+            self.cclient.sendGlobalPolygonAndMapNumber(gs.GLOBAL_AREA_POLYGON_PATH)
             print("picture sent!")
             self.stop_button.show()
             self.show_hide_button.show()
@@ -247,9 +248,10 @@ class UserGUI(QWidget):
         print("starting test")
         last_all_nodes = dict()
         self.map_gui.reset_transparent_img()
-        sleep(1)
+        #self.cclient.recv_bidon()
         while (not self.stop):
             print("enter while")
+            input("fetch all nodes.....")
             recv_allnodes = self.cclient.fetchAllNodes()
             print("pass fetch")
             if recv_allnodes != last_all_nodes or self.map_gui.position_in_path(recv_allnodes):
@@ -374,9 +376,11 @@ class SelectMapWindow(QDialog):
             for i in range(gs.DATASET):
                 if object.pixmap() == self.map[i].pixmap():
                     picture_path = gs.MAP_PATH[i]
+                    gs.GLOBAL_MAP_ID = int(i)
                     self.parent.update_picture_frame(picture_path)
                     self.parent.chosen_map_path = picture_path
                     self.parent.close_select_map_window()
+                    break
             return True
         else:
             return False

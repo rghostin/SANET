@@ -7,6 +7,8 @@ DB_DIR = os.path.join(CURR_DIR, "../database_utils")
 CCCOMMANDS_PATH = os.path.join(CURR_DIR, "../CCCommands.hpp")
 
 GLOBAL_AREA_POLYGON_PATH = os.path.join(CONF_DIR, "global_area.polygon")
+GLOBAL_MAP_ID = None
+
 USOCKET_PATH = "/tmp/usocket" #os.path.join(CONF_DIR, "usocket")
 FP_CURR_POS_FILE_PATH = os.path.join(CONF_DIR, "current.position")
 FP_CURR_POS_LOCK_PATH = os.path.join(CONF_DIR, "current.position.lock")

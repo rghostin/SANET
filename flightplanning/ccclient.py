@@ -39,8 +39,9 @@ class CCClient:
     def _send_uint8(self, to_send):
         if not 0<=to_send<256:
             raise TypeError("Uint8 out of bounds")
-        print("Sending [uint8]=", to_send)
         self.__socket_.send(np.uint8(to_send))
+        print("Sent [uint8]=", to_send)
+
 
     def _receive_json(self):
        received_chunk = self.__socket_.recv(4096)
@@ -53,11 +54,8 @@ class CCClient:
         print(status_node_map)
         return status_node_map
 
-    def sendMapNumber(self, map_number):
-        self._send_uint8(self.CCCommands["UPDATE_MAP_NUMBER"])
-        self._send_uint8(map_number)
 
-    def sendGlobalPolygon(self, global_area_polygon_path):
+    def sendGlobalPolygonAndMapNumber(self, global_area_polygon_path, mapid_conf_path):
         global_polygon = parsePolygonFile(global_area_polygon_path)
         global_polyg_vertices = []
         for point in global_polygon.vertices:
@@ -66,6 +64,8 @@ class CCClient:
         print("Sending polygon:", json_to_send)
         self._send_uint8(self.CCCommands["UPDATE_GLOBAL_AREA_POLYGON"])
         self.__socket_.send(json_to_send.encode())                   # senidng json
+        assert gs.GLOBAL_MAP_ID
+        self._send_uint8(gs.GLOBAL_MAP_ID)
 
 
     def fetchMapInfo(self):
@@ -92,6 +92,9 @@ class CCClient:
             vertices_list[int(k)] = tuple(pos)
         print(vertices_list)
         return vertices_list
+
+    def recv_bidon(self):
+        self.__socket.recv(1024)
 
 
     def start(self):
