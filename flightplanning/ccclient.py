@@ -86,8 +86,7 @@ class CCClient:
 
     def start(self):
         self.__setUpSocket_()
-        self.fetchMapNumber()
-        self.fetchGlobalPolygon()
+
 
     def stop(self):
         print("trying to close socket..")
@@ -96,7 +95,6 @@ class CCClient:
             self.__socket_.close()
             self.__socket_ = None
             print("Closing CCClient")
-
             
  
 
