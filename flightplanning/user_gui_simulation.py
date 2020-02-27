@@ -248,11 +248,24 @@ class UserGUI(QWidget):
                 QApplication.processEvents()
             step += 1
             sleep(1)
+        self.set_menu_window()
 
     def area_reconstruction(self, area):
         threadLock.acquire()
         self.map_gui.area_reconstruction(images=area)
         threadLock.release()
+
+    def stop_button_action(self):
+        self.stop = True
+
+    def show_hide_button_action(self):
+        if self.show_flight_plan:
+            self.show_flight_plan = False
+        else:
+            self.show_flight_plan = True
+        self.map_gui.set_display_flight_plans(self.show_flight_plan)
+        self.update_picture_frame(gs.GLOBAL_AREA_IMG_PATH_RECONSTRUCTION)
+        QApplication.processEvents()
 
 
     def update_picture_frame(self, picture_filename):

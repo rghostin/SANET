@@ -187,7 +187,7 @@ class MapGUI(object):
     def flight_plans_calculating(self, alpha, N_drones):
         # draws flight plans in the selected area
         # calcul scope
-        self.scope = calcul_scope(self.crop_picture, alpha)
+        self.scope = calcul_scope(self.crop_picture.shape[0], self.crop_picture.shape[1], alpha)
         print("SCOPE:",self.scope)
         # create object FlightPlanner
         self.fplanner = FlightPlanner(global_area_path=self.points_filename, scope=self.scope)
