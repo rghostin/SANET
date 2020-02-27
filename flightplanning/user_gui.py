@@ -195,13 +195,23 @@ class UserGUI(QWidget):
         # Create object map_gui
         # shows fullscreen map image
         self.map_gui.set_picture(self.chosen_map_path)
-        if self.map_gui.start_ui():
+        output = self.map_gui.start_ui()
+        if output == gs.EVERYTHING_OK:
             self.map_gui.destroy_window()
             self.update_picture_frame(gs.GLOBAL_AREA_IMG_PATH_BLACKMASK)
             self.select_area_button.setDisabled(True)
             self.send_area_button.show()
-        else:
+        elif output == gs.DID_CANCEL:
             self.map_gui.destroy_window()
+        elif output == gs.IS_NOT_CONVEX:
+            self.map_gui.destroy_window()
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Warning)
+            msg.setText("The input polygon is not convex: all interior angles must be less than 180°")
+            msg.setWindowTitle("ERROR, concave polygon!")
+            msg.setStandardButtons(QMessageBox.Ok)
+            self.show()
+            msg.exec_()
         self.show()
 
     def send_area_button_action(self):

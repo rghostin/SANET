@@ -6,6 +6,7 @@ from operator import itemgetter
 from utils import Colors, calcul_scope, parsePolygonFile, write_polygon_file
 from flight_planner import FlightPlanner
 from copy import deepcopy
+import global_settings as gs
 
 
 
@@ -30,6 +31,7 @@ class MapGUI(object):
         self.drone_photo = cv2.imread(self.drones_photo_path, -1)
         self.done = False  # Flag signalling user is done choosing area points
         self.cancel = False # Flag signalling user cancel area_selection
+        self.is_convex = True
         self.current = (0, 0)  # current user choosing point
         self.points = []  # List of points defining original polygon
         self.croped_polygon = None  # List of points defining croped polygon
@@ -52,15 +54,17 @@ class MapGUI(object):
         # start windows that allows users to select desired area
         # returns True if user successfully selected area, False if user cancel area selection
         self.select_area()
-        if not self.cancel:
+        if self.cancel:
+            return gs.DID_CANCEL
+        elif not self.is_convex:
+            return gs.IS_NOT_CONVEX
+        else:
             self.crop_polygon()
             self.create_polygon_file()
             self.points = list()
             self.create_picture(filename=self.crop_filename, picture=self.crop_picture, to_png=False)
             self.create_picture(filename=self.crop_withblack_filename, picture=self.crop_withblack, to_png=True)
-            return True
-        else:
-            return False
+            return gs.EVERYTHING_OK
 
     def set_picture(self, path):
         self.original_picture = cv2.imread(filename=path)
@@ -87,6 +91,7 @@ class MapGUI(object):
         # reset flag done and cancel
         self.done = False
         self.cancel = False
+        self.is_convex = True
         # Create window and set a mouse callback to handle events
         cv2.namedWindow(winname=self.window_name, flags=cv2.WINDOW_NORMAL)
         cv2.resizeWindow(winname=self.window_name, width=1000, height=800)
@@ -100,13 +105,7 @@ class MapGUI(object):
             # And wait 50ms before next iteration (this will pump window messages meanwhile)
             key_pressed =cv2.waitKey(50)
             if key_pressed == 32:  # Press Enter to finish the area selection
-                if Polygon(*self.points).is_convex():
-                    self.done = True
-                else:
-                    print("Polygon is not convex. Test with another one.")
-                    self.points = list()
-                    self.cancel = True
-                    # TODO: reset polylines
+                self.done = True
             elif key_pressed == 27:  # Press Esc to cancel area selection
                 self.done = True
                 self.cancel = True
@@ -115,12 +114,13 @@ class MapGUI(object):
         if (len(self.points) > 2) and not self.cancel:
             cv2.polylines(img=self.canvas, pts=np.array([self.points]), isClosed=True, color=Colors.ORANGE,
                           thickness=10)
-            # TODO else when <= 2 points
-            # TODO verify its not convex
             # show polygon
             cv2.imshow(winname=self.window_name, mat=self.canvas)
             # Waiting for the user to press any key
             cv2.waitKey()
+            if not Polygon(*self.points).is_convex():
+                self.is_convex = False
+                self.points = list()
 
 
     def check_selected_polygon(self):

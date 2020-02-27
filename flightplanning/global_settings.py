@@ -53,3 +53,7 @@ MAP_PATH.append(os.path.join(IMGSET_DIR, "map_4.jpg"))
 MAP_PATH.append(os.path.join(IMGSET_DIR, "map_5.jpg"))
 MAP_PATH.append(os.path.join(IMGSET_DIR, "map_6.jpg"))
 MAP_PATH.append(os.path.join(IMGSET_DIR, "map_7.jpg"))
+# GUI variables
+IS_NOT_CONVEX = 1
+DID_CANCEL = 2
+EVERYTHING_OK = 3
