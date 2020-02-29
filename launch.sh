@@ -1,11 +1,13 @@
 #!/bin/bash
 
-DB_DIR="database_utils"
+ROOT="/home/ubuntu/sanet"
+DB_DIR="$ROOT/database_utils"
 DB_PATH="${DB_DIR}/sanet.db"
 DB_INIT_SCRIPT="${DB_DIR}/init.sql"
-CONF_DIR="conf"
+CONF_DIR="$ROOT/conf"
 NODEID_CFG="${CONF_DIR}/nodeid.conf"
 
+cd "$ROOT"
 
 mynodeid=$( cat $NODEID_CFG )
 echo $mynodeid

@@ -1,8 +1,10 @@
 from __future__ import print_function
 import math
+import sys
+sys.path.append(r'/usr/lib/python2.7')
+sys.path.append(r'/usr/lib/python2.7/or-tools')
 from ortools.constraint_solver import routing_enums_pb2
 from ortools.constraint_solver import pywrapcp
-import matplotlib.pyplot as plt
 import sympy
 from shapely.geometry import Point
 from shapely.geometry.polygon import Polygon
@@ -79,9 +81,9 @@ def print_solution(ordered_points, poly):
         next_point = ordered_points[i + 1]
         if not (pathInPolyg(poly, point, next_point)):
             print(point, next_point)
-        plt.plot((point[0], next_point[0]), (point[1], next_point[1]), 'ro-')
+        #plt.plot((point[0], next_point[0]), (point[1], next_point[1]), 'ro-')
     print(pretty_print + '\n')
-    plt.show()
+    #plt.show()
     # plan_output += 'Objective: {}m\n'.format(route_distance)
 
 
@@ -89,8 +91,8 @@ def plot(vertices):
     for i in range(len(vertices) - 1):
         point = vertices[i]
         next_point = vertices[i + 1]
-        plt.plot((point[0], next_point[0]), (point[1], next_point[1]), 'ro-')
-    plt.plot((next_point[0], vertices[0][0]), (next_point[1], vertices[0][1]), 'ro-')
+        #plt.plot((point[0], next_point[0]), (point[1], next_point[1]), 'ro-')
+    #plt.plot((next_point[0], vertices[0][0]), (next_point[1], vertices[0][1]), 'ro-')
 
 
 def getBestRoute(vertices, vision_radious=0.5, debug=False):

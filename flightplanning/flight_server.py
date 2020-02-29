@@ -2,7 +2,7 @@ import socket
 import json
 import os
 from flight_planner import FlightPlanner
-from utils import plotAllFlightPlans, parseNodeId
+from utils import parseNodeId #, plotAllFlightPlans
 from autopilot import Autopilot
 import global_settings as gs
 
@@ -55,7 +55,7 @@ class FlightServer:
             self.__fplanner_.recompute(status_node_map, new_polygon)
 
             if self.__display_:
-                plotAllFlightPlans(self.__fplanner_.flight_plans)
+                pass #plotAllFlightPlans(self.__fplanner_.flight_plans)
             
             for fplan in self.__fplanner_.flight_plans:
                 if fplan.nodeid == self.__my_nodeId_:

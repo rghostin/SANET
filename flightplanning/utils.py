@@ -1,4 +1,4 @@
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 from functools import reduce
 import operator
 import math
@@ -34,13 +34,13 @@ class Colors:
     WHITE_PNG = (255, 255, 255, 255)
     ORANGE_PNG = (0, 165, 255, 255)
 
-
+"""
 def plotPoly(poly_vertices, color):
     for i in range(len(poly_vertices) - 1):
         point = poly_vertices[i]
         next_point = poly_vertices[i + 1]
-        plt.plot((point[0], next_point[0]), (point[1], next_point[1]), color=color)
-    plt.plot((next_point[0], poly_vertices[0][0]), (next_point[1], poly_vertices[0][1]),
+        #plt.plot((point[0], next_point[0]), (point[1], next_point[1]), color=color)
+    #plt.plot((next_point[0], poly_vertices[0][0]), (next_point[1], poly_vertices[0][1]),
              color=color)
 
 
@@ -58,7 +58,7 @@ def plotAllFlightPlans(flight_plans):
     plt.show(block=False)
     plt.pause(5)
     plt.close()
-
+"""
 
 def print_red(s):
     print("\033[93m%s\033[0m" % s)

@@ -1,6 +1,6 @@
 from sympy import Point2D, Line2D, Polygon, Triangle, intersection
-from utils import plotPoly, orderCoords, parsePolygonFile
-import matplotlib.pyplot as plt
+from utils import orderCoords, parsePolygonFile #plotPoly
+#import matplotlib.pyplot as plt
 
 colors = ['black', 'green', 'blue', 'yellow', 'red']
 
@@ -136,14 +136,14 @@ def getFairPartitioning(poly, n_partitions, display=False):
                 final_polygons.append(other)
             polyg_coords = [tuple(e) for e in other.vertices]
             polyg_coords = orderCoords(polyg_coords)
-            plotPoly(original_polyg_coords, 'black')
-            plotPoly([tuple(e) for e in sub_polygon.vertices], 'black')
+            #plotPoly(original_polyg_coords, 'black')
+            #plotPoly([tuple(e) for e in sub_polygon.vertices], 'black')
             n_partitions -= 1
             polyg = Polygon(*polyg_coords)
             target_area = abs(polyg.area) / n_partitions
             chosen_vertex = tuple(other.vertices[-1])
         if display:
-            plt.show()
+            pass #plt.show()
         return final_polygons
 
 

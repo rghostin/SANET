@@ -3,7 +3,7 @@ import numpy as np
 from itertools import permutations
 import math
 from time import time
-from utils import parsePolygonFile, plotAllFlightPlans, print_red, calcul_scope
+from utils import parsePolygonFile, print_red, calcul_scope
 import json
 import sys
 from flight_plan import FlightPlan
