@@ -21,6 +21,7 @@ KBLAYOUT="be"
 
 # paths
 ROBIN_PROG="$ROOT/robin"
+FP_DIR="$ROOT/flightplanning"
 
 BATMAN_PATH="$ROOT/batman"
 BATMANIFY_SCRIPT="$BATMAN_PATH/batmanify.sh"
@@ -30,3 +31,4 @@ CONNECTWIFI_SCRIPT="$BATMAN_PATH/connectwifi.sh"
 KILLWIFI_SCRIPT="$BATMAN_PATH/killwifi.sh"
 RUN_SCRIPT="$BATMAN_PATH/run.sh"
 NODEID_CONF="$CONF_DIR/nodeid.conf"
+TMX_START="$ROOT/launch.sh"

@@ -45,5 +45,5 @@ echo "v = ${v}"
 
 echo "{*} Starting batmanify script"
 "$BATMANIFY_SCRIPT" "$i"
-echo "{*} Starting robin program"
-"$ROBIN_PROG" -i "$i" -v "$v"
+echo "{*} Starting robin and flight_srv program"
+$TMX_START

@@ -38,6 +38,7 @@ function tmux_start() {
     tmux send -t 0:0.0 "python3 flightplanning/flight_server.py" C-m
     sleep 15s
     tmux send -t 0:0.1 "./robin -v 3" C-m
+    tmux attach-session
 }
 
 tmuxproc="$(pgrep tmux)"
@@ -48,8 +49,8 @@ if [ -n "$tmuxproc" ] ; then
     kill "$tmuxproc"
 fi
 
-tmux_start &
+tmux_start 
 
-mate-terminal --tab --command "tmux attach-session;"  # Only works on NO PC
+#mate-terminal --tab --command "tmux attach-session;"  # Only works on NO PC
 
 cat

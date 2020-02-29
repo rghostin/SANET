@@ -22,7 +22,6 @@ function usage() {
 	-i NodeID (0 <= i <= 254)
   -h Hostname
   bool_Antenna (0 : to enable | 1 : to disable)"
-    exit 1
 }
 
 cd "$ROOT"
@@ -64,9 +63,11 @@ shift $((OPTIND-1))
 
 if [ -z "${i}" ] || [ -z "${a}" ]; then
     usage
+    exit 1
 fi
 
 echo "i = ${i}"
+echo "h = ${h}"
 echo "a = ${a}"
 
 echo "changing hostname to $h"
@@ -84,10 +85,10 @@ apt upgrade -y
 apt autoremove -y
 
 echo '[*] Installing requirements'
-apt install build-essential cmake git libgtk2.0-dev pkg-config libavcodec-dev libavformat-dev libswscale-dev libopencv-dev wireless-tools iw batctl alfred make g++ python3-setuptools python3-pip libssl-dev libgeos++-dev hostapd isc-dhcp-server -y
+apt install build-essential cmake git libgtk2.0-dev pkg-config libavcodec-dev libavformat-dev libswscale-dev libopencv-dev wireless-tools sqlite3 sqlite3-dev iw batctl alfred make g++ python3-setuptools python3-pip libssl-dev libgeos++-dev hostapd isc-dhcp-server -y
 
 echo '[*] Installing Python3 - requirements'
-pip3 install --user -r "$RSRC_DIR/requirements_rasp.txt" || exit 1
+pip3 install -r "$RSRC_DIR/requirements_rasp.txt" || exit 1
 
 echo "[*] Setting keyboard layout to $KBLAYOUT"
 loadkeys "$KBLAYOUT"
@@ -101,8 +102,8 @@ cp "$RSRC_DIR"/config_waveshare.txt /boot/firmware/
 echo "[*] Compiling robin"
 make rebuild
 
-echo '[*] Enabling batman and robin on reboot'
-echo "@reboot   root    ${RUN_SCRIPT}" >> /etc/crontab
+#echo '[*] Enabling batman and robin on reboot'
+#echo "@reboot   root    ${RUN_SCRIPT}" >> /etc/crontab
 
 if [[ "$a" -eq "0" ]] ; then  # Enabling Antenna
     echo "- setting static IP address=$P_IP_ADDR/24"
