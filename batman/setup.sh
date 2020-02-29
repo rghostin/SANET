@@ -84,7 +84,7 @@ apt upgrade -y
 apt autoremove -y
 
 echo '[*] Installing requirements'
-apt install wireless-tools iw batctl alfred make g++ python3-setuptools python3-pip libssl-dev libgeos++-dev hostapd isc-dhcp-server -y
+apt install build-essential cmake git libgtk2.0-dev pkg-config libavcodec-dev libavformat-dev libswscale-dev libopencv-dev wireless-tools iw batctl alfred make g++ python3-setuptools python3-pip libssl-dev libgeos++-dev hostapd isc-dhcp-server -y
 
 echo '[*] Installing Python3 - requirements'
 pip3 install --user -r "$RSRC_DIR/requirements_rasp.txt" || exit 1
