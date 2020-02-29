@@ -86,7 +86,7 @@ apt autoremove -y
 
 echo '[*] Installing requirements'
 # opencv : build-essential cmake libgtk2.0-dev pkg-config libavcodec-dev libavformat-dev libswscale-dev libopencv-dev
-apt install wireless-tools sqlite3 sqlite3-dev iw batctl alfred make g++ python3-setuptools python3-pip libssl-dev libgeos++-dev hostapd isc-dhcp-server -y
+apt install wireless-tools sqlite3 libsqlite3-dev iw batctl alfred make g++ python3-setuptools python3-pip libssl-dev libgeos++-dev hostapd isc-dhcp-server -y
 
 echo '[*] Installing Python3 - requirements'
 pip3 install -r "$RSRC_DIR/requirements_rasp.txt" || exit 1
