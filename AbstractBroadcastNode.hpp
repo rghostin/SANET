@@ -119,7 +119,7 @@ void AbstractBroadcastNode<P>::_setup_socket_bind() {
         throw;
     }
 
-    #ifdef __aarch64__
+    #ifdef __ARM_ARCH_7A__
         LOG_F(WARNING, "ARM architecture detected");
         memset(&b_iface, 0, sizeof(b_iface));
         snprintf(b_iface.ifr_name, sizeof(b_iface.ifr_name), b_iface_name);
