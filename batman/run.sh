@@ -45,5 +45,7 @@ echo "v = ${v}"
 
 echo "{*} Starting batmanify script"
 "$BATMANIFY_SCRIPT" "$i"
+echo "{*} Setting nodeid : $i"
+"$SET_NODEID" "$i"
 echo "{*} Starting robin and flight_srv program"
 $TMX_START
