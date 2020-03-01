@@ -1,0 +1,69 @@
+Idées image cover :
+- plusieurs drones répartis dans l'image sombre avc les lumières des drones visibles
+- exemple de situation d'aide par le SANET
+- un drone, à côté écrit SANET
+- fond forêt brumeuse, avec des drones répartis sur l'image
+
+Trouver des images sans copyrights :
+- unsplash : pictures
+- cleanpng : png (cut around the object images)
+
+--- Instructions ---
+Les posters doivent inclure les éléments suivants :
+	- Titre de la présentation
+SANET : Surveillance Adhoc Network
+	- La question scientifique posée présenté de manière claire
+Créer un réseau meshnet pour la surveillance de zones
+	- Le contexte scientifique (existant, état de l’art, …)
+De nombreux projets, essayant de trouver des solutions pour aider lors de désastres dû à la météo ou aux Humains
+	- Méthodes employés
+Algorithmes de partitionnement ; protocoles ; ..
+	- Des exemples clairs
+Montrer notre application
+	- Les résultats obtenus
+Optimal ; déterministe ; taux de perte ; screens
+        - Une conclusion / synthèse
+
+Noms prénoms : 
+Mark DIAMANTINO CARIBE, Sarah GARDIOL, Rawad GHOSTIN, Hugo LLOREDA SANCHEZ et Chin RIVAS
+
+Poster 1 : 
+
+Introduction
+
+Etat actuel ; qu'est-ce que notre implémentation a d'innovant (meshnet ; autonome ; détection des drones entre eux autonome)
+But ; inclure schéma possibilités d'aide par les drones
+Méthodes/Etapes ; Différentes parties
+GUI pour visualiser ce que le réseau voit 
+
+Mettre les images actuelles dans le poster 2, et mettre un exemple d'exécution dans le poster 1
+
+Poster 2 :
+
+Méthodes
+
+Une image pour le partitionnement comme nous avait montré Mark lors de sa première présentation et explications
+Une image du path créé et expliqué pourquoi/comment on le trouve
+Schéma du protocole ? + explications
+Reliable Broadcast
+
+Résultats : taux de perte de paquets ; un algorithme déterministe et heuristiquement optimal
+
+TO-DO :
+
+Général : 
+Image header
+Mettre en gras mots clés
+Tous rectangles carrés ou arrondis ou mix ? 
+
+Poster 1 :
+- refaire les schémas de noeuds en reliable broadcast
+- mettre les screenshots de la GUI
+
+Poster 2 : 
+- checker la correspondance entre graphe problème voyageur de commerce et notre graphe
+- résultats expérimentaux
+
+
+First text partitionnement poster 2 : 
+[...]Nous testons alors l’aire du triangle constitué de V, ainsi que du vertex W le plus proche de V dans le sens antihoraire et du vertex Z opposé à V.[...]          :   
