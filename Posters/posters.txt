@@ -1,3 +1,17 @@
+TO-DO :
+
+Général : 
+Image header, choisir
+Mettre en gras mots clés
+Mettre "réseau maillé" ou "mesh net" et pas "réseau mèche"
+
+Poster 1 :
+- mettre les screenshots de la GUI (un pendant qu'on voit les drones en traind de parcourir les zones, un avec seulement la partition, et un avec la partition et les chemins tracés)
+
+Poster 2 : 
+- résultats expérimentaux, nombres
+
+
 Idées image cover :
 - plusieurs drones répartis dans l'image sombre avc les lumières des drones visibles
 - exemple de situation d'aide par le SANET
@@ -48,22 +62,6 @@ Schéma du protocole ? + explications
 Reliable Broadcast
 
 Résultats : taux de perte de paquets ; un algorithme déterministe et heuristiquement optimal
-
-TO-DO :
-
-Général : 
-Image header
-Mettre en gras mots clés
-Tous rectangles carrés ou arrondis ou mix ? 
-
-Poster 1 :
-- refaire les schémas de noeuds en reliable broadcast
-- mettre les screenshots de la GUI
-
-Poster 2 : 
-- checker la correspondance entre graphe problème voyageur de commerce et notre graphe
-- résultats expérimentaux
-
 
 First text partitionnement poster 2 : 
 [...]Nous testons alors l’aire du triangle constitué de V, ainsi que du vertex W le plus proche de V dans le sens antihoraire et du vertex Z opposé à V.[...]          :   
