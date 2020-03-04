@@ -1,0 +1,8 @@
+Activité 1 (fair-cake cutting) : dessins avec et sans solution de pizzas/gateaux
+Activité 2 (diviser un polygone) : dessins avec et sans solution de formes polygoniales 
+Activité 3.a (cycles Hamiltoniens simples) : dessins avec et sans solution de noeuds à relier
+Activité 3.b (cartes) : dessins avec et sans solution de cartes de Belgique, Bruxelles, ... + carton avec fils et punaises pour relier les villes et trouver le chemin le plus court
+Activité 3.c (partionnement des zones pour les drones) : dessins avec et sans solution des zones partitionnées pour les drones
+Activité 4 (TCP/UDP) : cubes représentant des paquets
+Activité 5 (introduction au Reliable Broadcast) : schémas sur lesquels montrer des exemples
+Activité 6 (protocole de communication des drones) : cubes représentant des paquets, petits obstacles, mettre des timers, ...
