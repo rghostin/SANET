@@ -1,0 +1,11 @@
+- broadcast determinisme
+- problème broadcast -> codé une amelioration = reliable bc
+- rel bc = chaque noeud est un répeteur et retransmet les packets reçu - réduit proba de perte
+
+
+packets: enveloppes
+drones: cubes
+
+- workshop 1, on aide les participants étape par étape à arriver a l'algorithme de reliable broadcast
+- workshop 2, 
+
