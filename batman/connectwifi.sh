@@ -35,7 +35,10 @@ fi
 echo '[*] Connecting to wifi'
 
 # writing wifi connection config
+
 rm -f /etc/wpa_supplicant.conf
+
+
 cat <<EOT >> /etc/wpa_supplicant.conf
 network={
 	ssid="eduroam"
