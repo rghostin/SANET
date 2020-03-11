@@ -35,10 +35,20 @@ fi
 echo '[*] Connecting to wifi'
 
 # writing wifi connection config
-cat <<EOT >> /etc/wpa_suplicant.conf
+rm -f /etc/wpa_supplicant.conf
+cat <<EOT >> /etc/wpa_supplicant.conf
 network={
-	ssid="_home"
-	psk="he[9)MH;jL7ch)4e9id9"
+	ssid="eduroam"
+	priority=1
+	proto=RSN
+	key_mgmt=WPA-EAP
+	pairwise=CCMP
+	auth_alg=OPEN
+	eap=PEAP
+	identity="$CONN_IDENTITY"
+	password="$CONN_PASSWORD"
+	phase1="peaplabel=0"
+	phase2="auth=MSCHAPV2"
 }
 EOT
 
