@@ -110,33 +110,7 @@ make rebuild
 #echo "@reboot   root    ${RUN_SCRIPT}" >> /etc/crontab
 
 if [[ "$a" -eq "0" ]] ; then  # Enabling Antenna
-    echo "- setting static IP address=$P_IP_ADDR/24"
-    ip addr add dev "$P_IFACE" "$P_IP_ADDR"/24
-
-    echo '[*] Overwriting dhcpd configuration'
-    cp "$RSRC_DIR/dhcpd.conf" "/etc/dhcp/dhcpd.conf"
-
-    echo '[*] Overwriting isc-dhcp-server default configuration'
-    cp "$RSRC_DIR/isc-dhcp-server" "/etc/default/isc-dhcp-server"
-
-    echo '[*] Restarting DHCP server'
-    systemctl unmask isc-dhcp-server
-    service isc-dhcp-server restart
-
-    echo '[*] Overwriting hostapd configuration'
-    cp "$RSRC_DIR/hostapd.conf" "/etc/hostapd/hostapd.conf"
-
-    echo '[*] Overwriting hostapd default configuration'
-    cp "$RSRC_DIR/hostapd" "/etc/default/hostapd"
-
-    systemctl unmask hostapd
-    service hostapd restart
-
-    echo '[*] Overwriting sysctl configuration'
-    cp "$RSRC_DIR/sysctl.conf" "/etc/sysctl.conf"
-
-    echo '[*] Activation of forwarding'
-    sh -c "echo 1 > /proc/sys/net/ipv4/ip_forward"
+    "$ACTIVATE_ANTENNA_SCRIPT"
 else
     systemctl stop isc-dhcp-server
     systemctl mask isc-dhcp-server

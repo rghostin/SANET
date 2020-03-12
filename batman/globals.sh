@@ -33,3 +33,5 @@ RUN_SCRIPT="$BATMAN_PATH/run.sh"
 NODEID_CONF="$CONF_DIR/nodeid.conf"
 SET_NODEID="$ROOT/setnodeid.sh"
 TMX_START="$ROOT/launch.sh"
+ACTIVATE_ANTENNA_SCRIPT="$BATMAN_PATH/antenna.sh"
+
