@@ -51,7 +51,7 @@ if [ -n "$tmuxproc" ] ; then
     kill "$tmuxproc"
 fi
 
-tmux_start 
+tmux_start $1
 
 #mate-terminal --tab --command "tmux attach-session;"  # Only works on NO PC
 
