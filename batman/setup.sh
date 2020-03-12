@@ -70,6 +70,9 @@ echo "i = ${i}"
 echo "h = ${h}"
 echo "a = ${a}"
 
+echo "[*] Setting timestamp"
+timedatectl set-timezone Europe/Brussels
+
 echo "changing hostname to $h"
 hostnamectl set-hostname "$h"
 

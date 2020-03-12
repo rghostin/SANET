@@ -48,4 +48,4 @@ echo "{*} Starting batmanify script"
 echo "{*} Setting nodeid : $i"
 "$SET_NODEID" "$i"
 echo "{*} Starting robin and flight_srv program"
-$TMX_START
+$TMX_START "$v"

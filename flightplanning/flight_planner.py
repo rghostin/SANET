@@ -91,6 +91,7 @@ class FlightPlanner:
         return distance_matrix, checkpoints
 
     def __computeBestAssignments_(self, drones_map):
+        print(drones_map)
         drones = {int(k):drones_map[k] for k in drones_map.keys()}
         print("drones->>>>", drones)
         drone_positions = list(drones.values())
