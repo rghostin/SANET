@@ -114,26 +114,26 @@ if [[ "$a" -eq "0" ]] ; then  # Enabling Antenna
     ip addr add dev "$P_IFACE" "$P_IP_ADDR"/24
 
     echo '[*] Overwriting dhcpd configuration'
-    mv "$RSRC_DIR/dhcpd.conf" "/etc/dhcp/dhcpd.conf"
+    cp "$RSRC_DIR/dhcpd.conf" "/etc/dhcp/dhcpd.conf"
 
     echo '[*] Overwriting isc-dhcp-server default configuration'
-    mv "$RSRC_DIR/isc-dhcp-server" "/etc/default/isc-dhcp-server"
+    cp "$RSRC_DIR/isc-dhcp-server" "/etc/default/isc-dhcp-server"
 
     echo '[*] Restarting DHCP server'
     systemctl unmask isc-dhcp-server
     service isc-dhcp-server restart
 
     echo '[*] Overwriting hostapd configuration'
-    mv "$RSRC_DIR/hostapd.conf" "/etc/hostapd/hostapd.conf"
+    cp "$RSRC_DIR/hostapd.conf" "/etc/hostapd/hostapd.conf"
 
     echo '[*] Overwriting hostapd default configuration'
-    mv "$RSRC_DIR/hostapd" "/etc/default/hostapd"
+    cp "$RSRC_DIR/hostapd" "/etc/default/hostapd"
 
     systemctl unmask hostapd
     service hostapd restart
 
     echo '[*] Overwriting sysctl configuration'
-    mv "$RSRC_DIR/sysctl.conf" "/etc/sysctl.conf"
+    cp "$RSRC_DIR/sysctl.conf" "/etc/sysctl.conf"
 
     echo '[*] Activation of forwarding'
     sh -c "echo 1 > /proc/sys/net/ipv4/ip_forward"
