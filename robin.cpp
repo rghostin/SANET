@@ -53,20 +53,21 @@ int main(int argc, char** argv) {
     loguru::g_stderr_verbosity = loguru::Verbosity_INFO;
     loguru::add_file("robin.log", loguru::Truncate, loguru::Verbosity_3);
     loguru::set_thread_name("robin_main");
-    while((opt = getopt(argc, argv, "i:v:")) != -1)
+    while((opt = getopt(argc, argv, "i:v:")) != -1) {
 
-    LOG_F(WARNING, "NodeID=%d", nodeID);
+        LOG_F(WARNING, "NodeID=%d", nodeID);
 
-    {
-        switch(opt)
         {
-            case 'v':
-                verbose_value = strtol (optarg, &checkLong, 10);
-                if (std::strcmp(checkLong, "\0") == 0 and (-2 <= verbose_value) and (verbose_value <= 9)) {
-                    loguru::g_stderr_verbosity = static_cast<int>(verbose_value);
-                    LOG_F(WARNING, "Logging changed to the value -> {%d} through parameter -v", loguru::g_stderr_verbosity);
-                }
-                break;
+            switch (opt) {
+                case 'v':
+                    verbose_value = strtol(optarg, &checkLong, 10);
+                    if (std::strcmp(checkLong, "\0") == 0 and (-2 <= verbose_value) and (verbose_value <= 9)) {
+                        loguru::g_stderr_verbosity = static_cast<int>(verbose_value);
+                        LOG_F(WARNING, "Logging changed to the value -> {%d} through parameter -v",
+                              loguru::g_stderr_verbosity);
+                    }
+                    break;
+            }
         }
     }
 
