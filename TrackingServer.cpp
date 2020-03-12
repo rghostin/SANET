@@ -185,6 +185,7 @@ void TrackingServer::_tr_check_node_map(){
                 uint32_t others_timestamp = std::get<1>(it->second);
 
                 if ( curr_timestamp>=others_timestamp &&  (curr_timestamp - others_timestamp) > _peer_lost_timeout) {
+                    LOG_F(WARNING, "%u", (curr_timestamp - others_timestamp));
                     //dead drone
                     uint8_t nodeid = it->first;
                     LOG_F(WARNING, "Peer lost NodeID=%d", nodeid);
