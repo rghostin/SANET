@@ -24,4 +24,4 @@ echo "Batmanify"
 "$BATMANIFY_SCRIPT" "$1"
 
 echo "Launch now"
-"$BATMAN_PATH/launch.sh" "3"
+"$ROOT/launch.sh" "3"
