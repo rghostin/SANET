@@ -5,7 +5,7 @@ GLOBALS_SCRIPT="$BATMAN_PATH/globals.sh"
 
 source "$GLOBALS_SCRIPT"
 
-if [[ $# -ne 1 ]]; then
+if [[ $# -le 0 ]]; then
    echo "Missing nodeid"
    exit 1
 fi
