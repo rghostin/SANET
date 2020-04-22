@@ -12,6 +12,9 @@ fi
 
 timedatectl set-timezone Europe/Brussels
 
+echo "Disconnect ethernet"
+sleep 15
+
 if [[ $# -ne 2 ]]; then
    echo "Antenna mode on"
    "$BATMAN_PATH/antenna.sh"
