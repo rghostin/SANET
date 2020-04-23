@@ -10,6 +10,8 @@ if [[ $# -le 0 ]]; then
    exit 1
 fi
 
+"$CONNECTWIFI_SCRIPT"
+
 timedatectl set-timezone Europe/Brussels
 
 echo "Disconnect ethernet"
