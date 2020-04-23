@@ -44,6 +44,8 @@ fi
 
     echo '[*] Activation of forwarding'
     sh -c "echo 1 > /proc/sys/net/ipv4/ip_forward"
+    
+    echo '[*] Restarting DHCP server BIS'
+    service isc-dhcp-server restart
 
 echo '[*] Done'
-
