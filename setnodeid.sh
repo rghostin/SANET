@@ -1,6 +1,12 @@
 #!/bin/bash
+ROOT='/home/ubuntu/sanet'
+BATMAN_PATH="$ROOT/batman"
+GLOBALS_SCRIPT="$BATMAN_PATH/globals.sh"
 
-NODEID_CFG_PATH="conf/nodeid.conf"
+source "$GLOBALS_SCRIPT"
+
+
+NODEID_CFG_PATH="$ROOT/conf/nodeid.conf"
 
 
 if [[ $# -ne 1 ]]; then
