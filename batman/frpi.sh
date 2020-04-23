@@ -10,7 +10,8 @@ if [[ $# -le 0 ]]; then
    exit 1
 fi
 
-"$CONNECTWIFI_SCRIPT"
+echo "Setting up nodeID"
+"$SET_NODEID" "$1"
 
 timedatectl set-timezone Europe/Brussels
 
